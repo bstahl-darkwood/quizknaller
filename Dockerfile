@@ -17,7 +17,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
-COPY main.py database.py quizzes.json ./
+COPY main.py database.py poll.py quizzes.json ./
 COPY static ./static
 
 USER quiz
