@@ -204,14 +204,18 @@ app.mount("/static", StaticFiles(directory=static_path), name="static")
 def _asset_version() -> str:
     digest = hashlib.sha256()
     for f in sorted(static_path.glob("*")):
-        if f.suffix in (".css", ".js"):
+        if f.suffix in (".css", ".js", ".png", ".svg", ".ico", ".webmanifest"):
             digest.update(f.name.encode())
             digest.update(f.read_bytes())
     return digest.hexdigest()[:10]
 
 
 ASSET_VERSION = _asset_version()
-_ASSET_RE = re.compile(r'((?:href|src)="/static/[^"?]+\.(?:css|js))"')
+# CSS/JS, Icons, Vorschaubild (auch als absolute og:image-URL) und /favicon.ico
+_ASSET_RE = re.compile(
+    r'((?:href|src|content)="(?:https://quiz\.benjamin-stahl\.de)?'
+    r'(?:/static/[^"?]+\.(?:css|js|png|svg|ico|webmanifest)|/favicon\.ico))"'
+)
 _page_cache: dict[str, str] = {}
 
 
