@@ -93,6 +93,7 @@ const elements = {
 function showScreen(screenName) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
     screens[screenName].classList.add('active');
+    document.body.classList.toggle('scrolled', screenName === 'select' && screens.select.scrollTop > 30);
 }
 
 // Update game code displays in headers
@@ -190,6 +191,7 @@ function createQuizCard(quiz, isCustom) {
         : quiz.questionCount;
     
     card.innerHTML = `
+        <div class="quiz-card-icon">${SQ.icon(isCustom ? 'pencil' : SQ.topicIcon(quiz.title))}</div>
         <h3>${escapeHtml(SQ.plain(quiz.title))}</h3>
         <span>${questionCount} Fragen</span>
         ${isCustom ? '<button class="delete-quiz-btn" aria-label="Quiz löschen" title="Quiz löschen">' + SQ.icon('trash') + '</button>' : ''}
@@ -1088,3 +1090,8 @@ socket.on('inactive_players_removed', (data) => {
     // You could also show a subtle toast message here instead of alert
     // For now, we'll just log it to avoid disrupting the game flow
 });
+
+// Lichterkette ausblenden, sobald die Quiz-Auswahl gescrollt wird
+screens.select.addEventListener('scroll', () => {
+    document.body.classList.toggle('scrolled', screens.select.scrollTop > 30);
+}, { passive: true });

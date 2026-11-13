@@ -878,3 +878,22 @@ button { cursor: pointer; }
 .delete-quiz-btn { display: grid; place-items: center; color: var(--muted); }
 .delete-quiz-btn:hover { color: var(--red); }
 .delete-quiz-btn .icon { pointer-events: none; }
+
+/* Themen-Icon auf den Quiz-Karten */
+.quiz-card { justify-content: flex-start; }
+.quiz-card span { margin-top: auto; }
+.quiz-card-icon {
+    width: 44px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    clip-path: var(--hex-pointy);
+    background: var(--lime-soft);
+    color: var(--navy-800);
+}
+.quiz-card-icon .icon { width: 22px; height: 22px; }
+.quiz-card.custom-quiz .quiz-card-icon { background: var(--navy-800); color: var(--lime); }
+
+/* Lichterkette blendet beim Scrollen der Quiz-Auswahl aus, statt über den Buttons zu liegen */
+.night-bg .lights { transition: opacity 0.3s; }
+body.scrolled .night-bg .lights { opacity: 0; }
