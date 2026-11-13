@@ -1,4 +1,4 @@
-// QuizKnaller - Quiz Creator
+// SmartQuiz - Quiz Creator
 
 const STORAGE_KEY = 'quizknaller_custom_quiz';
 

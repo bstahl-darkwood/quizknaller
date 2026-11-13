@@ -1,4 +1,4 @@
-// QuizKnaller - Sound Manager
+// SmartQuiz - Sound Manager
 // Manages all game sounds using Web Audio API
 
 class SoundManager {

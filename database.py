@@ -1,5 +1,5 @@
 """
-Database module for QuizKnaller persistence
+Database module for SmartQuiz persistence
 Handles SQLite operations for games, players, and quizzes
 """
 

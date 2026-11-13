@@ -1,0 +1,138 @@
+/* SmartQuiz – gemeinsames Theme (Farben, Schriften, Nachthimmel, Logo)
+   Stil der Smart-Solutions-Einladung „Christmas Basecamp“: Nachtblau, Lime, weiße Karten, Sechsecke. */
+
+:root {
+    --navy-950: #04102a;
+    --navy-900: #071a3d;
+    --navy-800: #0b2557;
+    --navy-700: #123276;
+    --blue-600: #1a4fa8;
+    --blue-400: #4f86e8;
+    --lime: #8be23c;
+    --lime-2: #5fcf3a;
+    --lime-soft: #e9fbd7;
+    --lime-grad: linear-gradient(135deg, #a6f04a, #5fcf3a);
+    --amber: #ffb547;
+    --red: #e5484d;
+    --ink: #0d1b3e;
+    --muted: #5b6b8c;
+    --line: #e3e9f4;
+    --card: #ffffff;
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-line: rgba(255, 255, 255, 0.16);
+
+    /* Antwortfarben – zusammen mit den Formen ▲ ◆ ● ■ */
+    --answer-0: #8be23c;
+    --answer-1: #2e6bff;
+    --answer-2: #ffb547;
+    --answer-3: #e5484d;
+    --answer-0-ink: #071a3d;
+    --answer-1-ink: #ffffff;
+    --answer-2-ink: #071a3d;
+    --answer-3-ink: #ffffff;
+
+    --font-head: 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-hand: 'Caveat', 'Segoe Print', cursive;
+
+    --hex: polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%);
+    --hex-pointy: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+
+/* Grundfarbe nur auf html – ein Body-Hintergrund würde den Nachthimmel (z-index -1) verdecken */
+html { background: var(--navy-900); }
+body { background: transparent; }
+
+/* ---------- Nachthimmel ---------- */
+.night-bg {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background:
+        radial-gradient(90% 55% at 78% 8%, rgba(255, 181, 71, 0.16), transparent 60%),
+        radial-gradient(120% 80% at 30% 0%, #1d438e 0%, transparent 60%),
+        linear-gradient(180deg, #0b2557 0%, #071a3d 55%, #04102a 100%);
+}
+.night-bg .snow i {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+}
+.night-bg .trees {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 22vh;
+    opacity: 0.6;
+}
+.night-bg .lights {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: env(safe-area-inset-top, 0px);
+    width: 100%;
+    height: 80px;
+}
+
+/* ---------- Marke ---------- */
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.brand svg { flex: none; }
+.wordmark {
+    font: 900 1.6rem/1 var(--font-head);
+    letter-spacing: -0.01em;
+    color: #fff;
+}
+.wordmark span { color: var(--lime); }
+.spaced {
+    font: 600 0.75rem/1.3 var(--font-body);
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+}
+.hand {
+    font-family: var(--font-hand);
+    font-weight: 700;
+}
+.lime-line {
+    display: block;
+    width: 44px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--lime);
+    margin-top: 10px;
+}
+
+/* Smart-Solutions-Eck wie in der Einladung */
+.ss-corner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+    background: #fff;
+    padding: 14px 64px 14px 28px;
+    clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+.ss-corner img { display: block; height: 52px; width: auto; }
+
+/* Sechseck-Badge */
+.hex-badge {
+    display: grid;
+    place-items: center;
+    clip-path: var(--hex-pointy);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

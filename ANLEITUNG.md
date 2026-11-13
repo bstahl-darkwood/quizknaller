@@ -1,4 +1,4 @@
-# QuizKnaller – Aufbau & Funktionsweise
+# SmartQuiz – Aufbau & Funktionsweise
 
 Kahoot-artiges Multiplayer-Quiz: ein **Host** (Beamer) steuert das Spiel, **Spieler** antworten am Handy. Alles läuft über einen Python-Server mit WebSockets.
 

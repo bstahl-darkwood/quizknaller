@@ -2,66 +2,75 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizKnaller 💥 - Host</title>
-    <meta name="description" content="Das Multiplayer-Quiz fürs Handy: Code eingeben, mitraten, Punkte sammeln. Wissen macht BUMM!">
-    <meta name="theme-color" content="#764ba2">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SmartQuiz – Host</title>
+    <meta name="description" content="Das Smart-Solutions-Quiz fürs Handy: Code eingeben, mitraten, Punkte sammeln.">
+    <meta name="theme-color" content="#071a3d">
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
     <meta property="og:type" content="website">
-    <meta property="og:site_name" content="QuizKnaller">
+    <meta property="og:site_name" content="SmartQuiz">
     <meta property="og:locale" content="de_DE">
-    <meta property="og:title" content="QuizKnaller 💥 – Quiz hosten">
-    <meta property="og:description" content="Das Multiplayer-Quiz fürs Handy: Code eingeben, mitraten, Punkte sammeln. Wissen macht BUMM!">
+    <meta property="og:title" content="SmartQuiz – Quiz hosten">
+    <meta property="og:description" content="Das Smart-Solutions-Quiz fürs Handy: Code eingeben, mitraten, Punkte sammeln.">
     <meta property="og:url" content="https://quiz.benjamin-stahl.de/host">
     <meta property="og:image" content="https://quiz.benjamin-stahl.de/static/og-image.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="QuizKnaller – Wissen macht BUMM!">
+    <meta property="og:image:alt" content="SmartQuiz – Smart Solutions">
     <meta name="twitter:card" content="summary_large_image">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/theme.css">
     <link rel="stylesheet" href="/static/host.css">
 </head>
 <body>
+    <div class="night-bg"></div>
     <!-- Select Quiz Screen -->
     <div id="select-screen" class="screen active">
         <div class="select-container">
+            <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
             <div class="logo-section">
-                <h1 class="logo">Quiz<span>Knaller</span></h1>
-                <p class="tagline">Wissen macht BUMM! 💥</p>
+                <svg class="select-logo" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg>
+                <h1 class="wordmark logo">Smart<span>Quiz</span></h1>
+                <p class="spaced tagline">Wissen. Team. Spaß.</p>
+                <p class="hand select-hand">Wer weiß es zuerst?</p>
             </div>
             <div class="creator-link-section">
-                <a href="/creator" class="creator-link">🎨 Eigenes Quiz erstellen</a>
+                <a href="/creator" class="creator-link">✏️ Eigenes Quiz erstellen</a>
                 <div class="upload-quiz-section">
                     <input type="file" id="upload-quiz-input" accept=".json" style="display: none;">
                     <button id="upload-quiz-btn" class="upload-quiz-btn">📤 Quiz hochladen</button>
                 </div>
             </div>
-            <h2>Quiz auswählen</h2>
+            <h2 class="section-title">Quiz auswählen</h2>
             <div id="quiz-list" class="quiz-list"></div>
         </div>
     </div>
 
     <!-- Lobby Screen -->
     <div id="lobby-screen" class="screen">
+        <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
         <div class="lobby-header">
-            <div class="logo-small">Quiz<span>Knaller</span></div>
             <div class="quiz-info">
-                <span id="lobby-quiz-title"></span>
+                <span class="spaced">Herzlich willkommen zum</span>
+                <span class="lobby-title" id="lobby-quiz-title"></span>
             </div>
             <div class="header-actions">
-                <button id="team-config-toggle" class="btn-team-config" title="Team-Einstellungen">⚙️ Teams</button>
-                <button id="end-game-btn" class="btn-end-game" title="Spiel beenden">❌ Beenden</button>
+                <button id="team-config-toggle" class="btn-team-config" title="Team-Einstellungen">⚙️ Einstellungen</button>
+                <button id="end-game-btn" class="btn-end-game" title="Spiel beenden">Beenden</button>
+                <div class="brand header-brand"><svg width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg><span class="wordmark">Smart<span>Quiz</span></span></div>
             </div>
         </div>
         <div class="lobby-main">
             <div class="left-panels">
                 <div class="join-info">
                     <div class="join-code-section">
+                        <div class="join-title">Jetzt mitmachen!</div>
+                        <span class="lime-line center"></span>
                         <div class="game-code-display">
                             <span class="code-label">Spiel-Code</span>
                             <span class="code-value" id="game-code-display"></span>
@@ -70,7 +79,7 @@
                             <img id="qr-code" src="" alt="QR Code" class="qr-code">
                         </div>
                         <div class="join-url-section">
-                            <span class="join-url-label">Scanne den QR-Code oder besuche</span>
+                            <span class="join-url-label">QR-Code scannen oder öffnen:</span>
                             <div class="join-url" id="join-url"></div>
                         </div>
                     </div>
@@ -117,7 +126,7 @@
                                 <label>Inaktivität nach X Fragen ohne Antwort:</label>
                                 <input type="number" id="inactivity-threshold-mobile" value="3" min="1" max="10">
                             </div>
-                            <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                            <p class="settings-hint">
                                 Spieler werden entfernt, wenn sie die angegebene Anzahl an aufeinanderfolgenden Fragen nicht beantworten.
                             </p>
                         </div>
@@ -125,7 +134,7 @@
                 </details>
             </div>
             <div class="players-section">
-                <h3>Spieler (<span id="player-count">0</span>)</h3>
+                <h3><span class="player-count" id="player-count">0</span> <span class="spaced">Spieler sind dabei</span></h3>
                 <div class="players-grid" id="players-grid"></div>
             </div>
         </div>
@@ -151,7 +160,7 @@
                     </div>
                     <button id="save-teams-btn" class="btn-save-teams">Teams speichern</button>
                 </div>
-                <hr style="margin: 20px 0; border: none; border-top: 1px solid #ddd;">
+                <hr class="offcanvas-sep">
                 <label class="team-mode-toggle">
                     <input type="checkbox" id="auto-remove-checkbox">
                     <span>Inaktive Spieler automatisch entfernen</span>
@@ -161,7 +170,7 @@
                         <label>Inaktivität nach X Fragen ohne Antwort:</label>
                         <input type="number" id="inactivity-threshold" value="3" min="1" max="10">
                     </div>
-                    <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                    <p class="settings-hint">
                         Spieler werden entfernt, wenn sie die angegebene Anzahl an aufeinanderfolgenden Fragen nicht beantworten.
                     </p>
                 </div>
@@ -173,13 +182,14 @@
                 <input type="checkbox" id="autoplay-checkbox">
                 <span>Automatisch zur nächsten Frage</span>
             </label>
-            <button id="start-game-btn" class="btn-start" disabled>Spiel starten 🚀</button>
+            <button id="start-game-btn" class="btn-start" disabled>Quiz starten ▶</button>
         </div>
     </div>
 
     <!-- Countdown Screen -->
     <div id="countdown-screen" class="screen">
         <div class="countdown-container">
+            <div class="spaced">Gleich geht's los</div>
             <h2>Macht euch bereit!</h2>
             <div class="big-countdown" id="countdown-number">3</div>
         </div>
@@ -189,6 +199,7 @@
     <div id="question-screen" class="screen">
         <div class="question-header">
             <div class="question-info">
+                <div class="brand"><img class="ss-hell" src="/static/smart-solutions-logo-hell.png" alt="Smart Solutions"><span class="brand-sep"></span><svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg><span class="wordmark">Smart<span>Quiz</span></span></div>
                 <span class="question-number" id="question-number">Frage 1 von 10</span>
             </div>
             <div class="timer-section">
@@ -212,7 +223,10 @@
             </div>
         </div>
         <div class="question-main">
-            <h1 class="question-text" id="question-text"></h1>
+            <div class="question-card">
+                <h1 class="question-text" id="question-text"></h1>
+                <span class="lime-line"></span>
+            </div>
         </div>
         <div class="answers-display" id="answers-display">
             <div class="answer-option answer-0">
@@ -237,19 +251,20 @@
     <!-- Results Screen -->
     <div id="results-screen" class="screen">
         <div class="results-header">
+            <div class="brand"><svg width="40" height="40" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg><span class="wordmark">Smart<span>Quiz</span></span></div>
             <div class="header-game-code" id="results-game-code">
                 <span class="header-code-label">Code:</span>
                 <span class="header-code-value"></span>
             </div>
-            <button id="end-game-btn-results" class="btn-end-game" title="Spiel beenden">❌ Beenden</button>
+            <button id="end-game-btn-results" class="btn-end-game" title="Spiel beenden">Beenden</button>
             <div id="autoplay-countdown" class="autoplay-countdown" style="display: none;">
                 <span id="autoplay-message">Nächste Frage in</span> <span id="autoplay-timer">10</span>s
             </div>
-            <button id="next-question-btn" class="btn-next">Weiter ➜</button>
+            <button id="next-question-btn" class="btn-next">Weiter →</button>
         </div>
         <div class="results-main">
             <div class="correct-answer-display">
-                <span class="correct-label">Richtige Antwort:</span>
+                <span class="spaced correct-label">Richtige Antwort</span>
                 <div class="correct-answer-box" id="correct-answer-box"></div>
             </div>
             <div class="answer-stats" id="answer-stats">
@@ -278,7 +293,11 @@
                     <span class="stat-percent" id="stat-percent-3">0%</span>
                 </div>
             </div>
-            <div class="leaderboard-preview" id="leaderboard-preview"></div>
+            <div class="leaderboard-card">
+                <div class="card-title">Zwischenstand</div>
+                <span class="lime-line"></span>
+                <div class="leaderboard-preview" id="leaderboard-preview"></div>
+            </div>
         </div>
     </div>
 
@@ -286,14 +305,19 @@
     <div id="final-screen" class="screen">
         <div class="final-container">
             <div class="confetti-container" id="confetti"></div>
-            <h1 class="final-title">🏆 Endergebnis 🏆</h1>
+            <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
+            <div class="final-head">
+                <span class="spaced">Das Finale</span>
+                <h1 class="final-title">Unsere <span>Quiz-Champions</span></h1>
+            </div>
             <div class="podium" id="podium"></div>
             <div class="full-leaderboard" id="full-leaderboard"></div>
-            <button id="new-game-btn" class="btn-new-game">Quiz wechseln 🔄</button>
+            <button id="new-game-btn" class="btn-new-game">Quiz wechseln</button>
         </div>
     </div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/static/theme.js"></script>
     <script src="/static/sounds.js"></script>
     <script src="/static/host.js"></script>
 </body>

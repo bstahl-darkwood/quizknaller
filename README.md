@@ -1,6 +1,8 @@
-# QuizKnaller 💥
+# SmartQuiz
 
-**Wissen macht BUMM!** - Ein Multiplayer-Quiz das einschlägt!
+**Wer weiß es zuerst?** – Das Multiplayer-Quiz von Smart Solutions, im Stil der Christmas-Basecamp-Einladung (Nachtblau, Lime, Sechsecke).
+
+Basiert auf QuizKnaller. Spieler spielen am Handy (iOS und Android, mobil optimiert), der Host zeigt Fragen und Rangliste am Beamer.
 
 Ein Kahoot-ähnliches Quiz-Spiel mit einer mobil-optimierten Spieleransicht und einer beamer-optimierten Host-Ansicht.
 
@@ -106,4 +108,4 @@ Der Host kann das automatische Entfernen inaktiver Spieler aktivieren:
 
 - **Backend:** Python 3.11+, FastAPI, python-socketio
 - **Frontend:** Vanilla HTML/CSS/JS
-- **Font:** Fredoka (Google Fonts)
+- **Design:** Montserrat, Inter, Caveat (Google Fonts); Theme in `static/theme.css` / `static/theme.js`, Entwurf in `design/`

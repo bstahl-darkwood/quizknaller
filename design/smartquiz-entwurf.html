@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartQuiz – UX-Entwurf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-950:#04102a; --navy-900:#071a3d; --navy-800:#0b2557; --navy-700:#123276; --blue-600:#1a4fa8; --blue-400:#4f86e8;
+  --lime:#8be23c; --lime-2:#5fcf3a; --lime-soft:#e9fbd7;
+  --amber:#ffb547; --red:#e5484d; --blue-ans:#2e6bff;
+  --ink:#0d1b3e; --muted:#5b6b8c; --line:#e3e9f4; --card:#ffffff;
+  --font-head:'Montserrat',system-ui,sans-serif; --font-body:'Inter',system-ui,sans-serif; --font-hand:'Caveat',cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-body);background:#eef2f9;color:var(--ink);-webkit-font-smoothing:antialiased}
+
+/* ---------- Präsentationsseite ---------- */
+.page{max-width:1240px;margin:0 auto;padding:56px 24px 96px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:40px}
+.eyebrow{font:600 12px/1 var(--font-body);letter-spacing:.32em;text-transform:uppercase;color:var(--blue-600)}
+.page-head h1{font:900 44px/1.05 var(--font-head);margin-top:10px;color:var(--navy-800)}
+.page-head h1 span{color:var(--lime-2)}
+.page-head p{max-width:520px;color:var(--muted);line-height:1.55;margin-top:12px}
+.section{margin-top:64px}
+.section h2{font:800 24px/1.2 var(--font-head);color:var(--navy-800);display:flex;align-items:center;gap:12px}
+.section h2::before{content:"";width:28px;height:4px;border-radius:2px;background:var(--lime)}
+.section .lead{color:var(--muted);margin:8px 0 24px;max-width:760px;line-height:1.55}
+.row{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+.caption{font:600 13px/1.4 var(--font-body);color:var(--muted);margin-top:12px;text-align:center}
+.caption b{color:var(--navy-800)}
+
+/* ---------- Nachthimmel-Hintergrund (gemeinsam) ---------- */
+.night{position:relative;overflow:hidden;color:#fff;
+  background:
+    radial-gradient(90% 55% at 78% 8%, rgba(255,181,71,.18), transparent 60%),
+    radial-gradient(120% 80% at 30% 0%, #1d438e 0%, transparent 60%),
+    linear-gradient(180deg,#0b2557 0%,#071a3d 55%,#04102a 100%)}
+.night .snow{position:absolute;inset:0;pointer-events:none}
+.night .snow i{position:absolute;border-radius:50%;background:#fff;opacity:.55}
+.night .trees{position:absolute;left:0;right:0;bottom:0;height:34%;pointer-events:none;opacity:.55}
+.night .lights{position:absolute;left:0;right:0;top:0;width:100%;height:80px;pointer-events:none}
+.phone .night .lights{top:26px}
+.night > .content{position:relative;z-index:2;height:100%}
+
+/* ---------- Bausteine ---------- */
+.mark{display:inline-flex;align-items:center;gap:10px}
+.mark svg{flex:none}
+.wordmark{font:900 26px/1 var(--font-head);letter-spacing:-.01em}
+.wordmark span{color:var(--lime)}
+.spaced{font:600 10px/1.3 var(--font-body);letter-spacing:.34em;text-transform:uppercase;opacity:.85}
+.hand{font-family:var(--font-hand);font-weight:700;color:#fff}
+.underline-lime{display:block;width:44px;height:4px;border-radius:2px;background:var(--lime);margin-top:10px}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:16px;font:800 17px/1 var(--font-head);
+  padding:18px 20px;width:100%;color:var(--navy-900);background:linear-gradient(135deg,#a6f04a,#5fcf3a);
+  box-shadow:0 10px 24px rgba(95,207,58,.35), inset 0 -3px 0 rgba(0,0,0,.12)}
+.field{background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.18);border-radius:14px;padding:16px 16px;
+  color:#fff;font:600 16px/1 var(--font-body);display:flex;align-items:center;gap:12px}
+.field.code{font:800 26px/1 var(--font-head);letter-spacing:.32em;justify-content:center;color:#fff}
+.field small{opacity:.6;font-weight:500}
+.card{background:var(--card);color:var(--ink);border-radius:20px;box-shadow:0 18px 40px rgba(4,16,42,.35)}
+.chip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:999px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.16);font:600 14px/1 var(--font-body)}
+.avatar{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font:800 12px/1 var(--font-head);color:var(--navy-900);
+  clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%)}
+
+/* Antwortfarben – mit Form, damit sie auch ohne Farbe unterscheidbar sind */
+.ans{position:relative;border-radius:18px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;
+  font:700 16px/1.25 var(--font-body);box-shadow:inset 0 -4px 0 rgba(0,0,0,.14)}
+.ans .shape{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:rgba(255,255,255,.25)}
+.a0{background:var(--lime);color:var(--navy-900)}  .a0 .shape{background:rgba(7,26,61,.12)}
+.a1{background:var(--blue-ans);color:#fff}
+.a2{background:var(--amber);color:var(--navy-900)} .a2 .shape{background:rgba(7,26,61,.12)}
+.a3{background:var(--red);color:#fff}
+
+/* ---------- Handy-Rahmen ---------- */
+.phone{width:340px;height:720px;border-radius:44px;padding:10px;background:#0a0f1c;box-shadow:0 30px 60px rgba(7,26,61,.35),0 0 0 1px #2a3550 inset}
+.phone .screen{width:100%;height:100%;border-radius:36px;overflow:hidden}
+.phone .content{display:flex;flex-direction:column;padding:54px 22px 26px}
+.statusbar{position:absolute;top:14px;left:28px;right:28px;display:flex;justify-content:space-between;font:600 13px/1 var(--font-body);z-index:3;opacity:.9}
+
+/* ---------- Beamer-Rahmen ---------- */
+.beamer{width:100%;max-width:1180px;aspect-ratio:16/9;border-radius:18px;overflow:hidden;box-shadow:0 30px 60px rgba(7,26,61,.3)}
+.beamer .content{padding:3.2% 3.6%;display:flex;flex-direction:column}
+
+/* Timer */
+.bar{height:10px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.bar i{display:block;height:100%;width:62%;border-radius:99px;background:linear-gradient(90deg,#5fcf3a,#a6f04a);box-shadow:0 0 18px rgba(139,226,60,.7)}
+
+/* Swatches */
+.swatches{display:flex;gap:14px;flex-wrap:wrap}
+.sw{width:150px;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 6px 18px rgba(7,26,61,.08)}
+.sw div{height:74px}
+.sw p{padding:10px 12px;font:600 12px/1.4 var(--font-body);color:var(--muted)}
+.sw p b{display:block;color:var(--ink);font-size:13px}
+.type{background:#fff;border-radius:20px;padding:28px;box-shadow:0 6px 18px rgba(7,26,61,.08);flex:1;min-width:320px}
+.type .h{font:900 40px/1 var(--font-head);color:var(--navy-800)}
+.type .h span{color:var(--lime-2)}
+.type .s{font:600 12px/1 var(--font-body);letter-spacing:.32em;text-transform:uppercase;color:var(--blue-600);margin:14px 0}
+.type .hand{color:var(--blue-600);font-size:34px}
+.notes{background:#fff;border-radius:20px;padding:24px 28px;box-shadow:0 6px 18px rgba(7,26,61,.08);flex:1;min-width:320px}
+.notes li{margin:0 0 10px 18px;line-height:1.5;color:var(--ink)}
+.notes li::marker{color:var(--lime-2)}
+/* Smart-Solutions-Eck wie in der Einladung */
+.corner{position:absolute;left:0;top:0;z-index:3;background:#fff;padding:2.2% 6% 2.2% 3.6%;
+  clip-path:polygon(0 0,100% 0,86% 100%,0 100%);box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.corner img{display:block;height:58px}
+.ss-hell{display:block;height:30px;opacity:.95}
+
+/* ---------- Geräte in echten CSS-Pixeln (auf der Seite verkleinert dargestellt) ---------- */
+.phones{gap:22px;justify-content:space-between}
+.phone{--w:375px;--h:667px;width:calc(var(--w) + 20px);height:calc(var(--h) + 20px);zoom:.86;border-radius:52px;padding:10px;background:#0a0f1c;
+  box-shadow:0 30px 60px rgba(7,26,61,.35),0 0 0 1px #2a3550 inset}
+.phone.ios-se{border-radius:40px;padding:10px}
+.phone.android{border-radius:36px}
+.phone .screen{width:100%;height:100%;border-radius:44px;overflow:hidden;position:relative}
+.phone.ios-se .screen{border-radius:30px}
+.phone.android .screen{border-radius:28px}
+/* Safe Areas: iPhone mit Insel oben 59px / unten 34px, SE 20px / 0, Android 32px / 24px */
+.phone.ios{--sat:59px;--sab:34px}.phone.ios-se{--sat:20px;--sab:0px}.phone.android{--sat:32px;--sab:24px}
+.phone .content{display:flex;flex-direction:column;padding:calc(var(--sat) + 14px) 18px calc(var(--sab) + 16px)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:124px;height:36px;border-radius:20px;background:#000;z-index:4}
+.punch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:#000;z-index:4}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.75);z-index:4}
+.android .homebar{width:110px;height:4px;bottom:10px}
+.statusbar{position:absolute;top:18px;left:30px;right:30px;display:flex;justify-content:space-between;font:600 14px/1 var(--font-body);z-index:3}
+.ios-se .statusbar{top:5px;font-size:12px}
+.android .statusbar{top:10px;left:22px;right:22px;font-size:13px}
+.phone .night .lights{top:calc(var(--sat) - 8px)}
+.spaced{font-size:11px}
+.phone .spaced{font-size:11px}
+
+.join-hero{text-align:center;margin-top:3vh;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.join-hero.compact{flex:none;flex-direction:row;gap:10px;margin-top:0}
+.join-form{display:flex;flex-direction:column;gap:8px}
+.lbl{font:600 12px/1 var(--font-body);opacity:.75;margin:6px 2px 0}
+.join-form .btn{margin-top:10px;min-height:56px}
+.field{font-size:17px;min-height:54px}
+.field.code{font-size:26px}
+.field.focus{border-color:var(--lime);box-shadow:0 0 0 3px rgba(139,226,60,.25)}
+.caret{display:inline-block;width:2px;height:20px;background:var(--lime);margin-left:2px;vertical-align:middle}
+
+.q-top{display:flex;justify-content:space-between;align-items:center}
+.chip.sm{padding:9px 14px;font-size:14px}
+.chip.sm b{color:var(--lime);margin:0 3px}
+.phone .bar{margin:14px 0 14px}
+.q-card{padding:16px 18px}
+.q-text{font:800 clamp(17px,5.4vw,21px)/1.28 var(--font-head);margin-top:8px;color:var(--navy-800)}
+.q-text.long{font-size:16px;margin-top:0}
+.answers{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:1fr;gap:10px;margin-top:14px}
+.answers .ans{border:0;text-align:left;font:700 17px/1.25 var(--font-body);min-height:96px;cursor:pointer;touch-action:manipulation}
+.answers.list{grid-template-columns:1fr;grid-auto-rows:auto;align-content:end;gap:8px}
+.answers.list .ans{flex-direction:row;align-items:center;justify-content:flex-start;gap:12px;min-height:56px;padding:10px 14px;font-size:15px}
+.answers.list .shape{flex:none}
+.answers.dim{opacity:.45;filter:saturate(.6)}
+.hexok{margin-top:auto;width:120px;height:120px;display:grid;place-items:center;background:linear-gradient(135deg,#a6f04a,#5fcf3a);
+  clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);font-size:54px;color:var(--navy-900);font-weight:900}
+.stats{width:100%;margin-top:auto;padding:16px;display:flex;justify-content:space-around;text-align:center}
+.stats > div b{display:block;font:900 24px/1 var(--font-head);color:var(--navy-800)}
+.stats > div span{display:block;font:600 11px/1 var(--font-body);letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.stats > i{width:1px;background:var(--line)}
+
+.keyboard{margin:auto -18px 0;background:#2b2f38;padding:8px 4px 34px;display:flex;flex-direction:column;gap:8px;color:#fff}
+.kb-row{display:flex;justify-content:center;gap:5px;font:500 18px/1 var(--font-body);word-spacing:16px;padding:8px 0;text-align:center}
+.kb-row span{background:#454b57;border-radius:6px;padding:8px 12px;font-size:14px;word-spacing:0}
+.kb-row .space{flex:1;max-width:170px}
+.kb-row .go{background:var(--lime);color:var(--navy-900);font-weight:700}
+
+.toast{position:absolute;left:14px;right:14px;top:calc(var(--sat) + 4px);z-index:5;display:flex;align-items:center;gap:10px;
+  background:#fff;color:var(--navy-800);border-radius:14px;padding:12px 14px;font:600 14px/1.3 var(--font-body);box-shadow:0 12px 30px rgba(0,0,0,.35);
+  border-left:5px solid var(--amber)}
+.spin{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--line);border-top-color:var(--blue-600);flex:none}
+.notes code{font-size:12px;background:#eef2f9;padding:1px 5px;border-radius:5px;color:var(--blue-600)}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="page-head">
+    <div>
+      <div class="eyebrow">UX-Entwurf · Weihnachtsfeier-Edition</div>
+      <h1>Smart<span>Quiz</span></h1>
+      <p>Neues Erscheinungsbild im Stil der Christmas-Basecamp-Einladung: Nachtblau, Lime-Akzent, weiße Karten, Sechsecke, Handschrift-Akzente und eine winterliche Lichterketten-Stimmung. Funktion und Ablauf bleiben gleich.</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
+    <img src="smart-solutions-logo.png" alt="Smart Solutions" style="height:64px">
+    <span style="width:1px;height:56px;background:#c9d3e6"></span>
+    <div class="mark" style="color:var(--navy-800)">
+      <svg width="64" height="64" viewBox="0 0 64 64"><use href="#logo"/></svg>
+      <div><div class="wordmark" style="color:var(--navy-800)">Smart<span style="color:var(--lime-2)">Quiz</span></div>
+      <div class="spaced" style="color:var(--blue-600);margin-top:6px">Wissen. Team. Spaß.</div></div>
+    </div>
+    </div>
+  </header>
+
+  <!-- ================= Bausteine ================= -->
+  <section class="section">
+    <h2>Design-Bausteine</h2>
+    <p class="lead">Farben und Schriften direkt aus der Einladung abgeleitet. Die vier Antwortfarben behalten ihre Formen (▲ ◆ ● ■), damit sie auch bei Farbschwäche und auf blassen Beamern eindeutig bleiben.</p>
+    <div class="swatches">
+      <div class="sw"><div style="background:#071a3d"></div><p><b>Nachtblau</b>#071A3D · Hintergrund</p></div>
+      <div class="sw"><div style="background:#1a4fa8"></div><p><b>Basecamp-Blau</b>#1A4FA8 · Überschriften</p></div>
+      <div class="sw"><div style="background:linear-gradient(135deg,#a6f04a,#5fcf3a)"></div><p><b>Lime</b>#8BE23C · Akzent, Buttons</p></div>
+      <div class="sw"><div style="background:#ffb547"></div><p><b>Lichterkette</b>#FFB547 · Highlights</p></div>
+      <div class="sw"><div style="background:#ffffff;border-bottom:1px solid var(--line)"></div><p><b>Schnee</b>#FFFFFF · Karten</p></div>
+      <div class="sw"><div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr"><span style="background:var(--lime)"></span><span style="background:var(--blue-ans)"></span><span style="background:var(--amber)"></span><span style="background:var(--red)"></span></div><p><b>Antworten</b>▲ ◆ ● ■</p></div>
+    </div>
+    <div class="row" style="margin-top:20px">
+      <div class="type">
+        <div class="h">Smart<span>Quiz</span></div>
+        <div class="s">Gemeinsam. Rätseln. Feiern.</div>
+        <div class="hand">Wer weiß es zuerst?</div>
+        <p style="color:var(--muted);margin-top:14px;line-height:1.5">Montserrat Black für Titel · Inter für Texte · Caveat für Handschrift-Akzente · gesperrte Großbuchstaben für Untertitel</p>
+      </div>
+      <div class="notes">
+        <ul>
+          <li><b>Sechseck</b> als wiederkehrende Form: Logo, Spiel-Code, Spieler-Avatare, Platzierungen.</li>
+          <li><b>Lime-Strich</b> unter Überschriften wie in der Einladung.</li>
+          <li><b>Nachthimmel</b> mit leichtem Schnee, Tannen-Silhouette und warmer Lichterkette – dezent, damit Texte lesbar bleiben.</li>
+          <li><b>Weiße Karten</b> für Inhalte (Fragen, Ranglisten), wie die Programm-Karten der Einladung.</li>
+          <li>Große Touch-Flächen am Handy, große Schrift am Beamer – unverändert gut lesbar aus 10 m.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Handy ================= -->
+  <section class="section">
+    <h2>Spieler · Handy</h2>
+    <p class="lead">Mobile first: Alle Handy-Screens sind in echten Gerätegrößen gebaut (CSS-Pixel) – mit Notch/Dynamic Island, Android-Kamera-Loch und Gesten-Leiste. Die Antwortflächen wachsen mit dem verfügbaren Platz, statt eine feste Höhe zu haben.</p>
+    <div class="row phones">
+
+      <!-- Join · iPhone 15 -->
+      <div>
+        <div class="phone ios" style="--w:393px;--h:852px"><div class="screen night" data-snow="22">
+          <div class="island"></div><div class="statusbar"><span>9:41</span><span>●●● ▮</span></div><div class="homebar"></div>
+          <svg class="lights"></svg>
+          <svg class="trees" viewBox="0 0 400 120" preserveAspectRatio="none"><use href="#trees"/></svg>
+          <div class="content">
+            <div class="join-hero">
+              <svg width="76" height="76" viewBox="0 0 64 64"><use href="#logo"/></svg>
+              <div class="wordmark" style="font-size:36px;margin-top:14px">Smart<span>Quiz</span></div>
+              <div class="spaced" style="margin-top:10px">Wissen. Team. Spaß.</div>
+              <div class="hand" style="font-size:28px;margin-top:14px;transform:rotate(-4deg)">Wer weiß es zuerst?</div>
+            </div>
+            <div class="join-form">
+              <label class="lbl">Spiel-Code</label>
+              <div class="field code">K7Q2XM</div>
+              <label class="lbl">Dein Name</label>
+              <div class="field">Anna<span class="caret"></span></div>
+              <button class="btn">Los geht's →</button>
+              <img src="smart-solutions-logo-hell.png" alt="Smart Solutions" style="display:block;margin:14px auto 0;height:26px;opacity:.75">
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Beitreten</b> · iPhone 15 · 393×852</div>
+      </div>
+
+      <!-- Frage · Android -->
+      <div>
+        <div class="phone android" style="--w:360px;--h:800px"><div class="screen night" data-snow="10">
+          <div class="punch"></div><div class="statusbar"><span>9:41</span><span>▾ ▮ 87%</span></div><div class="homebar"></div>
+          <div class="content">
+            <div class="q-top">
+              <span class="chip sm">Frage <b>4</b>/12</span>
+              <span class="chip sm">🔥 3er-Serie</span>
+            </div>
+            <div class="bar"><i></i></div>
+            <div class="card q-card">
+              <div class="spaced" style="color:var(--blue-600);opacity:1">Natur · Frage 4</div>
+              <div class="q-text">Wie viele Nadeln hat eine durchschnittliche Nordmanntanne?</div>
+              <span class="underline-lime"></span>
+            </div>
+            <div class="answers">
+              <button class="ans a0"><span class="shape">▲</span>ca. 10.000</button>
+              <button class="ans a1"><span class="shape">◆</span>ca. 50.000</button>
+              <button class="ans a2"><span class="shape">●</span>ca. 200.000</button>
+              <button class="ans a3"><span class="shape">■</span>über 1 Mio.</button>
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Frage</b> · Android · 360×800</div>
+      </div>
+
+      <!-- Ergebnis · iPhone SE -->
+      <div>
+        <div class="phone ios-se" style="--w:375px;--h:667px"><div class="screen night" data-snow="26">
+          <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
+          <svg class="lights"></svg>
+          <svg class="trees" viewBox="0 0 400 120" preserveAspectRatio="none"><use href="#trees"/></svg>
+          <div class="content" style="align-items:center;text-align:center">
+            <div class="hexok">✓</div>
+            <div style="font:900 32px/1 var(--font-head);margin-top:18px">Richtig!</div>
+            <div class="hand" style="font-size:30px;color:var(--lime);margin-top:4px">+ 860 Punkte</div>
+            <div class="card stats">
+              <div><b>3.</b><span>Platz</span></div><i></i>
+              <div><b>2.940</b><span>Punkte</span></div><i></i>
+              <div><b>🔥4</b><span>Serie</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Feedback</b> · iPhone SE · 375×667</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Mobile-Check ================= -->
+  <section class="section">
+    <h2>Mobile-Check · die kritischen Fälle</h2>
+    <p class="lead">Die drei Situationen, in denen Quiz-Apps am Handy typischerweise kaputtgehen – und wie SmartQuiz sie löst.</p>
+    <div class="row phones">
+
+      <!-- Lange Frage auf kleinem Handy -->
+      <div>
+        <div class="phone ios-se" style="--w:375px;--h:667px"><div class="screen night" data-snow="8">
+          <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
+          <div class="content">
+            <div class="q-top">
+              <span class="chip sm">Frage <b>9</b>/12</span>
+              <span class="chip sm">⏱ 14 s</span>
+            </div>
+            <div class="bar"><i style="width:70%"></i></div>
+            <div class="card q-card">
+              <div class="q-text long">Welche Wanderroute rund um den Brettmühlenteich ist die längste, wenn man am Campingplatz startet und wieder zurückkehrt?</div>
+            </div>
+            <div class="answers list">
+              <button class="ans a0"><span class="shape">▲</span>Rundweg über die Dresdner Heide und den Prießnitzgrund</button>
+              <button class="ans a1"><span class="shape">◆</span>Uferweg einmal um den Teich</button>
+              <button class="ans a2"><span class="shape">●</span>Waldlehrpfad mit Abstecher zur Hofewiese</button>
+              <button class="ans a3"><span class="shape">■</span>Direkter Weg zur Pizzeria 🍕</button>
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Lange Texte, kleines Handy</b> · Antworten werden zur Liste,<br>Schrift passt sich an – nichts wird abgeschnitten</div>
+      </div>
+
+      <!-- Tastatur offen -->
+      <div>
+        <div class="phone android" style="--w:360px;--h:800px"><div class="screen night" data-snow="12">
+          <div class="punch"></div><div class="statusbar"><span>9:41</span><span>▾ ▮ 87%</span></div>
+          <div class="content" style="padding-bottom:0">
+            <div class="join-hero compact">
+              <svg width="40" height="40" viewBox="0 0 64 64"><use href="#logo"/></svg>
+              <div class="wordmark" style="font-size:26px">Smart<span>Quiz</span></div>
+            </div>
+            <div class="join-form" style="margin-top:18px">
+              <label class="lbl">Spiel-Code</label>
+              <div class="field code">K7Q2XM</div>
+              <label class="lbl">Dein Name</label>
+              <div class="field focus">Ann<span class="caret"></span></div>
+              <button class="btn">Los geht's →</button>
+            </div>
+            <div class="keyboard">
+              <div class="kb-row">q w e r t z u i o p</div>
+              <div class="kb-row">a s d f g h j k l</div>
+              <div class="kb-row">⇧ y x c v b n m ⌫</div>
+              <div class="kb-row"><span>?123</span><span class="space">Leertaste</span><span class="go">Los</span></div>
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Tastatur offen</b> · Formular rutscht nach oben, Button bleibt sichtbar,<br>Enter-Taste heißt „Los“ und tritt direkt bei</div>
+      </div>
+
+      <!-- Verbindung weg -->
+      <div>
+        <div class="phone ios" style="--w:393px;--h:852px"><div class="screen night" data-snow="14">
+          <div class="island"></div><div class="statusbar"><span>9:41</span><span>✈︎ ▮</span></div><div class="homebar"></div>
+          <div class="toast"><span class="spin"></span>Verbindung weg – wir verbinden dich neu …</div>
+          <div class="content">
+            <div class="q-top">
+              <span class="chip sm">Frage <b>5</b>/12</span>
+              <span class="chip sm">🔥 4er-Serie</span>
+            </div>
+            <div class="bar"><i style="width:45%"></i></div>
+            <div class="card q-card">
+              <div class="spaced" style="color:var(--blue-600);opacity:1">Genuss · Frage 5</div>
+              <div class="q-text">Woraus wird klassischer Glühwein gemacht?</div>
+              <span class="underline-lime"></span>
+            </div>
+            <div class="answers dim">
+              <button class="ans a0"><span class="shape">▲</span>Rotwein</button>
+              <button class="ans a1"><span class="shape">◆</span>Apfelsaft</button>
+              <button class="ans a2"><span class="shape">●</span>Bier</button>
+              <button class="ans a3"><span class="shape">■</span>Tee</button>
+            </div>
+          </div>
+        </div></div>
+        <div class="caption"><b>Verbindung weg</b> · Hinweis statt leerem Bildschirm,<br>danach geht's automatisch mit der Restzeit weiter</div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top:28px">
+      <div class="notes">
+        <div style="font:800 18px/1.2 var(--font-head);color:var(--navy-800);margin-bottom:14px">iPhone (Safari)</div>
+        <ul>
+          <li><b>Safe Areas</b>: Inhalte weichen Notch, Dynamic Island und Home-Leiste aus (<code>viewport-fit=cover</code> + <code>env(safe-area-inset-*)</code>).</li>
+          <li><b>Echte Bildschirmhöhe</b> mit <code>100dvh</code> – die ein- und ausfahrende Safari-Leiste schneidet nichts ab.</li>
+          <li><b>Kein Auto-Zoom</b> beim Tippen: Eingabefelder mindestens 16 px Schrift.</li>
+          <li><b>Statusleiste</b> in Nachtblau (<code>theme-color</code>), auch als Web-App auf dem Home-Bildschirm.</li>
+          <li><b>Bildschirm bleibt an</b> während des Spiels (Wake Lock, ab iOS 16.4) – kein Sperrbildschirm mitten in der Frage.</li>
+        </ul>
+      </div>
+      <div class="notes">
+        <div style="font:800 18px/1.2 var(--font-head);color:var(--navy-800);margin-bottom:14px">Android (Chrome)</div>
+        <ul>
+          <li><b>Tastatur</b> verkleinert die Seite statt sie zu überdecken (<code>interactive-widget=resizes-content</code>).</li>
+          <li><b>Gesten- und 3-Tasten-Navigation</b>: Abstand unten, damit die Antworten nicht versehentlich ausgelöst werden.</li>
+          <li><b>Kurzes Vibrieren</b> beim Antippen und bei richtig/falsch (iPhone unterstützt das im Browser nicht – dort reicht die Animation).</li>
+          <li><b>Zurück-Taste</b> fragt nach, bevor man das laufende Spiel verlässt.</li>
+          <li><b>Leistung</b>: Schnee und Lichter sind statisch, keine teuren Unschärfe-Effekte – flüssig auch auf günstigen Geräten.</li>
+        </ul>
+      </div>
+      <div class="notes">
+        <div style="font:800 18px/1.2 var(--font-head);color:var(--navy-800);margin-bottom:14px">Beide</div>
+        <ul>
+          <li><b>Touch-Flächen</b> mindestens 48 px, Antworten deutlich größer; kein Doppeltipp-Zoom (<code>touch-action: manipulation</code>).</li>
+          <li><b>Zoom bleibt gesperrt</b> (<code>user-scalable=no</code> + <code>touch-action: manipulation</code>) – kein versehentliches Ranzoomen bei schnellem Doppeltippen auf iOS und Android.</li>
+          <li><b>Code-Feld</b>: automatisch Großbuchstaben, keine Autokorrektur; Name ohne Autovervollständigung.</li>
+          <li><b>Lesbarkeit</b>: kleinste Schrift 12 px, Kontrast nach WCAG AA, Schrift skaliert mit der Systemeinstellung.</li>
+          <li><b>Querformat</b> funktioniert (Antworten nebeneinander), ist aber nicht nötig.</li>
+          <li><b>Ladezeit</b>: nur zwei Schriftfamilien, Bilder klein – schnell auch im Mobilfunknetz.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Beamer ================= -->
+  <section class="section">
+    <h2>Host · Beamer</h2>
+    <p class="lead">Aufbau wie die Einladung: Titel links groß, Infos in weißen Karten, Lime-Akzente. Alles in 16:9 und aus der letzten Reihe lesbar.</p>
+
+    <!-- Lobby -->
+    <div class="beamer night" data-snow="40">
+      <svg class="lights"></svg>
+      <svg class="trees" viewBox="0 0 400 120" preserveAspectRatio="none" style="height:26%"><use href="#trees"/></svg>
+      <div class="corner"><img src="smart-solutions-logo.png" alt="Smart Solutions"></div>
+      <div class="content">
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:28px;min-height:58px">
+          <div class="hand" style="font-size:30px;transform:rotate(-5deg)">Same People. Brighter Quiz.</div>
+          <div class="mark"><svg width="46" height="46" viewBox="0 0 64 64"><use href="#logo"/></svg><div class="wordmark">Smart<span>Quiz</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:3%;margin-top:3%;flex:1">
+          <div>
+            <div class="spaced" style="font-size:13px">Herzlich willkommen zum</div>
+            <div style="font:900 54px/1.02 var(--font-head);margin-top:12px">Christmas<br><span style="color:var(--lime)">Basecamp Quiz</span></div>
+            <div class="spaced" style="font-size:12px;margin-top:14px">12 Fragen · Team-Modus · Top 3 zählen</div>
+            <span class="underline-lime" style="width:64px;margin-top:16px"></span>
+            <div style="margin-top:28px;display:flex;align-items:baseline;gap:14px">
+              <div style="font:900 36px/1 var(--font-head)">14</div><div class="spaced" style="font-size:12px">Spieler sind dabei</div>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;max-width:96%">
+              <span class="chip"><span class="avatar" style="background:var(--lime)">AN</span>Anna</span>
+              <span class="chip"><span class="avatar" style="background:var(--amber)">BE</span>Ben</span>
+              <span class="chip"><span class="avatar" style="background:#7fb0ff">CH</span>Chris</span>
+              <span class="chip"><span class="avatar" style="background:var(--lime)">DI</span>Dilara</span>
+              <span class="chip"><span class="avatar" style="background:#ff9aa0">EM</span>Emil</span>
+              <span class="chip"><span class="avatar" style="background:var(--amber)">FR</span>Franzi</span>
+              <span class="chip"><span class="avatar" style="background:#7fb0ff">GR</span>Greta</span>
+              <span class="chip"><span class="avatar" style="background:var(--lime)">HA</span>Hannes</span>
+              <span class="chip" style="opacity:.7">+ 6 weitere</span>
+            </div>
+          </div>
+          <div class="card" style="padding:7% 8%;display:flex;flex-direction:column;align-items:center;text-align:center">
+            <div style="font:800 20px/1.2 var(--font-head);color:var(--navy-800)">Jetzt mitmachen!</div>
+            <span class="underline-lime" style="margin:10px auto 0"></span>
+            <svg id="qr" width="190" height="190" viewBox="0 0 29 29" style="margin-top:18px" shape-rendering="crispEdges"></svg>
+            <div class="spaced" style="color:var(--muted);opacity:1;margin-top:16px">Oder Code eingeben</div>
+            <div style="display:flex;gap:6px;margin-top:10px">
+              <!-- Code in Sechsecken -->
+              <span class="hexd">K</span><span class="hexd">7</span><span class="hexd">Q</span><span class="hexd">2</span><span class="hexd">X</span><span class="hexd">M</span>
+            </div>
+            <div style="margin-top:14px;font:600 14px/1 var(--font-body);color:var(--blue-600)">quiz.benjamin-stahl.de</div>
+            <button class="btn" style="margin-top:auto;width:auto;padding:16px 34px">Quiz starten ▶</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption"><b>Lobby</b> · Smart-Solutions-Eck wie in der Einladung, QR-Code und Spiel-Code in Sechsecken, Spieler erscheinen live als Chips</div>
+
+    <!-- Frage -->
+    <div class="beamer night" data-snow="18" style="margin-top:36px">
+      <div class="content">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="display:flex;align-items:center;gap:22px"><img class="ss-hell" src="smart-solutions-logo-hell.png" alt="Smart Solutions"><span style="width:1px;height:30px;background:rgba(255,255,255,.25)"></span>
+          <div class="mark"><svg width="40" height="40" viewBox="0 0 64 64"><use href="#logo"/></svg><div class="wordmark" style="font-size:22px">Smart<span>Quiz</span></div></div></div>
+          <div style="display:flex;gap:12px">
+            <span class="chip" style="padding:10px 16px;font-size:16px">Frage <b style="color:var(--lime);margin:0 3px">4</b> / 12</span>
+            <span class="chip" style="padding:10px 16px;font-size:16px">✋ 11 / 14 geantwortet</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:3%;align-items:center;margin-top:3%">
+          <div class="card" style="padding:4% 5%">
+            <div class="spaced" style="color:var(--blue-600);opacity:1;font-size:13px">Natur · Frage 4</div>
+            <div style="font:800 40px/1.2 var(--font-head);color:var(--navy-800);margin-top:12px">Wie viele Nadeln hat eine durchschnittliche Nordmanntanne?</div>
+            <span class="underline-lime" style="width:64px"></span>
+          </div>
+          <!-- Timer-Ring -->
+          <div style="position:relative;width:170px;height:170px">
+            <svg viewBox="0 0 100 100" width="170" height="170" style="transform:rotate(-90deg)">
+              <circle cx="50" cy="50" r="44" fill="rgba(255,255,255,.08)" stroke="rgba(255,255,255,.14)" stroke-width="7"/>
+              <circle cx="50" cy="50" r="44" fill="none" stroke="#8be23c" stroke-opacity=".25" stroke-width="13" stroke-linecap="round" stroke-dasharray="276" stroke-dashoffset="105"/><circle cx="50" cy="50" r="44" fill="none" stroke="url(#limeGrad)" stroke-width="7" stroke-linecap="round" stroke-dasharray="276" stroke-dashoffset="105"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
+              <div><div style="font:900 52px/1 var(--font-head)">12</div><div class="spaced" style="font-size:10px">Sekunden</div></div>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2%;margin-top:auto;height:36%">
+          <div class="ans a0" style="justify-content:flex-start;flex-direction:row;align-items:center;gap:18px;font-size:28px;padding:0 3%"><span class="shape" style="width:52px;height:52px;font-size:24px">▲</span>ca. 10.000</div>
+          <div class="ans a1" style="justify-content:flex-start;flex-direction:row;align-items:center;gap:18px;font-size:28px;padding:0 3%"><span class="shape" style="width:52px;height:52px;font-size:24px">◆</span>ca. 50.000</div>
+          <div class="ans a2" style="justify-content:flex-start;flex-direction:row;align-items:center;gap:18px;font-size:28px;padding:0 3%"><span class="shape" style="width:52px;height:52px;font-size:24px">●</span>ca. 200.000</div>
+          <div class="ans a3" style="justify-content:flex-start;flex-direction:row;align-items:center;gap:18px;font-size:28px;padding:0 3%"><span class="shape" style="width:52px;height:52px;font-size:24px">■</span>über 1 Mio.</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption"><b>Frage</b> · Frage als weiße Karte, Timer-Ring in Lime, Antwortzähler oben rechts</div>
+
+    <!-- Rangliste / Finale -->
+    <div class="beamer night" data-snow="44" style="margin-top:36px">
+      <svg class="lights"></svg>
+      <svg class="trees" viewBox="0 0 400 120" preserveAspectRatio="none" style="height:24%"><use href="#trees"/></svg>
+      <div class="corner"><img src="smart-solutions-logo.png" alt="Smart Solutions"></div>
+      <div class="content">
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:28px;min-height:58px">
+          <div class="spaced" style="font-size:12px">Natur. Team. Genuss. Perspektiven.</div>
+          <div class="mark"><svg width="40" height="40" viewBox="0 0 64 64"><use href="#logo"/></svg><div class="wordmark" style="font-size:22px">Smart<span>Quiz</span></div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:4%;margin-top:2.5%;flex:1">
+          <div style="display:flex;flex-direction:column">
+            <div class="spaced" style="font-size:13px">Das Finale</div>
+            <div style="font:900 46px/1.05 var(--font-head);margin-top:10px">Unsere <span style="color:var(--lime)">Quiz-Champions</span></div>
+            <!-- Podest -->
+            <div style="display:flex;align-items:flex-end;justify-content:center;gap:18px;margin-top:auto;padding-bottom:2%">
+              <div class="pod"><div class="podname">Ben</div><div class="podpts">8.120</div><div class="podium" style="height:120px">2</div></div>
+              <div class="pod"><div style="font-size:30px">👑</div><div class="podname">Anna</div><div class="podpts">9.340</div><div class="podium first" style="height:170px">1</div></div>
+              <div class="pod"><div class="podname">Dilara</div><div class="podpts">7.860</div><div class="podium" style="height:90px">3</div></div>
+            </div>
+          </div>
+          <div class="card" style="padding:5% 6%">
+            <div style="font:800 20px/1 var(--font-head);color:var(--navy-800)">Team-Wertung</div>
+            <span class="underline-lime"></span>
+            <div class="rank"><span class="rk">1</span><b>🌲 Team Tanne</b><span>24.310</span></div>
+            <div class="rank"><span class="rk">2</span><b>☕ Team Glühwein</b><span>22.870</span></div>
+            <div class="rank"><span class="rk">3</span><b>⛺ Team Basecamp</b><span>21.040</span></div>
+            <div style="font:800 16px/1 var(--font-head);color:var(--navy-800);margin-top:22px">Weitere Plätze</div>
+            <div class="rank sm"><span class="rk">4</span><b>Chris</b><span>7.410</span></div>
+            <div class="rank sm"><span class="rk">5</span><b>Emil</b><span>7.020</span></div>
+            <div class="rank sm"><span class="rk">6</span><b>Franzi</b><span>6.880</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="caption"><b>Finale</b> · Podest mit Lime-Glow für Platz 1, Team-Wertung als Karte wie das Programm der Einladung</div>
+  </section>
+</div>
+
+<style>
+.hexd{width:34px;height:38px;display:grid;place-items:center;font:900 20px/1 var(--font-head);color:#fff;background:var(--navy-800);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.pod{display:flex;flex-direction:column;align-items:center;gap:6px;width:150px}
+.podname{font:800 22px/1 var(--font-head)}
+.podpts{font:600 14px/1 var(--font-body);color:var(--lime)}
+.podium{width:100%;border-radius:16px 16px 0 0;display:grid;place-items:center;font:900 46px/1 var(--font-head);color:#fff;
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.2);border-bottom:0}
+.podium.first{background:linear-gradient(180deg,#a6f04a,#5fcf3a);color:var(--navy-900);box-shadow:0 0 40px rgba(139,226,60,.45)}
+.rank{display:grid;grid-template-columns:38px 1fr auto;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font:600 17px/1 var(--font-body)}
+.rank .rk{width:32px;height:34px;display:grid;place-items:center;font:900 15px/1 var(--font-head);color:var(--navy-900);background:var(--lime);
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.rank span:last-child{font:800 17px/1 var(--font-head);color:var(--blue-600)}
+.rank.sm{font-size:15px;padding:9px 0}
+.rank.sm .rk{background:var(--lime-soft)}
+</style>
+
+<!-- Wiederverwendbare Grafiken -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="limeGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a6f04a"/><stop offset="1" stop-color="#5fcf3a"/></linearGradient>
+    <linearGradient id="hexGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1a4fa8"/><stop offset="1" stop-color="#0b2557"/></linearGradient>
+    <!-- Logo: Sechseck + Knall-Funke -->
+    <symbol id="logo" viewBox="0 0 64 64">
+      <polygon points="32,3 57,17.5 57,46.5 32,61 7,46.5 7,17.5" fill="url(#hexGrad)" stroke="url(#limeGrad)" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M25.2 24.6a7 7 0 1 1 9.9 6.4c-2.1 1-3.1 2.4-3.1 4.5v1.2" fill="none" stroke="#fff" stroke-width="5.2" stroke-linecap="round"/>
+      <circle cx="32" cy="44.3" r="3.3" fill="#fff"/>
+      <g stroke="#8be23c" stroke-width="2.6" stroke-linecap="round"><path d="M47 11l3-4"/><path d="M51 16l5-1"/><path d="M44 8l0-5"/></g>
+    </symbol>
+    <!-- Tannen-Silhouette -->
+    <symbol id="trees" viewBox="0 0 400 120" preserveAspectRatio="none">
+      <path fill="#030c22" d="M0 120V92l10-20 8 16 9-34 10 30 8-18 12 40 9-28 11 22 10-46 12 40 9-18 10 24 12-36 11 30 8-14 10 26 12-44 11 38 9-20 10 28 11-32 12 34 8-16 10 22 12-42 11 36 9-18 10 26 11-30 12 30 9-22 11 28 10-38 12 32 8-12 10 20V120z"/>
+    </symbol>
+    <!-- Lichterkette -->
+    <symbol id="lights" viewBox="0 0 320 70" preserveAspectRatio="none">
+      <path d="M-5 8 Q 80 52 160 22 T 330 18" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+      <g fill="#ffd27a">
+        <circle cx="20" cy="20" r="2.4"/><circle cx="48" cy="31" r="2.4"/><circle cx="78" cy="36" r="2.4"/><circle cx="108" cy="34" r="2.4"/>
+        <circle cx="138" cy="27" r="2.4"/><circle cx="168" cy="21" r="2.4"/><circle cx="198" cy="17" r="2.4"/><circle cx="228" cy="17" r="2.4"/>
+        <circle cx="258" cy="20" r="2.4"/><circle cx="288" cy="21" r="2.4"/><circle cx="314" cy="19" r="2.4"/>
+      </g>
+      <g fill="#ffb547" opacity=".28">
+        <circle cx="20" cy="20" r="7"/><circle cx="48" cy="31" r="7"/><circle cx="78" cy="36" r="7"/><circle cx="108" cy="34" r="7"/>
+        <circle cx="138" cy="27" r="7"/><circle cx="168" cy="21" r="7"/><circle cx="198" cy="17" r="7"/><circle cx="228" cy="17" r="7"/>
+        <circle cx="258" cy="20" r="7"/><circle cx="288" cy="21" r="7"/><circle cx="314" cy="19" r="7"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+// Schnee streuen
+document.querySelectorAll('[data-snow]').forEach(el => {
+  const n = +el.dataset.snow, layer = document.createElement('div');
+  layer.className = 'snow';
+  let seed = n * 97;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  for (let i = 0; i < n; i++) {
+    const s = document.createElement('i'), size = 1.5 + rnd() * 3;
+    Object.assign(s.style, {left: rnd() * 100 + '%', top: rnd() * 100 + '%', width: size + 'px', height: size + 'px', opacity: .25 + rnd() * .5});
+    layer.appendChild(s);
+  }
+  el.prepend(layer);
+});
+// Lichterketten in echter Breite zeichnen (keine verzerrten Lichter)
+document.querySelectorAll('svg.lights').forEach(svg => {
+  const w = svg.clientWidth || 1200, h = 80, sag = w > 600 ? 46 : 30, n = Math.round(w / 42);
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  const y = t => 10 + Math.sin(t * Math.PI * (w > 600 ? 2 : 1)) * sag * .5 + sag * .4 * Math.sin(t * Math.PI);
+  let path = '', bulbs = '';
+  for (let i = 0; i <= 60; i++) { const t = i / 60; path += (i ? 'L' : 'M') + (t * w).toFixed(1) + ' ' + y(t).toFixed(1); }
+  for (let i = 0; i < n; i++) {
+    const t = (i + .5) / n, x = t * w, yy = y(t) + 6;
+    bulbs += `<circle cx="${x}" cy="${yy}" r="9" fill="#ffb547" opacity=".22"/><circle cx="${x}" cy="${yy}" r="3" fill="#ffd27a"/>`;
+  }
+  svg.innerHTML = `<path d="${path}" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="1"/>` + bulbs;
+});
+// Platzhalter-QR (nur Optik)
+(() => {
+  const svg = document.getElementById('qr'); let seed = 7, out = '';
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const finder = (x, y) => `<rect x="${x}" y="${y}" width="7" height="7" fill="#071a3d"/><rect x="${x+1}" y="${y+1}" width="5" height="5" fill="#fff"/><rect x="${x+2}" y="${y+2}" width="3" height="3" fill="#071a3d"/>`;
+  for (let y = 0; y < 29; y++) for (let x = 0; x < 29; x++) {
+    const inF = (x < 8 && y < 8) || (x > 20 && y < 8) || (x < 8 && y > 20);
+    if (!inF && rnd() > .52) out += `<rect x="${x}" y="${y}" width="1" height="1" fill="#071a3d"/>`;
+  }
+  svg.innerHTML = out + finder(0, 0) + finder(22, 0) + finder(0, 22);
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-// QuizKnaller - Player Client
+// SmartQuiz - Player Client
 const socket = io();
 
 // Configuration
@@ -48,7 +48,11 @@ const elements = {
     playerAutoplayTimer: document.getElementById('player-autoplay-timer'),
     playerAutoplayMessage: document.getElementById('player-autoplay-message'),
     hostDisconnectOverlay: document.getElementById('host-disconnect-overlay'),
-    hostReconnectTimer: document.getElementById('host-reconnect-timer')
+    hostReconnectTimer: document.getElementById('host-reconnect-timer'),
+    joinForm: document.getElementById('join-form'),
+    questionPhase: document.getElementById('question-phase'),
+    questionCard: document.querySelector('.question-card'),
+    connectionToast: document.getElementById('connection-toast')
 };
 
 let hostReconnectCountdownInterval = null;
@@ -57,39 +61,110 @@ let hostReconnectCountdownInterval = null;
 function showScreen(screenName) {
     Object.values(screens).forEach(s => s.classList.remove('active'));
     screens[screenName].classList.add('active');
+    document.body.dataset.screen = screenName;   // z. B. Lichterkette während der Frage ausblenden
 }
 
 function showError(message) {
     elements.errorMessage.textContent = message;
     elements.errorMessage.classList.add('show');
-    setTimeout(() => elements.errorMessage.classList.remove('show'), 3000);
+    setTimeout(() => elements.errorMessage.classList.remove('show'), 4500);
+}
+
+// ---------- Handy-Helfer ----------
+// Kurzes Vibrieren (Android). iOS-Browser unterstützen das nicht – dort passiert einfach nichts.
+function vibrate(pattern) {
+    try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* ignorieren */ }
+}
+
+// Bildschirm während des Spiels anlassen (iOS ab 16.4, Android Chrome)
+let wakeLock = null;
+async function keepScreenOn() {
+    if (!('wakeLock' in navigator) || wakeLock || document.visibilityState !== 'visible') return;
+    try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } catch (e) { /* z. B. Energiesparmodus – dann eben ohne */ }
+}
+function releaseScreen() {
+    if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && gameCode) keepScreenOn();
+});
+
+// Zurück-Taste (Android) / Wischgeste: nicht versehentlich das laufende Spiel verlassen
+let backGuardActive = false;
+function armBackGuard() {
+    if (backGuardActive) return;
+    backGuardActive = true;
+    history.pushState({ smartquiz: true }, '');
+}
+window.addEventListener('popstate', () => {
+    if (!backGuardActive) return;
+    backGuardActive = false;
+    if (gameCode && !screens.join.classList.contains('active')) {
+        if (confirm('Spiel wirklich verlassen?')) {
+            leaveGame();
+        } else {
+            armBackGuard();
+        }
+    }
+});
+
+function clearSession() {
+    localStorage.removeItem('playerGameCode');
+    localStorage.removeItem('playerName');
+    localStorage.removeItem('playerQuizTitle');
+    localStorage.removeItem('playerToken');
+}
+
+function leaveGame() {
+    gameCode = null;
+    clearSession();
+    releaseScreen();
+    elements.gameCodeInput.value = '';
+    elements.playerNameInput.value = '';
+    showScreen('join');
+}
+
+function enteredGame() {
+    keepScreenOn();
+    armBackGuard();
 }
 
 // Event Listeners
-elements.joinBtn.addEventListener('click', () => {
+elements.joinForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    soundManager.init();
     const code = elements.gameCodeInput.value.trim().toUpperCase();
     const name = elements.playerNameInput.value.trim();
-    
+
+    // Enter im Code-Feld: weiter zum Namen statt Fehlermeldung
+    if (document.activeElement === elements.gameCodeInput && code && !name) {
+        elements.playerNameInput.focus();
+        return;
+    }
+
     if (!code || code.length < 4) {
         showError('Bitte gib einen gültigen Spiel-Code ein');
+        elements.gameCodeInput.focus();
         return;
     }
-    
+
     if (!name) {
         showError('Bitte gib deinen Namen ein');
+        elements.playerNameInput.focus();
         return;
     }
-    
+
+    elements.playerNameInput.blur();   // Tastatur schließen
     socket.emit('join_game', { code, name });
 });
 
-// Allow Enter key to submit
-elements.gameCodeInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') elements.playerNameInput.focus();
-});
-
-elements.playerNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') elements.joinBtn.click();
+// Code-Feld: nur Buchstaben/Ziffern, groß
+elements.gameCodeInput.addEventListener('input', () => {
+    const cleaned = elements.gameCodeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    if (cleaned !== elements.gameCodeInput.value) elements.gameCodeInput.value = cleaned;
 });
 
 // Answer buttons
@@ -106,6 +181,8 @@ document.querySelectorAll('.answer-btn').forEach(btn => {
         // Play pop sound when answer is submitted
         soundManager.playPopSound().catch(() => {}); // Silently ignore sound errors
         
+        vibrate(15);
+
         // Disable all buttons and mark selected
         document.querySelectorAll('.answer-btn').forEach(b => {
             b.classList.add('disabled');
@@ -115,14 +192,7 @@ document.querySelectorAll('.answer-btn').forEach(btn => {
 });
 
 elements.playAgainBtn.addEventListener('click', () => {
-    gameCode = null;
-    localStorage.removeItem('playerGameCode');
-    localStorage.removeItem('playerName');
-    localStorage.removeItem('playerQuizTitle');
-    localStorage.removeItem('playerToken');
-    elements.gameCodeInput.value = '';
-    elements.playerNameInput.value = '';
-    showScreen('join');
+    leaveGame();
 });
 
 // Socket Events
@@ -133,7 +203,7 @@ socket.on('error', (data) => {
     if (data.message && (data.message.includes('nicht gefunden') || data.message.includes('not found'))) {
         localStorage.removeItem('playerGameCode');
         localStorage.removeItem('playerQuizTitle');
-    localStorage.removeItem('playerToken');
+        localStorage.removeItem('playerToken');
     }
 });
 
@@ -210,7 +280,17 @@ window.addEventListener('load', () => {
 // Socket.IO verbindet nach Netzabbrüchen (Standby, WLAN-Wechsel) automatisch neu – aber mit neuer ID.
 // Dann beim Server wieder anmelden, sonst bekommt der Spieler keine Fragen mehr.
 let hasConnectedOnce = false;
+let toastTimer = null;
+socket.on('disconnect', () => {
+    // Kurz warten – ein Blinzeln der Verbindung soll keinen Hinweis auslösen
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+        if (gameCode) elements.connectionToast.classList.add('show');
+    }, 1200);
+});
 socket.on('connect', () => {
+    clearTimeout(toastTimer);
+    elements.connectionToast.classList.remove('show');
     if (!hasConnectedOnce) {
         hasConnectedOnce = true;
         return; // Erste Verbindung: das übernimmt der load-Handler
@@ -230,6 +310,7 @@ socket.on('reconnected_player', (data) => {
     localStorage.setItem('playerGameCode', data.code);
     elements.playerNameInput.value = localStorage.getItem('playerName');
     elements.waitingQuizTitle.textContent = data.quiz_title;
+    enteredGame();
     
     // Restore to appropriate screen based on state
     if (data.state === 'lobby') {
@@ -250,10 +331,7 @@ socket.on('reconnected_player', (data) => {
 });
 
 socket.on('reconnect_failed', (data) => {
-    localStorage.removeItem('playerGameCode');
-    localStorage.removeItem('playerName');
-    localStorage.removeItem('playerQuizTitle');
-    localStorage.removeItem('playerToken');
+    clearSession();
     showError(data.message || 'Verbindung fehlgeschlagen');
     showScreen('join');
 });
@@ -267,6 +345,8 @@ socket.on('joined_game', (data) => {
     if (data.player_token) localStorage.setItem('playerToken', data.player_token);
     
     elements.waitingQuizTitle.textContent = data.quiz_title;
+    enteredGame();
+    vibrate(20);
     
     // If team mode is enabled, show team selection
     if (data.team_mode && data.teams && data.teams.length > 0) {
@@ -344,11 +424,13 @@ socket.on('show_question_reading', (data) => {
     
     elements.questionNumber.textContent = `${data.question_num}/${data.total_questions}`;
     elements.questionText.textContent = data.question;
+    elements.questionCard.classList.toggle('long', data.question.length > 110);
+    elements.questionPhase.textContent = 'Lesen …';
     
     // Hide answer buttons during reading phase
     const buttons = document.querySelectorAll('.answer-btn');
     buttons.forEach(btn => {
-        btn.textContent = '';
+        btn.querySelector('.answer-label').textContent = '';
         btn.classList.add('hidden');
         btn.classList.remove('disabled', 'selected');
     });
@@ -373,6 +455,17 @@ socket.on('show_question_reading', (data) => {
     }, 100);
 });
 
+// Antworten eintragen; lange Texte -> Listenansicht, damit auf kleinen Handys nichts abgeschnitten wird
+function setAnswers(answers) {
+    const buttons = document.querySelectorAll('.answer-btn');
+    const longest = Math.max(...answers.map(a => String(a).length));
+    elements.answersGrid.classList.toggle('list', longest > 26);
+    answers.forEach((answer, i) => {
+        buttons[i].querySelector('.answer-label').textContent = answer;
+        buttons[i].classList.remove('hidden', 'disabled', 'selected');
+    });
+}
+
 // Show answers after reading phase
 socket.on('show_answers', (data) => {
     // Clear reading timer
@@ -381,11 +474,9 @@ socket.on('show_answers', (data) => {
     timeLimit = data.time_limit;
     
     // Reveal answer buttons
-    const buttons = document.querySelectorAll('.answer-btn');
-    data.answers.forEach((answer, i) => {
-        buttons[i].textContent = answer;
-        buttons[i].classList.remove('hidden', 'disabled', 'selected');
-    });
+    setAnswers(data.answers);
+    elements.questionPhase.textContent = 'Jetzt antworten!';
+    vibrate(10);
     
     // Reset and start answer timer
     elements.timerFill.style.width = '100%';
@@ -422,11 +513,7 @@ socket.on('show_question', (data) => {
     timeLimit = data.time_limit;
     
     // Set up answer buttons
-    const buttons = document.querySelectorAll('.answer-btn');
-    data.answers.forEach((answer, i) => {
-        buttons[i].textContent = answer;
-        buttons[i].classList.remove('disabled', 'selected', 'hidden');
-    });
+    setAnswers(data.answers);
     
     // Reset and start timer
     elements.timerFill.style.width = '100%';
@@ -472,28 +559,24 @@ socket.on('your_result', (data) => {
         elements.resultScreen.classList.add('correct');
         elements.resultIcon.textContent = '✓';
         elements.resultTitle.textContent = 'Richtig!';
+        vibrate([30, 40, 30]);
         // Play success sound for correct answer
         soundManager.playSuccessSound().catch(() => {}); // Silently ignore sound errors
     } else {
         elements.resultScreen.classList.remove('correct');
         elements.resultScreen.classList.add('incorrect');
         elements.resultIcon.textContent = '✗';
-        elements.resultTitle.textContent = 'Falsch!';
+        elements.resultTitle.textContent = 'Leider falsch';
+        vibrate(120);
         // Play error sound for incorrect answer
         soundManager.playErrorSound().catch(() => {}); // Silently ignore sound errors
     }
     
     elements.correctAnswer.textContent = `Richtige Antwort: ${data.correct_answer}`;
-    elements.scoreGained.textContent = data.score_gained > 0 ? `+${data.score_gained}` : '0';
-    elements.totalScore.textContent = data.total_score;
-    elements.rankDisplay.textContent = `Platz ${data.rank} von ${data.total_players}`;
-    
-    if (data.streak > 1) {
-        elements.streakDisplay.textContent = `🔥 ${data.streak}er Serie!`;
-        elements.streakDisplay.style.display = 'block';
-    } else {
-        elements.streakDisplay.style.display = 'none';
-    }
+    elements.scoreGained.textContent = data.score_gained > 0 ? `+ ${data.score_gained.toLocaleString('de-DE')} Punkte` : 'keine Punkte';
+    elements.totalScore.textContent = Number(data.total_score).toLocaleString('de-DE');
+    elements.rankDisplay.textContent = `${data.rank}.`;
+    elements.streakDisplay.textContent = data.streak > 1 ? `🔥${data.streak}` : '–';
     
     showScreen('result');
 });
@@ -539,15 +622,8 @@ socket.on('game_ended', (data) => {
     
     if (data.reason || data.message || !data.leaderboard) {
         // Game aborted (host ended it, host gone, or removed for inactivity)
-        gameCode = null;
-        localStorage.removeItem('playerGameCode');
-        localStorage.removeItem('playerName');
-        localStorage.removeItem('playerQuizTitle');
-    localStorage.removeItem('playerToken');
-        alert(data.reason || data.message || 'Das Spiel wurde beendet.');
-        elements.gameCodeInput.value = '';
-        elements.playerNameInput.value = '';
-        showScreen('join');
+        leaveGame();
+        showError(data.reason || data.message || 'Das Spiel wurde beendet.');
         return;
     }
     
@@ -564,13 +640,15 @@ socket.on('game_ended', (data) => {
     else if (myRank === 3) rankEmoji = '🥉';
     else rankEmoji = `#${myRank}`;
     
-    let finalText = `${myScore} Punkte`;
+    let finalText = `${Number(myScore).toLocaleString('de-DE')} Punkte`;
     if (data.team_mode && myTeam) {
         finalText += ` (Team: ${myTeam})`;
     }
     
     elements.finalRank.textContent = rankEmoji;
     elements.finalScore.textContent = finalText;
+    releaseScreen();
+    vibrate([40, 60, 40, 60, 80]);
     
     showScreen('final');
 });

@@ -1,5 +1,5 @@
 """
-QuizKnaller - Wissen macht BUMM! 💥
+SmartQuiz – das Smart-Solutions-Quiz (Basis: QuizKnaller)
 Ein Multiplayer-Quiz das einschlägt!
 """
 
@@ -19,6 +19,7 @@ sys.path = [p for p in sys.path if _should_keep_path(p)]
 import asyncio
 import io
 import json
+import mimetypes
 import os
 import re
 import secrets
@@ -52,7 +53,7 @@ async def lifespan(_app):
     yield
 
 
-app = FastAPI(title="QuizKnaller", description="Wissen macht BUMM! 💥", lifespan=lifespan)
+app = FastAPI(title="SmartQuiz", description="Das Smart-Solutions-Quiz", lifespan=lifespan)
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 # Initialize database
@@ -188,6 +189,8 @@ async def security_headers(request: Request, call_next):
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
     return response
 
+
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 # Serve static files
 static_path = Path(__file__).parent / "static"

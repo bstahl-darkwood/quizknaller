@@ -1,4 +1,4 @@
-// QuizKnaller - Host Client
+// SmartQuiz - Host Client
 const socket = io();
 
 // Configuration
@@ -906,6 +906,9 @@ socket.on('show_results', (data) => {
             document.getElementById(`stat-fill-${i}`).style.height = `${percent}%`;
             document.getElementById(`stat-count-${i}`).textContent = count;
             document.getElementById(`stat-percent-${i}`).textContent = `${Math.round(percent)}%`;
+            const bar = document.getElementById(`stat-fill-${i}`).parentElement;
+            bar.classList.toggle('is-correct', i === data.correct_index);
+            bar.classList.toggle('is-wrong', i !== data.correct_index);
         });
         
         // Update leaderboard preview
@@ -1037,7 +1040,7 @@ socket.on('game_ended', (data) => {
         });
         
         // Full leaderboard (rest of players)
-        elements.fullLeaderboard.innerHTML = '';
+        elements.fullLeaderboard.innerHTML = leaderboard.length > 3 ? '<h3>Weitere Plätze</h3>' : '';
         leaderboard.slice(3).forEach((player, i) => {
             const item = document.createElement('div');
             item.className = 'final-leaderboard-item';
