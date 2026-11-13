@@ -220,7 +220,7 @@ socket.on('reconnected_player', (data) => {
         }
     } else if (data.state === 'starting') {
         showScreen('starting');
-    } else if (data.state === 'question') {
+    } else if (data.state === 'question' || data.state === 'reading') {
         showScreen('question');
     } else if (data.state === 'results') {
         showScreen('answered');
@@ -255,7 +255,11 @@ socket.on('joined_game', (data) => {
 });
 
 socket.on('quiz_switched', (data) => {
+    // gameCode must be restored here, otherwise answers/team picks are sent with code=null
+    gameCode = data.code;
     localStorage.setItem('playerGameCode', data.code);
+    const name = elements.playerNameInput.value.trim();
+    if (name) localStorage.setItem('playerName', name);
     localStorage.setItem('playerQuizTitle', data.quiz_title);
 
     elements.waitingQuizTitle.textContent = data.quiz_title;
@@ -509,20 +513,20 @@ socket.on('game_ended', (data) => {
         autoplayCountdownInterval = null;
     }
     
-    gameCode = null;
-    localStorage.removeItem('playerGameCode');
-    localStorage.removeItem('playerName');
-    localStorage.removeItem('playerQuizTitle');
-    
-    if (data.reason || data.message) {
-        // Show a more prominent notification for game ended by host
-        alert(data.reason || data.message);
+    if (data.reason || data.message || !data.leaderboard) {
+        // Game aborted (host ended it, host gone, or removed for inactivity)
+        gameCode = null;
+        localStorage.removeItem('playerGameCode');
+        localStorage.removeItem('playerName');
+        localStorage.removeItem('playerQuizTitle');
+        alert(data.reason || data.message || 'Das Spiel wurde beendet.');
         elements.gameCodeInput.value = '';
         elements.playerNameInput.value = '';
         showScreen('join');
         return;
     }
     
+    // Normal end: keep the session - the host may start another quiz with the same players
     const leaderboard = data.leaderboard;
     const myName = elements.playerNameInput.value.trim();
     const myRank = leaderboard.findIndex(p => p.name.toLowerCase() === myName.toLowerCase()) + 1;

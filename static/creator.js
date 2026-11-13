@@ -202,7 +202,7 @@ function validateQuiz() {
             }
         }
         
-        if (q.time_limit < 5 || q.time_limit > 120) {
+        if (!Number.isInteger(q.time_limit) || q.time_limit < 5 || q.time_limit > 120) {
             showToast(`Frage ${i + 1}: Zeitlimit muss zwischen 5 und 120 Sekunden liegen!`, 'error');
             return false;
         }
@@ -232,7 +232,19 @@ function saveToLocalStorage() {
     
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(quizData));
-        showToast('Quiz erfolgreich im Browser gespeichert! 💾', 'success');
+        // Also publish to the host's quiz list (same browser) - before, the creator used a
+        // different storage key, so saved quizzes never showed up on /host.
+        const hostKey = 'quizknaller_custom_quizzes';
+        const hostQuizzes = JSON.parse(localStorage.getItem(hostKey) || '[]');
+        const existing = hostQuizzes.findIndex(q => q.title === quizData.title);
+        const entry = {
+            id: existing >= 0 ? hostQuizzes[existing].id : `custom_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+            ...quizData,
+            isCustom: true
+        };
+        if (existing >= 0) hostQuizzes[existing] = entry; else hostQuizzes.push(entry);
+        localStorage.setItem(hostKey, JSON.stringify(hostQuizzes));
+        showToast('Quiz gespeichert – erscheint jetzt auch in der Host-Ansicht! 💾', 'success');
     } catch (e) {
         showToast('Fehler beim Speichern: ' + e.message, 'error');
     }

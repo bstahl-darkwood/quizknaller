@@ -31,7 +31,7 @@ uv sync
 uv run python main.py
 ```
 
-Der Server startet auf `http://localhost:8000`.
+Der Server startet auf `http://localhost:8000` (Port per `PORT=…` änderbar).
 
 ## Deployment auf Netcup
 
@@ -78,7 +78,7 @@ Der Host kann den Team-Modus in der Lobby aktivieren und Teams konfigurieren:
 - Spieler wählen beim Beitritt ihr Team aus
 - Am Ende werden sowohl Team- als auch Einzelrankings angezeigt
 
-Siehe [TEAM_MODE_README.md](TEAM_MODE_README.md) für weitere Details.
+
 
 ### Auto-Remove Inactive Users
 Der Host kann das automatische Entfernen inaktiver Spieler aktivieren:

@@ -3,6 +3,8 @@ QuizKnaller - Wissen macht BUMM! 💥
 Ein Multiplayer-Quiz das einschlägt!
 """
 
+from __future__ import annotations
+
 import sys
 
 # Workaround: drop known system injection paths that can shadow venv packages
@@ -72,8 +74,76 @@ def calculate_reading_time(text: str) -> float:
 
 
 def generate_game_code() -> str:
-    """Generate a 6-character game code."""
-    return str(uuid.uuid4())[:6].upper()
+    """Generate a 6-character game code that is not in use yet."""
+    while True:
+        code = str(uuid.uuid4())[:6].upper()
+        if code not in games and not db.get_game(code):
+            return code
+
+
+MAX_NAME_LENGTH = 20
+RUNNING_STATES = ("starting", "reading", "question")
+
+
+def _is_int(value) -> bool:
+    """True for real ints (bool is a subclass of int in Python, exclude it)."""
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def validate_quiz(quiz) -> str | None:
+    """Validate a custom quiz. Returns an error message or None if valid."""
+    if (not isinstance(quiz, dict) or
+        not isinstance(quiz.get("title"), str) or
+        not quiz["title"].strip() or
+        not isinstance(quiz.get("questions"), list) or
+        not quiz["questions"]):
+        return "Ungültiges Quiz-Format"
+
+    for i, q in enumerate(quiz["questions"]):
+        if (not isinstance(q, dict) or
+            not isinstance(q.get("question"), str) or
+            not q["question"].strip() or
+            not isinstance(q.get("answers"), list) or
+            len(q["answers"]) != 4 or
+            not all(isinstance(a, str) and a.strip() for a in q["answers"]) or
+            not _is_int(q.get("correct")) or
+            not 0 <= q["correct"] <= 3 or
+            not _is_int(q.get("time_limit")) or
+            not MIN_TIME_LIMIT <= q["time_limit"] <= MAX_TIME_LIMIT):
+            return f"Ungültiges Fragen-Format bei Frage {i + 1}"
+    return None
+
+
+def get_builtin_quiz(quiz_id) -> dict | None:
+    quizzes = load_quizzes()
+    if not _is_int(quiz_id) or not 0 <= quiz_id < len(quizzes):
+        return None
+    return quizzes[quiz_id]
+
+
+def new_game_state(host_sid: str, quiz: dict, host_token: str) -> dict:
+    return {
+        "host_sid": host_sid,
+        "host_token": host_token,
+        "quiz": quiz,
+        "players": {},
+        "current_question": -1,
+        "state": "lobby",  # lobby, starting, reading, question, results, ended
+        "answers": {},
+        "question_start_time": None,
+        "team_mode": False,
+        "teams": [],
+        "top_n_players": 3,
+        "auto_remove_inactive": False,
+        "inactivity_threshold": DEFAULT_INACTIVITY_THRESHOLD,
+        "answer_history": {},  # Track which questions each player answered
+        "last_results": None,   # cached show_results payload for host reconnects
+        "final_results": None,  # cached game_ended payload for host reconnects
+    }
+
+
+def player_list(game: dict) -> list[dict]:
+    return [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
 
 
 # Serve static files
@@ -103,7 +173,7 @@ async def creator():
 async def get_qrcode(request: Request, code: str):
     """Generate a QR code for the game join URL."""
     # Get the base URL from the request
-    base_url = f"{request.url.scheme}://{request.headers.get('host', 'localhost:8080')}"
+    base_url = f"{request.url.scheme}://{request.headers.get('host', 'localhost:8000')}"
     join_url = f"{base_url}/?code={code}"
     
     # Generate QR code
@@ -168,22 +238,22 @@ def load_game_from_db(game_code: str) -> bool:
             "streak": 0,  # Reset streak on load
         }
     
-    games[game_code] = {
-        "host_sid": game_data["host_sid"],
-        "quiz": game_data["quiz"],
+    game = new_game_state(game_data["host_sid"], game_data["quiz"], game_data.get("host_token"))
+    game.update({
         "players": players,
         "current_question": game_data["current_question"],
         "state": game_data["state"],
-        "answers": {},
-        "question_start_time": None,
         "team_mode": game_data["team_mode"],
         "teams": game_data["teams"],
         "top_n_players": game_data["top_n_players"],
-        "auto_remove_inactive": False,  # Default to disabled on load
-        "inactivity_threshold": DEFAULT_INACTIVITY_THRESHOLD,
-        "answer_history": {},  # Track which questions each player answered
-    }
-    
+    })
+
+    # A question that was running when the server stopped cannot be resumed
+    # (timers are gone). Park the game so the host can continue with "next".
+    if game["state"] in RUNNING_STATES:
+        game["state"] = "results" if game["current_question"] >= 0 else "lobby"
+
+    games[game_code] = game
     return True
 
 
@@ -199,8 +269,13 @@ async def reconnect_host(sid, data):
             return
     
     game = games[game_code]
-    old_host_sid = game["host_sid"]
-    
+
+    # Only the original host (who holds the secret token) may take over the game.
+    # Without this check every player knowing the game code could hijack the host view.
+    if not game.get("host_token") or data.get("token") != game["host_token"]:
+        await sio.emit("reconnect_failed", {"message": "Keine Berechtigung für dieses Spiel"}, to=sid)
+        return
+
     # Cancel any pending cleanup task
     if game_code in host_disconnect_tasks:
         print(f"Host reconnected to game {game_code}, cancelling cleanup task")
@@ -226,52 +301,69 @@ async def reconnect_host(sid, data):
         "quiz_title": game["quiz"]["title"],
         "state": game["state"],
         "current_question": game["current_question"],
-        "players": [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()],
+        "players": player_list(game),
         "team_mode": game["team_mode"],
         "teams": game["teams"],
     }, to=sid)
+
+    # Restore the screen content the host missed while being away
+    if game["state"] == "results" and game.get("last_results"):
+        await sio.emit("show_results", game["last_results"], to=sid)
+    elif game["state"] == "ended" and game.get("final_results"):
+        await sio.emit("game_ended", game["final_results"], to=sid)
+
+
+def transfer_player(game: dict, old_sid: str, new_sid: str):
+    """Move a player's in-memory state (score, answer, history) to a new socket id."""
+    player_data = game["players"].pop(old_sid)
+    player_data["disconnected"] = False
+    game["players"][new_sid] = player_data
+    if old_sid in game["answers"]:
+        game["answers"][new_sid] = game["answers"].pop(old_sid)
+    if old_sid in game["answer_history"]:
+        game["answer_history"][new_sid] = game["answer_history"].pop(old_sid)
 
 
 @sio.event
 async def reconnect_player(sid, data):
     """Player reconnects to their game."""
-    game_code = data.get("code")
-    player_name = data.get("name")
-    
+    game_code = str(data.get("code") or "").upper()
+    player_name = str(data.get("name") or "").strip()
+
     # Try to load from database if not in memory
     if game_code not in games:
         if not load_game_from_db(game_code):
             await sio.emit("reconnect_failed", {"message": "Spiel nicht gefunden"}, to=sid)
             return
-    
+
     game = games[game_code]
-    
+
     # Find player by name
     old_sid = None
     for player_sid, player in game["players"].items():
         if player["name"].lower() == player_name.lower():
             old_sid = player_sid
             break
-    
+
     if old_sid is None:
+        # In the lobby, players are removed on disconnect (e.g. page reload).
+        # Simply let them join again instead of kicking them to the join screen.
+        if game["state"] == "lobby" and player_name:
+            await join_game(sid, {"code": game_code, "name": player_name})
+            return
         await sio.emit("reconnect_failed", {"message": "Spieler nicht gefunden"}, to=sid)
         return
-    
-    # Transfer player data to new SID
-    player_data = game["players"][old_sid]
-    del game["players"][old_sid]
-    game["players"][sid] = player_data
-    
-    # Update database
-    db.update_player_session(game_code, player_name, sid)
-    
-    # Transfer answer if exists
-    if old_sid in game["answers"]:
-        game["answers"][sid] = game["answers"][old_sid]
-        del game["answers"][old_sid]
-    
+
+    transfer_player(game, old_sid, sid)
+    player_data = game["players"][sid]
+    db.update_player_session(game_code, player_data["name"], sid)
+
     await sio.enter_room(sid, game_code)
-    
+    await sio.emit("player_reconnected", {
+        "name": player_data["name"],
+        "message": f"{player_data['name']} ist wieder verbunden"
+    }, room=game_code)
+
     # Send current game state
     await sio.emit("reconnected_player", {
         "code": game_code,
@@ -302,10 +394,10 @@ async def disconnect(sid):
                 del game["players"][sid]
                 
                 # Notify host and remaining players about the disconnection
-                player_list = [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
+                players_payload = player_list(game)
                 await sio.emit("player_left", {
                     "name": player_name,
-                    "players": player_list
+                    "players": players_payload
                 }, room=game_code)
             else:
                 # Game is active - mark player as disconnected but keep their data
@@ -346,8 +438,9 @@ async def disconnect(sid):
                             "reason": "Der Host hat das Spiel verlassen."
                         }, room=code)
                         await asyncio.sleep(0.5)
-                        if code in games:
-                            del games[code]
+                        games.pop(code, None)
+                        # Also remove from DB, otherwise a later reconnect would revive the game
+                        db.delete_game(code)
                     # Clean up task reference
                     if code in host_disconnect_tasks:
                         del host_disconnect_tasks[code]
@@ -364,38 +457,24 @@ async def disconnect(sid):
 @sio.event
 async def create_game(sid, data):
     """Host creates a new game."""
-    quiz_id = data.get("quiz_id", 0)
-    quizzes = load_quizzes()
-    
-    if quiz_id >= len(quizzes):
+    quiz = get_builtin_quiz(data.get("quiz_id", 0))
+    if quiz is None:
         await sio.emit("error", {"message": "Quiz nicht gefunden"}, to=sid)
         return
-    
+    await _create_game_with_quiz(sid, quiz)
+
+
+async def _create_game_with_quiz(sid: str, quiz: dict):
     game_code = generate_game_code()
-    quiz = quizzes[quiz_id]
-    
-    # Create in database
-    db.create_game(game_code, sid, quiz["title"], quiz)
-    
-    games[game_code] = {
-        "host_sid": sid,
-        "quiz": quiz,
-        "players": {},
-        "current_question": -1,
-        "state": "lobby",  # lobby, question, results, leaderboard, ended
-        "answers": {},
-        "question_start_time": None,
-        "team_mode": False,
-        "teams": [],
-        "top_n_players": 3,
-        "auto_remove_inactive": False,
-        "inactivity_threshold": DEFAULT_INACTIVITY_THRESHOLD,
-        "answer_history": {},  # Track which questions each player answered
-    }
-    
+    host_token = uuid.uuid4().hex
+
+    db.create_game(game_code, sid, quiz["title"], quiz, host_token=host_token)
+    games[game_code] = new_game_state(sid, quiz, host_token)
+
     await sio.enter_room(sid, game_code)
     await sio.emit("game_created", {
         "code": game_code,
+        "host_token": host_token,
         "quiz_title": quiz["title"],
         "question_count": len(quiz["questions"])
     }, to=sid)
@@ -405,61 +484,11 @@ async def create_game(sid, data):
 async def create_custom_game(sid, data):
     """Host creates a new game with a custom quiz."""
     quiz = data.get("quiz")
-    
-    if not quiz:
-        await sio.emit("error", {"message": "Quiz-Daten fehlen"}, to=sid)
+    error = validate_quiz(quiz)
+    if error:
+        await sio.emit("error", {"message": error}, to=sid)
         return
-    
-    # Validate quiz structure
-    if (not quiz.get("title") or 
-        not isinstance(quiz.get("title"), str) or 
-        not quiz.get("title").strip() or 
-        not isinstance(quiz.get("questions"), list)):
-        await sio.emit("error", {"message": "Ungültiges Quiz-Format"}, to=sid)
-        return
-    
-    # Validate questions
-    for i, q in enumerate(quiz["questions"]):
-        if (not q.get("question") or 
-            not isinstance(q.get("question"), str) or
-            not q.get("question").strip() or
-            not isinstance(q.get("answers"), list) or 
-            len(q.get("answers", [])) != 4 or
-            not all(isinstance(a, str) and a.strip() for a in q.get("answers", [])) or
-            not isinstance(q.get("correct"), int) or
-            q.get("correct") < 0 or q.get("correct") > 3 or
-            not isinstance(q.get("time_limit"), int) or
-            q.get("time_limit") < MIN_TIME_LIMIT or q.get("time_limit") > MAX_TIME_LIMIT):
-            await sio.emit("error", {"message": f"Ungültiges Fragen-Format bei Frage {i + 1}"}, to=sid)
-            return
-    
-    game_code = generate_game_code()
-    
-    # Create in database
-    db.create_game(game_code, sid, quiz["title"], quiz)
-    
-    games[game_code] = {
-        "host_sid": sid,
-        "quiz": quiz,
-        "players": {},
-        "current_question": -1,
-        "state": "lobby",
-        "answers": {},
-        "question_start_time": None,
-        "team_mode": False,
-        "teams": [],
-        "top_n_players": 3,
-        "auto_remove_inactive": False,
-        "inactivity_threshold": DEFAULT_INACTIVITY_THRESHOLD,
-        "answer_history": {},
-    }
-    
-    await sio.enter_room(sid, game_code)
-    await sio.emit("game_created", {
-        "code": game_code,
-        "quiz_title": quiz["title"],
-        "question_count": len(quiz["questions"])
-    }, to=sid)
+    await _create_game_with_quiz(sid, {"title": quiz["title"], "questions": quiz["questions"]})
 
 
 def apply_quiz_switch(game_code: str, quiz: dict) -> list[dict]:
@@ -472,6 +501,8 @@ def apply_quiz_switch(game_code: str, quiz: dict) -> list[dict]:
     game["answers"] = {}
     game["question_start_time"] = None
     game["answer_history"] = {}
+    game["last_results"] = None
+    game["final_results"] = None
 
     for player in game["players"].values():
         player["score"] = 0
@@ -488,155 +519,99 @@ def apply_quiz_switch(game_code: str, quiz: dict) -> list[dict]:
     )
     db.reset_game_progress(game_code, reset_teams=not game["team_mode"])
 
-    return [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
+    return player_list(game)
+
+
+async def _switch_quiz(sid: str, game_code, quiz: dict):
+    if game_code not in games:
+        await sio.emit("error", {"message": "Spiel nicht gefunden"}, to=sid)
+        return
+
+    game = games[game_code]
+    if game["host_sid"] != sid:
+        return
+
+    if game["state"] not in ("lobby", "ended"):
+        await sio.emit("error", {"message": "Quizwechsel ist nur in der Lobby oder nach Spielende möglich"}, to=sid)
+        return
+
+    players = apply_quiz_switch(game_code, quiz)
+    await sio.emit("game_quiz_switched", {
+        "code": game_code,
+        "quiz_title": quiz["title"],
+        "question_count": len(quiz["questions"]),
+        "players": players,
+    }, to=sid)
+
+    for player_sid, player in game["players"].items():
+        await sio.emit("quiz_switched", {
+            "code": game_code,
+            "quiz_title": quiz["title"],
+            "team_mode": game["team_mode"],
+            "teams": game["teams"],
+            "team": player["team"],
+        }, to=player_sid)
 
 
 @sio.event
 async def switch_game_quiz(sid, data):
     """Host switches the quiz within an existing game session."""
-    game_code = data.get("code")
-    quiz_id = data.get("quiz_id", 0)
-    quizzes = load_quizzes()
-
-    if game_code not in games:
-        await sio.emit("error", {"message": "Spiel nicht gefunden"}, to=sid)
-        return
-
-    if quiz_id >= len(quizzes):
+    quiz = get_builtin_quiz(data.get("quiz_id", 0))
+    if quiz is None:
         await sio.emit("error", {"message": "Quiz nicht gefunden"}, to=sid)
         return
-
-    game = games[game_code]
-    if game["host_sid"] != sid:
-        return
-
-    if game["state"] not in ("lobby", "ended"):
-        await sio.emit("error", {"message": "Quizwechsel ist nur in der Lobby oder nach Spielende möglich"}, to=sid)
-        return
-
-    quiz = quizzes[quiz_id]
-
-    players = apply_quiz_switch(game_code, quiz)
-    await sio.emit("game_quiz_switched", {
-        "code": game_code,
-        "quiz_title": quiz["title"],
-        "question_count": len(quiz["questions"]),
-        "players": players,
-    }, to=sid)
-
-    for player_sid, player in game["players"].items():
-        await sio.emit("quiz_switched", {
-            "code": game_code,
-            "quiz_title": quiz["title"],
-            "team_mode": game["team_mode"],
-            "teams": game["teams"],
-            "team": player["team"],
-        }, to=player_sid)
+    await _switch_quiz(sid, data.get("code"), quiz)
 
 
 @sio.event
 async def switch_custom_game_quiz(sid, data):
     """Host switches to a custom quiz within an existing game session."""
-    game_code = data.get("code")
     quiz = data.get("quiz")
-
-    if game_code not in games:
-        await sio.emit("error", {"message": "Spiel nicht gefunden"}, to=sid)
+    error = validate_quiz(quiz)
+    if error:
+        await sio.emit("error", {"message": error}, to=sid)
         return
-
-    if not quiz:
-        await sio.emit("error", {"message": "Quiz-Daten fehlen"}, to=sid)
-        return
-
-    if (not quiz.get("title") or
-        not isinstance(quiz.get("title"), str) or
-        not quiz.get("title").strip() or
-        not isinstance(quiz.get("questions"), list)):
-        await sio.emit("error", {"message": "Ungültiges Quiz-Format"}, to=sid)
-        return
-
-    for i, q in enumerate(quiz["questions"]):
-        if (not q.get("question") or
-            not isinstance(q.get("question"), str) or
-            not q.get("question").strip() or
-            not isinstance(q.get("answers"), list) or
-            len(q.get("answers", [])) != 4 or
-            not all(isinstance(a, str) and a.strip() for a in q.get("answers", [])) or
-            not isinstance(q.get("correct"), int) or
-            q.get("correct") < 0 or q.get("correct") > 3 or
-            not isinstance(q.get("time_limit"), int) or
-            q.get("time_limit") < MIN_TIME_LIMIT or q.get("time_limit") > MAX_TIME_LIMIT):
-            await sio.emit("error", {"message": f"Ungültiges Fragen-Format bei Frage {i + 1}"}, to=sid)
-            return
-
-    game = games[game_code]
-    if game["host_sid"] != sid:
-        return
-
-    if game["state"] not in ("lobby", "ended"):
-        await sio.emit("error", {"message": "Quizwechsel ist nur in der Lobby oder nach Spielende möglich"}, to=sid)
-        return
-
-    players = apply_quiz_switch(game_code, quiz)
-    await sio.emit("game_quiz_switched", {
-        "code": game_code,
-        "quiz_title": quiz["title"],
-        "question_count": len(quiz["questions"]),
-        "players": players,
-    }, to=sid)
-
-    for player_sid, player in game["players"].items():
-        await sio.emit("quiz_switched", {
-            "code": game_code,
-            "quiz_title": quiz["title"],
-            "team_mode": game["team_mode"],
-            "teams": game["teams"],
-            "team": player["team"],
-        }, to=player_sid)
+    await _switch_quiz(sid, data.get("code"), {"title": quiz["title"], "questions": quiz["questions"]})
 
 
 @sio.event
 async def join_game(sid, data):
     """Player joins a game."""
-    game_code = data.get("code", "").upper()
-    player_name = data.get("name", "").strip()
-    
+    game_code = str(data.get("code") or "").strip().upper()
+    player_name = str(data.get("name") or "").strip()[:MAX_NAME_LENGTH]
+
     if not player_name:
         await sio.emit("error", {"message": "Bitte gib einen Namen ein"}, to=sid)
         return
-    
+
     if game_code not in games:
         await sio.emit("error", {"message": "Spiel nicht gefunden"}, to=sid)
         return
-    
+
     game = games[game_code]
-    
+
     # Check if player with same name already exists (potential reconnect)
     existing_sid = None
     for player_sid, player in game["players"].items():
         if player["name"].lower() == player_name.lower():
             existing_sid = player_sid
             break
-    
+
+    if existing_sid == sid:
+        return  # Same socket joined twice (double click) - nothing to do
+
     if existing_sid is not None:
-        # Player with same name exists - treat as reconnection
-        # Transfer player data to new SID
-        player_data = game["players"][existing_sid]
-        del game["players"][existing_sid]
-        
-        # Clear disconnected flag if it was set
-        player_data["disconnected"] = False
-        
-        game["players"][sid] = player_data
-        
-        # Update database
-        db.update_player_session(game_code, player_name, sid)
-        
-        # Transfer answer if exists
-        if existing_sid in game["answers"]:
-            game["answers"][sid] = game["answers"][existing_sid]
-            del game["answers"][existing_sid]
-        
+        # Only take over the slot of a player who actually lost the connection.
+        # Otherwise a second person with the same name would silently steal
+        # the score/session of the first one.
+        if not game["players"][existing_sid].get("disconnected"):
+            await sio.emit("error", {"message": "Dieser Name ist bereits vergeben"}, to=sid)
+            return
+
+        transfer_player(game, existing_sid, sid)
+        player_data = game["players"][sid]
+        db.update_player_session(game_code, player_data["name"], sid)
+
         await sio.enter_room(sid, game_code)
         
         # Notify host that player reconnected
@@ -685,10 +660,10 @@ async def join_game(sid, data):
     }, to=sid)
     
     # Notify host
-    player_list = [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
+    players_payload = player_list(game)
     await sio.emit("player_joined", {
         "name": player_name,
-        "players": player_list
+        "players": players_payload
     }, room=game_code)
 
 
@@ -705,6 +680,9 @@ async def start_game(sid, data):
     if game["host_sid"] != sid:
         return
     
+    if game["state"] != "lobby":
+        return  # already started (e.g. double click)
+
     if len(game["players"]) < 1:
         await sio.emit("error", {"message": "Mindestens 1 Spieler benötigt"}, to=sid)
         return
@@ -732,7 +710,8 @@ async def next_question(game_code: str):
         await end_game(game_code)
         return
     
-    question = game["quiz"]["questions"][game["current_question"]]
+    question_index = game["current_question"]
+    question = game["quiz"]["questions"][question_index]
     game["state"] = "reading"  # New state for reading phase
     
     # Calculate reading time based on question length
@@ -761,8 +740,9 @@ async def next_question(game_code: str):
     # Wait for reading time, then show answers
     await asyncio.sleep(reading_time)
     
-    # Check if game still exists and is still in reading state
-    if game_code not in games or games[game_code]["state"] != "reading":
+    # Check if game still exists and is still reading the same question
+    if (games.get(game_code) is not game or game["state"] != "reading"
+            or game["current_question"] != question_index):
         return
     
     game["state"] = "question"
@@ -781,6 +761,17 @@ async def next_question(game_code: str):
             "answers": question["answers"],
             "time_limit": question.get("time_limit", 20),
         }, to=player_sid)
+
+    # Server-side safety timer: previously only the host browser sent "time_up".
+    # If the host reloaded/lost connection during a question the game hung forever.
+    asyncio.create_task(question_timeout(game_code, question_index, question.get("time_limit", 20)))
+
+
+async def question_timeout(game_code: str, question_index: int, time_limit: float):
+    await asyncio.sleep(time_limit + 1.5)  # small grace so the host timer normally wins
+    game = games.get(game_code)
+    if game and game["state"] == "question" and game["current_question"] == question_index:
+        await show_results(game_code)
 
 
 @sio.event
@@ -802,6 +793,9 @@ async def submit_answer(sid, data):
     
     if sid in game["answers"]:
         return  # Already answered
+
+    if not _is_int(answer_index) or not 0 <= answer_index <= 3:
+        return  # invalid payload would crash show_results
     
     # Calculate response time
     response_time = asyncio.get_event_loop().time() - game["question_start_time"]
@@ -931,6 +925,11 @@ async def check_and_remove_inactive_players(game_code: str):
             # Remove from current answers if present
             if player_sid in game.get("answers", {}):
                 del game["answers"][player_sid]
+
+            # Tell the player and take them out of the room, otherwise their
+            # phone stays on an outdated screen and still receives broadcasts
+            await sio.emit("game_ended", {"reason": "Du wurdest wegen Inaktivität entfernt."}, to=player_sid)
+            await sio.leave_room(player_sid, game_code)
             
             print(f"Removed inactive player {player_name} from game {game_code}")
         
@@ -1019,13 +1018,14 @@ async def show_results(game_code: str):
     is_last_question = game["current_question"] >= len(game["quiz"]["questions"]) - 1
     
     # Send results to host
-    await sio.emit("show_results", {
+    game["last_results"] = {
         "correct_index": correct_index,
         "correct_answer": question["answers"][correct_index],
         "answer_counts": answer_counts,
         "results": [{"name": r["name"], "correct": r["correct"], "score_gained": r["score_gained"], "total_score": r["total_score"]} for r in results],
         "is_last_question": is_last_question,
-    }, to=game["host_sid"])
+    }
+    await sio.emit("show_results", game["last_results"], to=game["host_sid"])
     
     # Send individual results to players
     for result in results:
@@ -1063,6 +1063,13 @@ async def configure_teams(sid, data):
     if game["state"] != "lobby":
         return
     
+    if not isinstance(teams, list):
+        teams = []
+    teams = list(dict.fromkeys(str(t).strip()[:30] for t in teams if str(t).strip()))
+    team_mode = bool(team_mode) and len(teams) > 0
+    if not _is_int(top_n_players) or top_n_players < 1:
+        top_n_players = 3
+
     game["team_mode"] = team_mode
     game["teams"] = teams
     game["top_n_players"] = top_n_players
@@ -1096,6 +1103,8 @@ async def configure_auto_remove(sid, data):
         return
     
     # Validate threshold
+    if not _is_int(inactivity_threshold):
+        inactivity_threshold = DEFAULT_INACTIVITY_THRESHOLD
     if inactivity_threshold < 1:
         inactivity_threshold = 1
     elif inactivity_threshold > 10:
@@ -1138,9 +1147,9 @@ async def select_team(sid, data):
     db.update_player_team(game_code, game["players"][sid]["name"], team)
     
     # Notify host and all players
-    player_list = [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
+    players_payload = player_list(game)
     await sio.emit("player_updated", {
-        "players": player_list
+        "players": players_payload
     }, room=game_code)
 
 
@@ -1155,6 +1164,11 @@ async def next_question_request(sid, data):
     game = games[game_code]
     
     if game["host_sid"] != sid:
+        return
+
+    # Only advance from the results screen. Otherwise a double click / autoplay
+    # race skips questions or mixes up answers of two questions.
+    if game["state"] != "results":
         return
     
     await next_question(game_code)
@@ -1173,15 +1187,15 @@ async def end_game_request(sid, data):
     if game["host_sid"] != sid:
         return
     
-    # Notify all players that the game has ended
+    # Clean up first (memory + DB), so nobody can reconnect into the dying game
+    games.pop(game_code, None)
+    db.delete_game(game_code)
+    task = host_disconnect_tasks.pop(game_code, None)
+    if task:
+        task.cancel()
+
+    # Notify all players that the game has ended (socket rooms are independent of `games`)
     await sio.emit("game_ended", {"message": "Das Spiel wurde vom Host beendet."}, room=game_code)
-    
-    # Give some time for the message to be delivered
-    await asyncio.sleep(0.5)
-    
-    # Clean up the game
-    if game_code in games:
-        del games[game_code]
 
 
 async def end_game(game_code: str):
@@ -1225,12 +1239,13 @@ async def end_game(game_code: str):
         team_leaderboard = list(team_scores.values())
         team_leaderboard.sort(key=lambda x: x["score"], reverse=True)
     
-    await sio.emit("game_ended", {
+    game["final_results"] = {
         "leaderboard": leaderboard,
         "team_mode": game["team_mode"],
         "team_leaderboard": team_leaderboard,
         "top_n_players": game["top_n_players"]
-    }, room=game_code)
+    }
+    await sio.emit("game_ended", game["final_results"], room=game_code)
     
     # Update final state in database
     db.update_game(game_code, state="ended")
@@ -1247,4 +1262,5 @@ async def startup_cleanup():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(socket_app, host="0.0.0.0", port=8080)
+    import os
+    uvicorn.run(socket_app, host="0.0.0.0", port=int(os.environ.get("PORT", 8000)))

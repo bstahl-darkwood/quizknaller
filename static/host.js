@@ -110,6 +110,14 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+function clearHostSession() {
+    gameCode = null;
+    localStorage.removeItem('hostGameCode');
+    localStorage.removeItem('hostQuizTitle');
+    localStorage.removeItem('hostToken');
+    updateHeaderGameCodes(null);
+}
+
 // Custom quiz management
 function getCustomQuizzes() {
     try {
@@ -272,10 +280,10 @@ function handleQuizUpload(event) {
                         !Array.isArray(q.answers) || 
                         q.answers.length !== 4 ||
                         !q.answers.every(a => typeof a === 'string' && a.trim() !== '') ||
-                        typeof q.correct !== 'number' ||
+                        !Number.isInteger(q.correct) ||
                         q.correct < 0 || 
                         q.correct > 3 ||
-                        typeof q.time_limit !== 'number' ||
+                        !Number.isInteger(q.time_limit) ||
                         q.time_limit < MIN_TIME_LIMIT ||
                         q.time_limit > MAX_TIME_LIMIT) {
                         alert(`Ungültiges Format bei Frage ${i + 1} in Quiz "${quizData.title}"!`);
@@ -317,7 +325,7 @@ loadQuizzes();
 window.addEventListener('load', () => {
     const savedGameCode = localStorage.getItem('hostGameCode');
     if (savedGameCode) {
-        socket.emit('reconnect_host', { code: savedGameCode });
+        socket.emit('reconnect_host', { code: savedGameCode, token: localStorage.getItem('hostToken') });
     }
 });
 
@@ -345,20 +353,19 @@ socket.on('reconnected_host', (data) => {
         showScreen('lobby');
     } else if (data.state === 'starting') {
         showScreen('countdown');
-    } else if (data.state === 'question') {
-        // Host will receive show_question event from backend
-        showScreen('lobby'); // Temporary, will switch when question arrives
+    } else if (data.state === 'question' || data.state === 'reading') {
+        // Answers are not re-sent; the server timer will deliver show_results shortly
+        showScreen('question');
     } else if (data.state === 'results') {
-        showScreen('lobby'); // Temporary
+        // Server re-sends the cached results; the screen holds the "next question" button
+        showScreen('results');
     } else if (data.state === 'ended') {
         showScreen('final');
     }
 });
 
 socket.on('reconnect_failed', (data) => {
-    localStorage.removeItem('hostGameCode');
-    localStorage.removeItem('hostQuizTitle');
-    updateHeaderGameCodes(null);
+    clearHostSession();
     alert(data.message || 'Verbindung fehlgeschlagen');
     showScreen('select');
 });
@@ -384,10 +391,7 @@ elements.startGameBtn.addEventListener('click', () => {
 elements.endGameBtn.addEventListener('click', () => {
     if (confirm('Möchtest du das Spiel wirklich beenden?')) {
         socket.emit('end_game_request', { code: gameCode });
-        gameCode = null;
-        localStorage.removeItem('hostGameCode');
-        localStorage.removeItem('hostQuizTitle');
-        updateHeaderGameCodes(null);
+        clearHostSession();
         showScreen('select');
     }
 });
@@ -396,10 +400,7 @@ elements.endGameBtn.addEventListener('click', () => {
 elements.endGameBtnResults.addEventListener('click', () => {
     if (confirm('Möchtest du das Spiel wirklich beenden?')) {
         socket.emit('end_game_request', { code: gameCode });
-        gameCode = null;
-        localStorage.removeItem('hostGameCode');
-        localStorage.removeItem('hostQuizTitle');
-        updateHeaderGameCodes(null);
+        clearHostSession();
         showScreen('select');
     }
 });
@@ -593,6 +594,7 @@ socket.on('game_created', (data) => {
     gameCode = data.code;
     // Save to localStorage for reconnection
     localStorage.setItem('hostGameCode', data.code);
+    localStorage.setItem('hostToken', data.host_token);
     localStorage.setItem('hostQuizTitle', data.quiz_title);
     
     elements.lobbyQuizTitle.textContent = data.quiz_title;
@@ -909,7 +911,7 @@ socket.on('show_results', (data) => {
             item.className = `leaderboard-item ${player.correct ? 'correct' : 'incorrect'}`;
             item.innerHTML = `
                 <span class="leaderboard-rank">${i + 1}</span>
-                <span class="leaderboard-name">${player.name}</span>
+                <span class="leaderboard-name">${escapeHtml(player.name)}</span>
                 <span class="leaderboard-score">${player.total_score}</span>
                 ${player.score_gained > 0 ? `<span class="leaderboard-gained">+${player.score_gained}</span>` : ''}
             `;
@@ -955,19 +957,23 @@ socket.on('show_results', (data) => {
 
 socket.on('game_ended', (data) => {
     if (timerInterval) clearInterval(timerInterval);
-    localStorage.removeItem('hostGameCode');
     
     // Stop background music
     soundManager.stopBackgroundMusic();
     
-    // Play celebration sound for final leaderboard
-    soundManager.playCelebrationSound().catch(() => {}); // Silently ignore sound errors
-    
-    if (data.reason) {
-        alert(data.reason);
+    // Game was aborted (host timeout or ended via "Beenden"): no leaderboard in payload.
+    // Previously this crashed on data.leaderboard === undefined and kept a dead gameCode.
+    if (!data.leaderboard) {
+        const wasActive = gameCode !== null;
+        clearHostSession();
+        if (data.reason && wasActive) alert(data.reason);
         showScreen('select');
         return;
     }
+    
+    // Normal end: keep the session (gameCode) so the host can pick the next quiz
+    // for the same players via "Neues Quiz".
+    soundManager.playCelebrationSound().catch(() => {}); // Silently ignore sound errors
     
     const leaderboard = data.leaderboard;
     
@@ -985,7 +991,7 @@ socket.on('game_ended', (data) => {
                 place.className = 'podium-place';
                 place.innerHTML = `
                     <div class="podium-avatar">${medals[rank]}</div>
-                    <div class="podium-name">${data.team_leaderboard[rank].team}</div>
+                    <div class="podium-name">${escapeHtml(data.team_leaderboard[rank].team)}</div>
                     <div class="podium-score">${data.team_leaderboard[rank].score} Punkte</div>
                     <div class="podium-stand ${standClasses[displayOrder]}">${rank + 1}</div>
                 `;
@@ -1000,7 +1006,7 @@ socket.on('game_ended', (data) => {
             item.className = 'final-leaderboard-item';
             item.innerHTML = `
                 <span class="rank">${i + 1}.</span>
-                <span class="name">${player.name}${player.team ? ` (${player.team})` : ''}</span>
+                <span class="name">${escapeHtml(player.name)}${player.team ? ` (${escapeHtml(player.team)})` : ''}</span>
                 <span class="score">${player.score}</span>
             `;
             elements.fullLeaderboard.appendChild(item);
@@ -1018,7 +1024,7 @@ socket.on('game_ended', (data) => {
                 place.className = 'podium-place';
                 place.innerHTML = `
                     <div class="podium-avatar">${medals[rank]}</div>
-                    <div class="podium-name">${leaderboard[rank].name}</div>
+                    <div class="podium-name">${escapeHtml(leaderboard[rank].name)}</div>
                     <div class="podium-score">${leaderboard[rank].score} Punkte</div>
                     <div class="podium-stand ${standClasses[displayOrder]}">${rank + 1}</div>
                 `;
@@ -1033,7 +1039,7 @@ socket.on('game_ended', (data) => {
             item.className = 'final-leaderboard-item';
             item.innerHTML = `
                 <span class="rank">${i + 4}.</span>
-                <span class="name">${player.name}</span>
+                <span class="name">${escapeHtml(player.name)}</span>
                 <span class="score">${player.score}</span>
             `;
             elements.fullLeaderboard.appendChild(item);

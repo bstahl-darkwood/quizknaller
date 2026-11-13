@@ -1,0 +1,25 @@
+[
+  {
+    "title": "Firmenfeier Quiz 🎉",
+    "questions": [
+      {
+        "question": "Wie heißt die Hauptstadt von Australien?",
+        "answers": ["Sydney", "Canberra", "Melbourne", "Perth"],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Wie viele Beine hat eine Spinne?",
+        "answers": ["6", "8", "10", "12"],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Welches Element hat das chemische Symbol 'O'?",
+        "answers": ["Sauerstoff", "Gold", "Osmium", "Wasserstoff"],
+        "correct": 0,
+        "time_limit": 10
+      }
+    ]
+  }
+]

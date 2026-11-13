@@ -67,6 +67,11 @@ def init_db():
         )
     """)
     
+    # Migration: secret token that authorises a host to reconnect to its game
+    columns = {row[1] for row in cursor.execute("PRAGMA table_info(games)")}
+    if "host_token" not in columns:
+        cursor.execute("ALTER TABLE games ADD COLUMN host_token TEXT")
+
     # Create indexes for better query performance
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_players_game_code 
@@ -94,13 +99,15 @@ def get_connection():
     # Enable WAL mode for better concurrent access
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA busy_timeout=30000")
+    # Needed so ON DELETE CASCADE actually removes players/responses of deleted games
+    conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
 
 # Game operations
 def create_game(game_code: str, host_sid: str, quiz_name: str, quiz_data: dict, 
                 team_mode: bool = False, teams: Optional[List[str]] = None, 
-                top_n_players: int = 3) -> bool:
+                top_n_players: int = 3, host_token: Optional[str] = None) -> bool:
     """Create a new game in the database."""
     try:
         conn = get_connection()
@@ -108,8 +115,8 @@ def create_game(game_code: str, host_sid: str, quiz_name: str, quiz_data: dict,
         
         cursor.execute("""
             INSERT INTO games 
-            (game_code, host_sid, quiz_name, quiz_data, team_mode, teams, top_n_players)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (game_code, host_sid, quiz_name, quiz_data, team_mode, teams, top_n_players, host_token)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             game_code,
             host_sid,
@@ -117,7 +124,8 @@ def create_game(game_code: str, host_sid: str, quiz_name: str, quiz_data: dict,
             json.dumps(quiz_data),
             team_mode,
             json.dumps(teams) if teams else None,
-            top_n_players
+            top_n_players,
+            host_token
         ))
         
         conn.commit()
@@ -148,6 +156,7 @@ def get_game(game_code: str) -> Optional[Dict[str, Any]]:
             "team_mode": bool(row["team_mode"]),
             "teams": json.loads(row["teams"]) if row["teams"] else [],
             "top_n_players": row["top_n_players"],
+            "host_token": row["host_token"],
             "created_at": row["created_at"],
             "updated_at": row["updated_at"]
         }
@@ -319,7 +328,7 @@ def update_player_session(game_code: str, name: str, new_session_id: str) -> boo
         cursor.execute("""
             UPDATE players 
             SET session_id = ?, connected = 1, updated_at = CURRENT_TIMESTAMP
-            WHERE game_code = ? AND name = ?
+            WHERE game_code = ? AND LOWER(name) = LOWER(?)
         """, (new_session_id, game_code, name))
         
         conn.commit()
