@@ -169,6 +169,12 @@ async def creator():
     return FileResponse(static_path / "creator.html")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Browser fragen das Icon oft direkt unter /favicon.ico an."""
+    return FileResponse(static_path / "favicon.ico", headers={"Cache-Control": "public, max-age=86400"})
+
+
 @app.get("/api/health")
 async def health():
     """Health check for Docker/Compose."""
