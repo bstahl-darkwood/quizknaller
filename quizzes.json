@@ -3095,5 +3095,175 @@
         "time_limit": 15
       }
     ]
+  },
+  {
+    "title": "Techno-Geschichte",
+    "questions": [
+      {
+        "question": "In welcher US-Stadt entstand Mitte der 1980er-Jahre der Techno?",
+        "answers": [
+          "Chicago",
+          "Detroit",
+          "New York",
+          "Los Angeles"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Welcher dieser Künstler gehört NICHT zu den „Belleville Three“?",
+        "answers": [
+          "Juan Atkins",
+          "Derrick May",
+          "Frankie Knuckles",
+          "Kevin Saunderson"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "Welche deutsche Band gilt als wichtiger Wegbereiter und beeinflusste den Detroit-Techno stark?",
+        "answers": [
+          "Tangerine Dream",
+          "Scooter",
+          "Can",
+          "Kraftwerk"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie hieß das Projekt von Juan Atkins und Rick Davis, das 1983 mit „Clear“ bekannt wurde?",
+        "answers": [
+          "Cybotron",
+          "Orbital",
+          "The Prodigy",
+          "Daft Punk"
+        ],
+        "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "Welche Stadt gilt als Geburtsort der House-Musik?",
+        "answers": [
+          "Detroit",
+          "London",
+          "Chicago",
+          "Berlin"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Welcher Roland-Synthesizer erzeugt den typischen „Acid“-Sound?",
+        "answers": [
+          "Juno-60",
+          "TB-303",
+          "Jupiter-8",
+          "SH-101"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Welche Roland-Drum-Machine aus dem Jahr 1983 ist im Techno bis heute allgegenwärtig?",
+        "answers": [
+          "TR-909",
+          "TR-606",
+          "CR-78",
+          "TR-505"
+        ],
+        "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "Welcher Track von Derrick May (als Rhythim Is Rhythim) aus dem Jahr 1987 gilt als Techno-Hymne?",
+        "answers": [
+          "Blue Monday",
+          "Born Slippy",
+          "Strings of Life",
+          "Sandstorm"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "Wie hieß die Compilation von 1988, die dem Genre Techno seinen Namen gab?",
+        "answers": [
+          "Detroit Calling",
+          "Techno! The New Dance Sound of Detroit",
+          "Acid Tracks",
+          "Rave Nation"
+        ],
+        "correct": 1,
+        "time_limit": 25
+      },
+      {
+        "question": "Wie wird die britische Rave- und Acid-House-Welle von 1988/89 genannt?",
+        "answers": [
+          "Britpop",
+          "Northern Soul",
+          "New Romantics",
+          "Second Summer of Love"
+        ],
+        "correct": 3,
+        "time_limit": 20
+      },
+      {
+        "question": "Welches Detroiter Kollektiv gründeten Jeff Mills und „Mad“ Mike Banks?",
+        "answers": [
+          "Underground Resistance",
+          "Kompakt",
+          "Cocoon",
+          "Warp"
+        ],
+        "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "In welchem Jahr fand die erste Love Parade in Berlin statt?",
+        "answers": [
+          "1985",
+          "1989",
+          "1993",
+          "1997"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Wer gründete die Love Parade?",
+        "answers": [
+          "Westbam",
+          "Paul van Dyk",
+          "Dr. Motte",
+          "Sven Väth"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Welcher Berliner Club eröffnete 1991 im Tresorraum eines ehemaligen Kaufhauses?",
+        "answers": [
+          "E-Werk",
+          "Tresor",
+          "WMF",
+          "Berghain"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Aus welchem Club ging das Berghain hervor?",
+        "answers": [
+          "Bunker",
+          "Planet",
+          "Tresor",
+          "Ostgut"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      }
+    ]
   }
 ]
