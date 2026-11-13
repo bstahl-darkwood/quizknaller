@@ -387,6 +387,46 @@ async def reconnect_player(sid, data):
         "teams": game["teams"],
     }, to=sid)
 
+    # Laufende Frage nachliefern: Fragen werden nur einmal beim Start der Frage verschickt.
+    # Ohne das sah ein Spieler nach dem Reconnect einen leeren Fragebildschirm und verpasste die Frage.
+    await send_current_question(game, sid)
+
+
+async def send_current_question(game: dict, sid: str):
+    """Schickt einem (wieder) verbundenen Spieler die gerade laufende Frage mit Restzeit."""
+    if game["state"] not in ("reading", "question"):
+        return
+    index = game["current_question"]
+    questions = game["quiz"]["questions"]
+    if not 0 <= index < len(questions):
+        return
+    question = questions[index]
+    now = asyncio.get_event_loop().time()
+    reading_time = game.get("reading_time") or 0
+    reading_left = reading_time - (now - (game.get("reading_start_time") or now))
+
+    await sio.emit("show_question_reading", {
+        "question_num": index + 1,
+        "total_questions": len(questions),
+        "question": question["question"],
+        "reading_time": max(reading_left, 0.1) if game["state"] == "reading" else 0.1,
+    }, to=sid)
+
+    if game["state"] != "question":
+        return  # show_answers kommt regulär nach der Lesezeit an alle Spieler
+
+    if sid in game["answers"]:
+        await sio.emit("answer_received", {}, to=sid)
+        return
+
+    time_limit = question.get("time_limit", 20)
+    elapsed = now - (game.get("question_start_time") or now)
+    await sio.emit("show_answers", {
+        "answers": question["answers"],
+        "time_limit": time_limit,
+        "time_left": max(time_limit - elapsed, 0),
+    }, to=sid)
+
 
 @sio.event
 async def disconnect(sid):
@@ -728,6 +768,8 @@ async def next_question(game_code: str):
     
     # Calculate reading time based on question length
     reading_time = calculate_reading_time(question["question"])
+    game["reading_time"] = reading_time
+    game["reading_start_time"] = asyncio.get_event_loop().time()
     
     # Sync to database
     sync_game_to_db(game_code)

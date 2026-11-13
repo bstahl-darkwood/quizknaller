@@ -205,6 +205,21 @@ window.addEventListener('load', () => {
     }
 });
 
+// Socket.IO verbindet nach Netzabbrüchen (Standby, WLAN-Wechsel) automatisch neu – aber mit neuer ID.
+// Dann beim Server wieder anmelden, sonst bekommt der Spieler keine Fragen mehr.
+let hasConnectedOnce = false;
+socket.on('connect', () => {
+    if (!hasConnectedOnce) {
+        hasConnectedOnce = true;
+        return; // Erste Verbindung: das übernimmt der load-Handler
+    }
+    const savedGameCode = localStorage.getItem('playerGameCode');
+    const savedPlayerName = localStorage.getItem('playerName');
+    if (savedGameCode && savedPlayerName) {
+        socket.emit('reconnect_player', { code: savedGameCode, name: savedPlayerName });
+    }
+});
+
 // Reconnection handlers
 socket.on('reconnected_player', (data) => {
     gameCode = data.code;
@@ -369,7 +384,9 @@ socket.on('show_answers', (data) => {
     elements.timerFill.style.width = '100%';
     elements.timerFill.classList.remove('warning', 'danger', 'reading');
     
-    let timeLeft = timeLimit;
+    // Nach einem Reconnect schickt der Server die Restzeit mit
+    let timeLeft = typeof data.time_left === 'number' ? data.time_left : timeLimit;
+    showScreen('question');
     timerInterval = setInterval(() => {
         timeLeft -= 0.1;
         const percent = (timeLeft / timeLimit) * 100;
