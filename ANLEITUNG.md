@@ -70,7 +70,9 @@ lobby → starting (3 s Countdown) → reading → question → results ─┐
 | Situation | Verhalten |
 |---|---|
 | Spieler lädt in der Lobby neu | tritt automatisch wieder bei |
-| Spieler verliert die Verbindung im Spiel | Punkte bleiben erhalten; Wiedereinstieg per Reload oder mit gleichem Namen |
+| Spieler verliert kurz die Verbindung (Standby, WLAN-Wechsel) | Handy meldet sich nach dem automatischen Neuverbinden selbst wieder an, kein Reload nötig |
+| Spieler kommt mitten in einer Frage zurück | Server schickt die laufende Frage nach: in der Lesezeit den Fragetext, in der Antwortzeit auch die Antworten mit der Restzeit. Wer schon geantwortet hat, sieht „beantwortet“ und kann nicht doppelt antworten |
+| Spieler lädt im Spiel neu oder öffnet die Seite erneut | Punkte bleiben erhalten; Wiedereinstieg mit gespeicherter Sitzung oder gleichem Namen |
 | Host lädt neu | übernimmt per Token wieder, der aktuelle Bildschirm wird wiederhergestellt |
 | Host länger als 60 s weg | Spiel endet für alle |
 | Server-Neustart | Spiele werden aus SQLite geladen; eine laufende Frage wird übersprungen, der Host macht mit „Weiter“ weiter |
