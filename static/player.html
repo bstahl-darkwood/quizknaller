@@ -64,7 +64,7 @@
                 <input type="text" id="player-name" class="field" placeholder="z. B. Anna" maxlength="20"
                        autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false"
                        inputmode="text" enterkeyhint="go">
-                <button id="join-btn" type="submit" class="btn-primary">Los geht's <span aria-hidden="true">→</span></button>
+                <button id="join-btn" type="submit" class="btn-primary">Los geht's <i data-icon="arrow-right"></i></button>
                 <div id="error-message" class="error-message" role="alert"></div>
             </form>
             <img class="ss-footer" src="/static/smart-solutions-logo-hell.png" alt="Smart Solutions" width="640" height="169">
@@ -73,7 +73,7 @@
         <!-- Team Selection Screen -->
         <div id="team-screen" class="screen">
             <div class="center-content">
-                <div class="hex-icon">✓</div>
+                <div class="hex-icon"><i data-icon="check"></i></div>
                 <h2 class="screen-title">Wähle dein Team</h2>
                 <span class="lime-line center"></span>
                 <div id="team-list" class="team-list"></div>
@@ -83,7 +83,7 @@
         <!-- Waiting Screen -->
         <div id="waiting-screen" class="screen">
             <div class="center-content">
-                <div class="hex-icon">✓</div>
+                <div class="hex-icon"><i data-icon="check"></i></div>
                 <h2 class="screen-title">Du bist dabei!</h2>
                 <p class="quiz-title" id="waiting-quiz-title"></p>
                 <div class="pulse-text">Warte auf den Start …</div>
@@ -113,17 +113,17 @@
                 <span class="lime-line"></span>
             </div>
             <div class="answers-grid" id="answers-grid">
-                <button class="answer-btn answer-0" data-index="0" type="button"><span class="shape" aria-hidden="true">▲</span><span class="answer-label"></span></button>
-                <button class="answer-btn answer-1" data-index="1" type="button"><span class="shape" aria-hidden="true">◆</span><span class="answer-label"></span></button>
-                <button class="answer-btn answer-2" data-index="2" type="button"><span class="shape" aria-hidden="true">●</span><span class="answer-label"></span></button>
-                <button class="answer-btn answer-3" data-index="3" type="button"><span class="shape" aria-hidden="true">■</span><span class="answer-label"></span></button>
+                <button class="answer-btn answer-0" data-index="0" type="button"><span class="shape" aria-hidden="true"><i data-icon="shape-0"></i></span><span class="answer-label"></span></button>
+                <button class="answer-btn answer-1" data-index="1" type="button"><span class="shape" aria-hidden="true"><i data-icon="shape-1"></i></span><span class="answer-label"></span></button>
+                <button class="answer-btn answer-2" data-index="2" type="button"><span class="shape" aria-hidden="true"><i data-icon="shape-2"></i></span><span class="answer-label"></span></button>
+                <button class="answer-btn answer-3" data-index="3" type="button"><span class="shape" aria-hidden="true"><i data-icon="shape-3"></i></span><span class="answer-label"></span></button>
             </div>
         </div>
 
         <!-- Answered Screen -->
         <div id="answered-screen" class="screen">
             <div class="center-content">
-                <div class="hex-icon hex-blue"><span class="sent-icon">✓</span></div>
+                <div class="hex-icon hex-blue"><i data-icon="check"></i></div>
                 <h2 class="screen-title">Antwort ist drin!</h2>
                 <p class="muted-text">Warte auf die anderen …</p>
             </div>
@@ -132,7 +132,7 @@
         <!-- Result Screen -->
         <div id="result-screen" class="screen">
             <div class="result-content">
-                <div class="result-icon" id="result-icon">✓</div>
+                <div class="result-icon" id="result-icon"><i data-icon="check"></i></div>
                 <h2 class="result-title" id="result-title">Richtig!</h2>
                 <div class="hand result-points" id="score-gained">+0</div>
                 <p class="correct-answer" id="correct-answer"></p>
@@ -158,13 +158,13 @@
                 <div class="final-rank" id="final-rank"></div>
                 <div class="final-score" id="final-score"></div>
             </div>
-            <button id="play-again-btn" class="btn-primary btn-bottom" type="button">Neues Spiel beitreten</button>
+            <button id="play-again-btn" class="btn-primary btn-bottom" type="button"><i data-icon="rotate"></i>Neues Spiel beitreten</button>
         </div>
 
         <!-- Host Disconnected Overlay -->
         <div id="host-disconnect-overlay" class="host-disconnect-overlay" style="display: none;">
             <div class="host-disconnect-content">
-                <div class="hex-icon hex-amber">!</div>
+                <div class="hex-icon hex-amber"><i data-icon="alert"></i></div>
                 <h2>Host getrennt</h2>
                 <p>Der Host hat die Verbindung verloren.<br>Warte auf Wiederverbindung …</p>
                 <div class="reconnect-countdown">Spiel endet in <span id="host-reconnect-timer">60</span> s</div>

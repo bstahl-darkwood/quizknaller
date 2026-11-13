@@ -392,3 +392,7 @@ body {
 .header-actions .btn-back { border: 1px solid var(--glass-line); border-radius: 999px; }
 .btn-add, .btn-primary { color: var(--navy-900) !important; background: var(--lime-grad) !important; font-weight: 700; }
 input, textarea { font-size: 16px; }
+
+/* ---------- Icons (Creator) ---------- */
+.btn-back, .btn-add, .btn-remove, .btn-action { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-icon { display: inline-flex; font-size: 1rem; }

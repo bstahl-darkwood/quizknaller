@@ -17,6 +17,7 @@ def _should_keep_path(p: str) -> bool:
 sys.path = [p for p in sys.path if _should_keep_path(p)]
 
 import asyncio
+import hashlib
 import io
 import json
 import mimetypes
@@ -197,22 +198,48 @@ static_path = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=static_path), name="static")
 
 
+# Cache-Busting: Cloudflare cacht /static/* – ohne Versionsnummer bekämen Besucher nach einem Update
+# neue HTML-Seiten mit altem CSS/JS. Die Version ist ein Hash über alle CSS/JS-Dateien und ändert sich
+# automatisch bei jeder Änderung; die HTML-Seiten selbst werden nie gecacht.
+def _asset_version() -> str:
+    digest = hashlib.sha256()
+    for f in sorted(static_path.glob("*")):
+        if f.suffix in (".css", ".js"):
+            digest.update(f.name.encode())
+            digest.update(f.read_bytes())
+    return digest.hexdigest()[:10]
+
+
+ASSET_VERSION = _asset_version()
+_ASSET_RE = re.compile(r'((?:href|src)="/static/[^"?]+\.(?:css|js))"')
+_page_cache: dict[str, str] = {}
+
+
+def render_page(name: str) -> HTMLResponse:
+    html = _page_cache.get(name)
+    if html is None:
+        html = (static_path / name).read_text(encoding="utf-8")
+        html = _ASSET_RE.sub(rf'\1?v={ASSET_VERSION}"', html)
+        _page_cache[name] = html
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
+
+
 @app.get("/", response_class=HTMLResponse)
 async def index():
     """Serve the player (mobile) interface."""
-    return FileResponse(static_path / "player.html")
+    return render_page("player.html")
 
 
 @app.get("/host", response_class=HTMLResponse)
 async def host():
     """Serve the host (beamer) interface."""
-    return FileResponse(static_path / "host.html")
+    return render_page("host.html")
 
 
 @app.get("/creator", response_class=HTMLResponse)
 async def creator():
     """Serve the quiz creator interface."""
-    return FileResponse(static_path / "creator.html")
+    return render_page("creator.html")
 
 
 @app.get("/favicon.ico", include_in_schema=False)

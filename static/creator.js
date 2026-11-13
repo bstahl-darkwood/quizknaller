@@ -74,7 +74,7 @@ function renderQuestion(question, index) {
     questionCard.innerHTML = `
         <div class="question-header">
             <span class="question-number">Frage ${index + 1}</span>
-            <button class="btn-remove" onclick="removeQuestion(${question.id})">🗑️ Löschen</button>
+            <button class="btn-remove" onclick="removeQuestion(${question.id})">${SQ.icon('trash')} Löschen</button>
         </div>
         
         <div class="form-group">
@@ -248,7 +248,7 @@ function saveToLocalStorage() {
         };
         if (existing >= 0) hostQuizzes[existing] = entry; else hostQuizzes.push(entry);
         localStorage.setItem(hostKey, JSON.stringify(hostQuizzes));
-        showToast('Quiz gespeichert – erscheint jetzt auch in der Host-Ansicht! 💾', 'success');
+        showToast('Quiz gespeichert – erscheint jetzt auch in der Quiz-Auswahl.', 'success');
     } catch (e) {
         showToast('Fehler beim Speichern: ' + e.message, 'error');
     }
@@ -269,7 +269,7 @@ function loadFromLocalStorage() {
         
         const quizData = JSON.parse(data);
         loadQuizData(quizData);
-        showToast('Quiz erfolgreich geladen! 📂', 'success');
+        showToast('Quiz geladen.', 'success');
     } catch (e) {
         showToast('Fehler beim Laden: ' + e.message, 'error');
     }
@@ -296,7 +296,7 @@ function downloadAsJSON() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     
-    showToast('Quiz als JSON heruntergeladen! ⬇️', 'success');
+    showToast('Quiz als JSON heruntergeladen.', 'success');
 }
 
 function handleFileUpload(event) {
@@ -350,7 +350,7 @@ function handleFileUpload(event) {
             }
             
             loadQuizData(quizData);
-            showToast('Quiz erfolgreich importiert! ⬆️', 'success');
+            showToast('Quiz importiert.', 'success');
         } catch (e) {
             showToast('Fehler beim Lesen der Datei: ' + e.message, 'error');
         }
@@ -384,7 +384,7 @@ function clearAll() {
     quizTitleInput.value = '';
     questions = [];
     updateUI();
-    showToast('Alles gelöscht! 🗑️', 'success');
+    showToast('Alles gelöscht.', 'success');
 }
 
 function showToast(message, type = 'success') {

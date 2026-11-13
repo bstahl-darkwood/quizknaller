@@ -309,7 +309,7 @@ socket.on('reconnected_player', (data) => {
     if (data.name) localStorage.setItem('playerName', data.name);
     localStorage.setItem('playerGameCode', data.code);
     elements.playerNameInput.value = localStorage.getItem('playerName');
-    elements.waitingQuizTitle.textContent = data.quiz_title;
+    elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
     enteredGame();
     
     // Restore to appropriate screen based on state
@@ -344,7 +344,7 @@ socket.on('joined_game', (data) => {
     localStorage.setItem('playerQuizTitle', data.quiz_title);
     if (data.player_token) localStorage.setItem('playerToken', data.player_token);
     
-    elements.waitingQuizTitle.textContent = data.quiz_title;
+    elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
     enteredGame();
     vibrate(20);
     
@@ -364,7 +364,7 @@ socket.on('quiz_switched', (data) => {
     if (name) localStorage.setItem('playerName', name);
     localStorage.setItem('playerQuizTitle', data.quiz_title);
 
-    elements.waitingQuizTitle.textContent = data.quiz_title;
+    elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
 
     if (data.team_mode && data.teams && data.teams.length > 0 && !data.team) {
         showTeamSelection(data.teams);
@@ -557,7 +557,7 @@ socket.on('your_result', (data) => {
     if (data.correct) {
         elements.resultScreen.classList.remove('incorrect');
         elements.resultScreen.classList.add('correct');
-        elements.resultIcon.textContent = '✓';
+        elements.resultIcon.innerHTML = SQ.icon('check');
         elements.resultTitle.textContent = 'Richtig!';
         vibrate([30, 40, 30]);
         // Play success sound for correct answer
@@ -565,7 +565,7 @@ socket.on('your_result', (data) => {
     } else {
         elements.resultScreen.classList.remove('correct');
         elements.resultScreen.classList.add('incorrect');
-        elements.resultIcon.textContent = '✗';
+        elements.resultIcon.innerHTML = SQ.icon('x');
         elements.resultTitle.textContent = 'Leider falsch';
         vibrate(120);
         // Play error sound for incorrect answer
@@ -576,7 +576,7 @@ socket.on('your_result', (data) => {
     elements.scoreGained.textContent = data.score_gained > 0 ? `+ ${data.score_gained.toLocaleString('de-DE')} Punkte` : 'keine Punkte';
     elements.totalScore.textContent = Number(data.total_score).toLocaleString('de-DE');
     elements.rankDisplay.textContent = `${data.rank}.`;
-    elements.streakDisplay.textContent = data.streak > 1 ? `🔥${data.streak}` : '–';
+    elements.streakDisplay.innerHTML = data.streak > 1 ? `${SQ.icon('flame', 'streak-icon')}${data.streak}` : '–';
     
     showScreen('result');
 });
@@ -590,7 +590,7 @@ socket.on('autoplay_countdown', (data) => {
         // Set message based on whether this is the last question
         if (elements.playerAutoplayMessage) {
             if (data.is_last_question) {
-                elements.playerAutoplayMessage.textContent = '🎉 Ergebnisse in';
+                elements.playerAutoplayMessage.textContent = 'Ergebnisse in';
             } else {
                 elements.playerAutoplayMessage.textContent = 'Nächste Frage in';
             }
@@ -634,18 +634,15 @@ socket.on('game_ended', (data) => {
     const myScore = leaderboard.find(p => p.name.toLowerCase() === myName.toLowerCase())?.score || 0;
     const myTeam = leaderboard.find(p => p.name.toLowerCase() === myName.toLowerCase())?.team;
     
-    let rankEmoji = '';
-    if (myRank === 1) rankEmoji = '🥇';
-    else if (myRank === 2) rankEmoji = '🥈';
-    else if (myRank === 3) rankEmoji = '🥉';
-    else rankEmoji = `#${myRank}`;
+    // Platz als Zahl; Platz 1 mit Krone statt bunter Medaillen-Emojis
+    const rankHtml = myRank === 1 ? `${SQ.icon('crown', 'final-crown')}1.` : `${myRank}.`;
     
     let finalText = `${Number(myScore).toLocaleString('de-DE')} Punkte`;
     if (data.team_mode && myTeam) {
         finalText += ` (Team: ${myTeam})`;
     }
     
-    elements.finalRank.textContent = rankEmoji;
+    elements.finalRank.innerHTML = rankHtml;
     elements.finalScore.textContent = finalText;
     releaseScreen();
     vibrate([40, 60, 40, 60, 80]);

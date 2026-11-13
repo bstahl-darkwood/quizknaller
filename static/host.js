@@ -190,16 +190,16 @@ function createQuizCard(quiz, isCustom) {
         : quiz.questionCount;
     
     card.innerHTML = `
-        <h3>${escapeHtml(quiz.title)}</h3>
+        <h3>${escapeHtml(SQ.plain(quiz.title))}</h3>
         <span>${questionCount} Fragen</span>
-        ${isCustom ? '<button class="delete-quiz-btn" aria-label="Quiz löschen" title="Quiz löschen">🗑️</button>' : ''}
+        ${isCustom ? '<button class="delete-quiz-btn" aria-label="Quiz löschen" title="Quiz löschen">' + SQ.icon('trash') + '</button>' : ''}
     `;
     
     // Add click handler for playing the quiz
     const cardClickArea = card;
     cardClickArea.addEventListener('click', (e) => {
         // Don't trigger if clicking delete button
-        if (e.target.classList.contains('delete-quiz-btn')) {
+        if (e.target.closest('.delete-quiz-btn')) {
             return;
         }
         
@@ -303,7 +303,7 @@ function handleQuizUpload(event) {
             }
             
             if (addedCount > 0) {
-                alert(`${addedCount} Quiz(ze) erfolgreich hochgeladen! ⬆️`);
+                alert(`${addedCount} Quiz(ze) erfolgreich hochgeladen.`);
                 loadQuizzes();
             }
         } catch (e) {
@@ -344,7 +344,7 @@ socket.on('reconnected_host', (data) => {
     // Update header game codes
     updateHeaderGameCodes(data.code);
     
-    elements.lobbyQuizTitle.textContent = data.quiz_title;
+    elements.lobbyQuizTitle.textContent = SQ.plain(data.quiz_title);
     elements.joinUrl.textContent = window.location.host;
     elements.gameCodeDisplay.textContent = data.code;
     elements.qrCode.src = `/api/qrcode?code=${data.code}`;
@@ -601,7 +601,7 @@ socket.on('game_created', (data) => {
     localStorage.setItem('hostToken', data.host_token);
     localStorage.setItem('hostQuizTitle', data.quiz_title);
     
-    elements.lobbyQuizTitle.textContent = data.quiz_title;
+    elements.lobbyQuizTitle.textContent = SQ.plain(data.quiz_title);
     elements.joinUrl.textContent = window.location.host;
     elements.gameCodeDisplay.textContent = data.code;
     elements.qrCode.src = `/api/qrcode?code=${data.code}`;
@@ -620,7 +620,7 @@ socket.on('game_quiz_switched', (data) => {
     localStorage.setItem('hostGameCode', data.code);
     localStorage.setItem('hostQuizTitle', data.quiz_title);
 
-    elements.lobbyQuizTitle.textContent = data.quiz_title;
+    elements.lobbyQuizTitle.textContent = SQ.plain(data.quiz_title);
     elements.joinUrl.textContent = window.location.host;
     elements.gameCodeDisplay.textContent = data.code;
     elements.qrCode.src = `/api/qrcode?code=${data.code}`;
@@ -755,7 +755,7 @@ socket.on('show_question_reading', (data) => {
     elements.timerProgress.style.strokeDashoffset = '0';
     elements.timerProgress.classList.remove('warning', 'danger');
     elements.timerProgress.classList.add('reading');
-    elements.timerText.textContent = '📖';
+    elements.timerText.innerHTML = SQ.icon('book-open', 'timer-icon');
     
     showScreen('question');
     
@@ -934,7 +934,7 @@ socket.on('show_results', (data) => {
             
             // Set message based on whether this is the last question
             if (data.is_last_question) {
-                elements.autoplayMessage.textContent = '🎉 Ergebnisse in';
+                elements.autoplayMessage.textContent = 'Ergebnisse in';
             } else {
                 elements.autoplayMessage.textContent = 'Nächste Frage in';
             }
@@ -989,7 +989,7 @@ socket.on('game_ended', (data) => {
         // Create team podium
         elements.podium.innerHTML = '<h2 style="text-align: center; margin-bottom: 20px;">Team-Rangliste</h2>';
         const teamPodiumOrder = [1, 0, 2];
-        const medals = ['🥇', '🥈', '🥉'];
+        const medals = [SQ.icon('crown'), '', ''];
         const standClasses = ['second', 'first', 'third'];
         
         teamPodiumOrder.forEach((rank, displayOrder) => {
@@ -1022,7 +1022,7 @@ socket.on('game_ended', (data) => {
         // Normal individual podium
         elements.podium.innerHTML = '';
         const podiumOrder = [1, 0, 2];
-        const medals = ['🥇', '🥈', '🥉'];
+        const medals = [SQ.icon('crown'), '', ''];
         const standClasses = ['second', 'first', 'third'];
         
         podiumOrder.forEach((rank, displayOrder) => {

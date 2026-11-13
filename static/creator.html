@@ -36,7 +36,7 @@
                 <p class="spaced tagline">Quiz-Creator · Eigenes Quiz erstellen</p>
             </div>
             <div class="header-actions">
-                <a href="/host" class="btn-back">← Zurück zur Quiz-Auswahl</a>
+                <a href="/host" class="btn-back"><i data-icon="arrow-left"></i>Zurück zur Quiz-Auswahl</a>
             </div>
         </div>
 
@@ -54,7 +54,7 @@
             <div class="questions-section card">
                 <div class="section-header">
                     <h2>Fragen (<span id="question-count">0</span>)</h2>
-                    <button id="add-question-btn" class="btn-add">+ Frage hinzufügen</button>
+                    <button id="add-question-btn" class="btn-add"><i data-icon="plus"></i>Frage hinzufügen</button>
                 </div>
                 <div id="questions-container" class="questions-container">
                     <!-- Questions will be added here dynamically -->
@@ -66,32 +66,32 @@
                 <h2>Aktionen</h2>
                 <div class="action-buttons">
                     <div class="action-group">
-                        <h3>💾 Speichern & Laden</h3>
+                        <h3>Speichern & Laden</h3>
                         <button id="save-local-btn" class="btn-action btn-primary">
-                            <span class="btn-icon">💾</span>
+                            <span class="btn-icon"><i data-icon="save"></i></span>
                             <span>Im Browser speichern</span>
                         </button>
                         <button id="load-local-btn" class="btn-action btn-secondary">
-                            <span class="btn-icon">📂</span>
+                            <span class="btn-icon"><i data-icon="folder-open"></i></span>
                             <span>Aus Browser laden</span>
                         </button>
                     </div>
                     <div class="action-group">
-                        <h3>📥 Import & Export</h3>
+                        <h3>Import & Export</h3>
                         <button id="download-btn" class="btn-action btn-primary">
-                            <span class="btn-icon">⬇️</span>
+                            <span class="btn-icon"><i data-icon="download"></i></span>
                             <span>Als JSON herunterladen</span>
                         </button>
                         <label for="upload-input" class="btn-action btn-secondary">
-                            <span class="btn-icon">⬆️</span>
+                            <span class="btn-icon"><i data-icon="upload"></i></span>
                             <span>JSON hochladen</span>
                         </label>
                         <input type="file" id="upload-input" accept=".json" style="display: none;">
                     </div>
                     <div class="action-group">
-                        <h3>🗑️ Zurücksetzen</h3>
+                        <h3>Zurücksetzen</h3>
                         <button id="clear-btn" class="btn-action btn-danger">
-                            <span class="btn-icon">🗑️</span>
+                            <span class="btn-icon"><i data-icon="trash"></i></span>
                             <span>Alles löschen</span>
                         </button>
                     </div>

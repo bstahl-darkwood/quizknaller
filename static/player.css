@@ -554,3 +554,11 @@ body[data-screen="question"] .night-bg .lights { opacity: 0; }
     .answers-grid.list { grid-template-columns: 1fr 1fr; }
     .join-hero { display: none; }
 }
+
+/* ---------- Icons (Spieler) ---------- */
+.hex-icon .icon, .result-icon .icon { width: 46%; height: 46%; stroke-width: 3; }
+.shape .icon { width: 15px; height: 15px; }
+.btn-primary .icon { width: 1.05em; height: 1.05em; }
+.streak-icon { width: 0.85em; height: 0.85em; margin-right: 2px; color: #ff8a3d; vertical-align: -0.05em; }
+.final-crown { display: block; width: 0.55em; height: 0.55em; margin: 0 auto 8px; color: var(--lime); }
+.host-disconnect-content .hex-icon .icon { stroke-width: 2.5; }

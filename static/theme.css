@@ -136,3 +136,19 @@ body { background: transparent; }
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ---------- Icons (Lucide) ---------- */
+.icon {
+    width: 1.15em;
+    height: 1.15em;
+    flex: none;
+    display: inline-block;
+    vertical-align: -0.2em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+.icon-solid { fill: currentColor; stroke: none; }
+[data-icon] { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }

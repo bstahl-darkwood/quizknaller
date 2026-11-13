@@ -40,10 +40,10 @@
                 <p class="hand select-hand">Wer weiß es zuerst?</p>
             </div>
             <div class="creator-link-section">
-                <a href="/creator" class="creator-link">✏️ Eigenes Quiz erstellen</a>
+                <a href="/creator" class="creator-link"><i data-icon="pencil"></i>Eigenes Quiz erstellen</a>
                 <div class="upload-quiz-section">
                     <input type="file" id="upload-quiz-input" accept=".json" style="display: none;">
-                    <button id="upload-quiz-btn" class="upload-quiz-btn">📤 Quiz hochladen</button>
+                    <button id="upload-quiz-btn" class="upload-quiz-btn"><i data-icon="upload"></i>Quiz hochladen</button>
                 </div>
             </div>
             <h2 class="section-title">Quiz auswählen</h2>
@@ -60,8 +60,8 @@
                 <span class="lobby-title" id="lobby-quiz-title"></span>
             </div>
             <div class="header-actions">
-                <button id="team-config-toggle" class="btn-team-config" title="Team-Einstellungen">⚙️ Einstellungen</button>
-                <button id="end-game-btn" class="btn-end-game" title="Spiel beenden">Beenden</button>
+                <button id="team-config-toggle" class="btn-team-config" title="Team-Einstellungen"><i data-icon="settings"></i>Einstellungen</button>
+                <button id="end-game-btn" class="btn-end-game" title="Spiel beenden"><i data-icon="x"></i>Beenden</button>
                 <div class="brand header-brand"><svg width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg><span class="wordmark">Smart<span>Quiz</span></span></div>
             </div>
         </div>
@@ -87,9 +87,9 @@
                 <!-- Mobile: collapsible team config -->
                 <details class="team-config-panel team-config-mobile">
                     <summary class="panel-header">
-                        <span class="panel-icon">⚙️</span>
+                        <span class="panel-icon"><i data-icon="users"></i></span>
                         <span>Team-Einstellungen</span>
-                        <span class="panel-chevron">▼</span>
+                        <span class="panel-chevron"><i data-icon="chevron-down"></i></span>
                     </summary>
                     <div class="panel-content">
                         <label class="team-mode-toggle">
@@ -112,9 +112,9 @@
                 <!-- Mobile: auto-remove inactive users -->
                 <details class="team-config-panel team-config-mobile">
                     <summary class="panel-header">
-                        <span class="panel-icon">🗑️</span>
+                        <span class="panel-icon"><i data-icon="user-minus"></i></span>
                         <span>Inaktive Spieler</span>
-                        <span class="panel-chevron">▼</span>
+                        <span class="panel-chevron"><i data-icon="chevron-down"></i></span>
                     </summary>
                     <div class="panel-content">
                         <label class="team-mode-toggle">
@@ -141,8 +141,8 @@
         <!-- Desktop: offcanvas team config -->
         <div class="team-config-offcanvas" id="team-config-offcanvas">
             <div class="offcanvas-header">
-                <h3>⚙️ Spiel-Einstellungen</h3>
-                <button class="offcanvas-close" id="team-config-close">✕</button>
+                <h3><i data-icon="settings"></i>Spiel-Einstellungen</h3>
+                <button class="offcanvas-close" id="team-config-close" aria-label="Schließen"><i data-icon="x"></i></button>
             </div>
             <div class="offcanvas-content">
                 <label class="team-mode-toggle">
@@ -182,7 +182,7 @@
                 <input type="checkbox" id="autoplay-checkbox">
                 <span>Automatisch zur nächsten Frage</span>
             </label>
-            <button id="start-game-btn" class="btn-start" disabled>Quiz starten ▶</button>
+            <button id="start-game-btn" class="btn-start" disabled>Quiz starten<i data-icon="play"></i></button>
         </div>
     </div>
 
@@ -230,19 +230,19 @@
         </div>
         <div class="answers-display" id="answers-display">
             <div class="answer-option answer-0">
-                <span class="answer-icon">▲</span>
+                <span class="answer-icon"><i data-icon="shape-0"></i></span>
                 <span class="answer-text" id="answer-0"></span>
             </div>
             <div class="answer-option answer-1">
-                <span class="answer-icon">◆</span>
+                <span class="answer-icon"><i data-icon="shape-1"></i></span>
                 <span class="answer-text" id="answer-1"></span>
             </div>
             <div class="answer-option answer-2">
-                <span class="answer-icon">●</span>
+                <span class="answer-icon"><i data-icon="shape-2"></i></span>
                 <span class="answer-text" id="answer-2"></span>
             </div>
             <div class="answer-option answer-3">
-                <span class="answer-icon">■</span>
+                <span class="answer-icon"><i data-icon="shape-3"></i></span>
                 <span class="answer-text" id="answer-3"></span>
             </div>
         </div>
@@ -256,11 +256,11 @@
                 <span class="header-code-label">Code:</span>
                 <span class="header-code-value"></span>
             </div>
-            <button id="end-game-btn-results" class="btn-end-game" title="Spiel beenden">Beenden</button>
+            <button id="end-game-btn-results" class="btn-end-game" title="Spiel beenden"><i data-icon="x"></i>Beenden</button>
             <div id="autoplay-countdown" class="autoplay-countdown" style="display: none;">
                 <span id="autoplay-message">Nächste Frage in</span> <span id="autoplay-timer">10</span>s
             </div>
-            <button id="next-question-btn" class="btn-next">Weiter →</button>
+            <button id="next-question-btn" class="btn-next">Weiter<i data-icon="arrow-right"></i></button>
         </div>
         <div class="results-main">
             <div class="correct-answer-display">
@@ -270,25 +270,25 @@
             <div class="answer-stats" id="answer-stats">
                 <div class="stat-bar stat-0">
                     <div class="stat-fill" id="stat-fill-0"></div>
-                    <span class="stat-icon">▲</span>
+                    <span class="stat-icon"><i data-icon="shape-0"></i></span>
                     <span class="stat-count" id="stat-count-0">0</span>
                     <span class="stat-percent" id="stat-percent-0">0%</span>
                 </div>
                 <div class="stat-bar stat-1">
                     <div class="stat-fill" id="stat-fill-1"></div>
-                    <span class="stat-icon">◆</span>
+                    <span class="stat-icon"><i data-icon="shape-1"></i></span>
                     <span class="stat-count" id="stat-count-1">0</span>
                     <span class="stat-percent" id="stat-percent-1">0%</span>
                 </div>
                 <div class="stat-bar stat-2">
                     <div class="stat-fill" id="stat-fill-2"></div>
-                    <span class="stat-icon">●</span>
+                    <span class="stat-icon"><i data-icon="shape-2"></i></span>
                     <span class="stat-count" id="stat-count-2">0</span>
                     <span class="stat-percent" id="stat-percent-2">0%</span>
                 </div>
                 <div class="stat-bar stat-3">
                     <div class="stat-fill" id="stat-fill-3"></div>
-                    <span class="stat-icon">■</span>
+                    <span class="stat-icon"><i data-icon="shape-3"></i></span>
                     <span class="stat-count" id="stat-count-3">0</span>
                     <span class="stat-percent" id="stat-percent-3">0%</span>
                 </div>
@@ -312,7 +312,7 @@
             </div>
             <div class="podium" id="podium"></div>
             <div class="full-leaderboard" id="full-leaderboard"></div>
-            <button id="new-game-btn" class="btn-new-game">Quiz wechseln</button>
+            <button id="new-game-btn" class="btn-new-game"><i data-icon="rotate"></i>Quiz wechseln</button>
         </div>
     </div>
 
