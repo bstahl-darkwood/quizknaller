@@ -897,3 +897,6 @@ button { cursor: pointer; }
 /* Lichterkette blendet beim Scrollen der Quiz-Auswahl aus, statt über den Buttons zu liegen */
 .night-bg .lights { transition: opacity 0.3s; }
 body.scrolled .night-bg .lights { opacity: 0; }
+
+/* Einstieg Abstimmung: hervorgehoben neben „Eigenes Quiz“ */
+.creator-link-vote { border-color: var(--lime); color: var(--lime); }

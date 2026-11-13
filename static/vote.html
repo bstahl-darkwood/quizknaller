@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SmartQuiz – Abstimmung</title>
+    <meta name="description" content="Abstimmen per Handy: QR-Code scannen, Namen eingeben, Favorit wählen.">
+    <meta name="theme-color" content="#071a3d">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SmartQuiz">
+    <meta property="og:locale" content="de_DE">
+    <meta property="og:title" content="SmartQuiz – Abstimmung">
+    <meta property="og:description" content="Abstimmen per Handy: QR-Code scannen, Namen eingeben, Favorit wählen.">
+    <meta property="og:url" content="https://quiz.benjamin-stahl.de/vote">
+    <meta property="og:image" content="https://quiz.benjamin-stahl.de/static/og-image.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="SmartQuiz – Smart Solutions">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="/static/host.css">
+    <link rel="stylesheet" href="/static/vote.css">
+</head>
+<body>
+    <div class="night-bg"></div>
+
+    <!-- Abstimmung einrichten -->
+    <div id="setup-screen" class="screen active">
+        <div class="setup-container">
+            <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
+            <div class="setup-top">
+                <a href="/host" class="creator-link"><i data-icon="arrow-left"></i>Zum Quiz</a>
+            </div>
+            <div class="logo-section">
+                <div class="hex-badge setup-badge"><i data-icon="vote"></i></div>
+                <h1 class="wordmark logo">Smart<span>Vote</span></h1>
+                <p class="spaced tagline">Abstimmen. Küren. Feiern.</p>
+                <p class="hand select-hand">Wer hat das schönste Haus?</p>
+            </div>
+
+            <form id="setup-form" class="setup-card" novalidate>
+                <label class="setup-label" for="poll-title">Worüber wird abgestimmt?</label>
+                <input id="poll-title" class="setup-input setup-title" type="text" maxlength="100"
+                       placeholder="z. B. Das schönste Lebkuchenhaus" autocomplete="off">
+
+                <div class="setup-row-head">
+                    <span class="setup-label">Zur Wahl stehen <b id="option-count">0</b></span>
+                    <span class="setup-quick">
+                        <input id="quick-count" type="number" min="2" max="40" value="8" aria-label="Anzahl">
+                        <button id="quick-fill" type="button" class="link-btn"><i data-icon="house"></i>Häuser 1–n anlegen</button>
+                    </span>
+                </div>
+                <p class="setup-hint">Name ist Pflicht, die Zeile darunter optional – z. B. wer gebaut hat.</p>
+                <ol id="option-list" class="option-list"></ol>
+                <button id="add-option" type="button" class="add-option"><i data-icon="plus"></i>Option hinzufügen</button>
+
+                <div id="setup-error" class="setup-error" role="alert"></div>
+                <div class="setup-actions">
+                    <button id="cancel-edit" type="button" class="btn-end-game" hidden><i data-icon="x"></i>Abbrechen</button>
+                    <button id="create-poll" type="submit" class="btn-start">QR-Code anzeigen<i data-icon="arrow-right"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Anmeldung + laufende Abstimmung -->
+    <div id="live-screen" class="screen">
+        <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
+        <div class="lobby-header">
+            <div class="quiz-info">
+                <span class="spaced" id="live-kicker">Gleich wird abgestimmt</span>
+                <span class="lobby-title" id="live-title"></span>
+            </div>
+            <div class="header-actions">
+                <button id="edit-btn" class="btn-team-config"><i data-icon="pencil"></i>Bearbeiten</button>
+                <button id="delete-btn" class="btn-end-game"><i data-icon="x"></i>Beenden</button>
+                <div class="brand header-brand"><svg width="44" height="44" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg><span class="wordmark">Smart<span>Vote</span></span></div>
+            </div>
+        </div>
+        <div class="lobby-main">
+            <div class="left-panels">
+                <div class="join-info">
+                    <div class="join-code-section">
+                        <div class="join-title">Jetzt mitmachen!</div>
+                        <span class="lime-line center"></span>
+                        <div class="game-code-display">
+                            <span class="code-label">Code</span>
+                            <span class="code-value" id="code-display"></span>
+                        </div>
+                        <div class="qr-code-container">
+                            <img id="qr-code" src="" alt="QR-Code" class="qr-code">
+                        </div>
+                        <div class="join-url-section">
+                            <span class="join-url-label">QR-Code scannen oder öffnen:</span>
+                            <div class="join-url" id="join-url"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="players-section">
+                <div class="vote-meter">
+                    <div class="vote-meter-numbers">
+                        <span class="player-count" id="votes-cast">0</span>
+                        <span class="spaced" id="votes-label">von 0 haben abgestimmt</span>
+                    </div>
+                    <div class="vote-meter-bar"><div id="votes-fill"></div></div>
+                </div>
+                <div class="section-sub"><i data-icon="house"></i>Zur Wahl</div>
+                <div class="option-chips" id="option-chips"></div>
+                <div class="section-sub"><i data-icon="users"></i>Dabei <b id="voter-count">0</b></div>
+                <div class="players-grid" id="voters-grid"></div>
+            </div>
+        </div>
+        <div class="lobby-footer">
+            <span class="footer-hint" id="footer-hint">Alle angemeldet? Dann Abstimmung öffnen.</span>
+            <button id="open-btn" class="btn-start">Abstimmung starten<i data-icon="play"></i></button>
+            <button id="close-btn" class="btn-start btn-close" hidden>Abstimmung beenden<i data-icon="trophy"></i></button>
+        </div>
+    </div>
+
+    <!-- Trommelwirbel -->
+    <div id="reveal-screen" class="screen">
+        <div class="countdown-container reveal-container">
+            <div class="spaced">Die Stimmen sind ausgezählt</div>
+            <h2>Und gewonnen hat …</h2>
+            <div class="big-countdown" id="reveal-number">3</div>
+        </div>
+    </div>
+
+    <!-- Siegerehrung -->
+    <div id="result-screen" class="screen">
+        <div class="confetti-container" id="confetti"></div>
+        <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
+        <div class="result-wrap">
+            <div class="result-head">
+                <span class="spaced" id="result-kicker">Das Ergebnis</span>
+                <h1 class="final-title" id="result-title"></h1>
+            </div>
+            <div class="winner-row" id="winner-row"></div>
+            <div class="ranking-card">
+                <div class="card-title">Alle Stimmen <small id="total-votes"></small></div>
+                <span class="lime-line"></span>
+                <ol class="ranking" id="ranking"></ol>
+            </div>
+            <div class="result-actions">
+                <button id="new-poll-btn" class="btn-new-game"><i data-icon="rotate"></i>Neue Abstimmung</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/static/theme.js"></script>
+    <script src="/static/sounds.js"></script>
+    <script src="/static/vote.js"></script>
+</body>
+</html>

@@ -21,10 +21,12 @@ Handys im selben WLAN erreichen den Server über die IP des Rechners (z. B. `htt
 
 ```
 main.py          Server: FastAPI (HTTP) + python-socketio (Echtzeit), komplette Spiellogik
-database.py      SQLite-Persistenz (quizknaller.db): Spiele, Spieler, Antworten
+poll.py          Abstimmung (SmartVote): Optionen, Stimmen, Auswertung
+database.py      SQLite-Persistenz (quizknaller.db): Spiele, Spieler, Antworten, Abstimmungen
 quizzes.json     Eingebaute Quizze (Titel + Fragen)
 static/
   host.html/js/css     Beamer-Ansicht
+  vote.html/js/css     Beamer-Ansicht der Abstimmung (/vote)
   player.html/js/css   Handy-Ansicht
   creator.html/js/css  Quiz-Editor (rein im Browser, speichert in localStorage)
   sounds.js, host.mp3  Soundeffekte & Hintergrundmusik
@@ -97,8 +99,20 @@ Im **Creator** erstellen und auf „Im Browser speichern“ klicken. Das Quiz er
 ```
 `correct` ist der Index der richtigen Antwort (0–3). Es gibt immer genau vier Antworten.
 
+## Abstimmung (SmartVote)
+
+Für Abstimmungen wie „Das schönste Lebkuchenhaus“: `/host` → **Abstimmung starten** (oder direkt `/vote`).
+
+1. **Einrichten:** Titel und Optionen eintragen. Jede Option hat einen Namen (Pflicht) und eine optionale Zeile, z. B. wer gebaut hat. „Häuser 1–n anlegen“ füllt die Liste mit „Haus 1“ bis „Haus n“. Der Entwurf bleibt im Browser gespeichert.
+2. **QR-Code anzeigen:** Es erscheint ein Code mit QR-Code, wie beim Quiz. Die Leute scannen ihn und geben ihren Namen ein; sie sehen die Optionen schon, können aber noch nicht abstimmen. Solange nicht gestartet ist, lässt sich die Liste über **Bearbeiten** noch ändern (die Handys aktualisieren sich sofort).
+3. **Abstimmung starten:** Jede Person hat eine Stimme und kann sie bis zum Ende ändern. Wer später kommt, kann noch mitmachen. Der Beamer zeigt nur, *wer* schon abgestimmt hat, nicht *wofür* – das bleibt bis zum Schluss geheim.
+4. **Abstimmung beenden:** Trommelwirbel 3-2-1, dann der Sieger mit Konfetti und die komplette Rangliste mit Stimmen und Prozent. Bei Gleichstand gibt es mehrere Sieger. Die Handys zeigen den Sieger und wofür man selbst gestimmt hat.
+
+Abstimmungen werden in der Datenbank gespeichert (Tabelle `polls`) und überstehen Reload und Server-Neustart; nach 48 Stunden werden sie gelöscht. Abstimmungs-Codes und Quiz-Codes teilen sich denselben Beitritt – der Server erkennt am Code, was gemeint ist. Obergrenzen: 40 Optionen, 300 Personen pro Abstimmung.
+
 ## Socket-Events (Kurzreferenz)
 
 **Host → Server:** `create_game`, `create_custom_game`, `switch_game_quiz`, `switch_custom_game_quiz`, `configure_teams`, `configure_auto_remove`, `start_game`, `time_up`, `next_question_request`, `autoplay_started`, `end_game_request`, `reconnect_host`
 **Spieler → Server:** `join_game`, `select_team`, `submit_answer`, `reconnect_player`
+**Abstimmung, Host → Server:** `create_poll`, `update_poll_options`, `open_poll`, `close_poll`, `delete_poll`, `reconnect_poll_host` · **Spieler → Server:** `join_game`/`reconnect_player` (wie beim Quiz), `cast_vote` · **Server → Clients:** `poll_created`, `poll_host_update` (Host), `poll_joined`, `poll_options`, `poll_state`, `vote_saved`, `poll_deleted`
 **Server → Clients:** `game_created`, `player_joined/left/updated`, `game_starting`, `show_question_reading`, `show_answers`, `answer_update`, `show_results` (Host), `your_result` (Spieler), `game_ended`, `quiz_switched`, `host_disconnected/reconnected`, `error`

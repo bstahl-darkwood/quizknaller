@@ -18,7 +18,9 @@ const screens = {
     question: document.getElementById('question-screen'),
     answered: document.getElementById('answered-screen'),
     result: document.getElementById('result-screen'),
-    final: document.getElementById('final-screen')
+    final: document.getElementById('final-screen'),
+    poll: document.getElementById('poll-screen'),
+    pollResult: document.getElementById('poll-result-screen')
 };
 
 const elements = {
@@ -648,6 +650,144 @@ socket.on('game_ended', (data) => {
     vibrate([40, 60, 40, 60, 80]);
     
     showScreen('final');
+});
+
+// ---------- Abstimmung (z. B. bestes Lebkuchenhaus) ----------
+let poll = null;   // { title, options, state, my_vote, results }
+
+function escapeHtml(text) {
+    return String(text ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function renderPoll() {
+    document.getElementById('poll-title').textContent = poll.title;
+    const status = document.getElementById('poll-status');
+    const voted = poll.my_vote !== null && poll.my_vote !== undefined;
+    status.classList.toggle('saved', poll.state === 'open' && voted);
+    if (poll.state === 'lobby') {
+        status.textContent = 'Gleich geht’s los – sobald der Host startet, kannst du hier abstimmen.';
+    } else if (voted) {
+        status.textContent = 'Deine Stimme ist gespeichert. Bis zum Ende kannst du sie noch ändern.';
+    } else {
+        status.textContent = 'Tippe auf deinen Favoriten.';
+    }
+    const list = document.getElementById('poll-options');
+    list.classList.toggle('locked', poll.state !== 'open');
+    list.innerHTML = poll.options.map((o, i) => `
+        <button type="button" class="poll-option${poll.my_vote === i ? ' selected' : ''}" data-index="${i}"
+                aria-pressed="${poll.my_vote === i}">
+            <span class="num">${i + 1}</span>
+            <span class="txt">${escapeHtml(o.name)}${o.detail ? `<small>${escapeHtml(o.detail)}</small>` : ''}</span>
+            <span class="tick">${SQ.icon('check')}</span>
+        </button>`).join('');
+}
+
+function renderPollResult() {
+    const r = poll.results;
+    const winners = r.ranking.filter(row => r.winners.includes(row.index));
+    const kicker = document.getElementById('poll-result-kicker');
+    const winnerEl = document.getElementById('poll-winner');
+    const detailEl = document.getElementById('poll-winner-detail');
+    const votesEl = document.getElementById('poll-winner-votes');
+    if (r.total_votes === 0) {
+        kicker.textContent = 'Abstimmung beendet';
+        winnerEl.textContent = 'Keine Stimmen';
+        detailEl.textContent = '';
+        votesEl.textContent = '';
+    } else {
+        kicker.textContent = winners.length > 1 ? 'Gleichstand! Gewonnen haben' : 'Gewonnen hat';
+        winnerEl.textContent = winners.map(w => w.name).join(' & ');
+        detailEl.textContent = winners.length === 1 ? (winners[0].detail || '') : '';
+        const v = winners[0].votes;
+        votesEl.textContent = `${v} ${v === 1 ? 'Stimme' : 'Stimmen'}`;
+    }
+    const mine = poll.my_vote !== null && poll.my_vote !== undefined ? poll.options[poll.my_vote] : null;
+    const myRow = mine ? r.ranking.find(row => row.index === poll.my_vote) : null;
+    document.getElementById('poll-mine').textContent = mine
+        ? (r.winners.includes(poll.my_vote)
+            ? `Du hast für „${mine.name}“ gestimmt – dein Favorit hat gewonnen!`
+            : `Du hast für „${mine.name}“ gestimmt (Platz ${myRow.place}).`)
+        : 'Du hast nicht abgestimmt.';
+    releaseScreen();
+    showScreen('pollResult');
+}
+
+function showPoll() {
+    if (poll.state === 'closed' && poll.results) {
+        renderPollResult();
+    } else {
+        renderPoll();
+        showScreen('poll');
+    }
+}
+
+socket.on('poll_joined', (data) => {
+    gameCode = data.code;
+    localStorage.setItem('playerGameCode', data.code);
+    localStorage.setItem('playerName', data.name);
+    localStorage.setItem('playerToken', data.player_token);
+    elements.playerNameInput.value = data.name;
+    poll = { title: data.title, options: data.options, state: data.state, my_vote: data.my_vote, results: data.results };
+    enteredGame();
+    vibrate(20);
+    showPoll();
+});
+
+socket.on('poll_options', (data) => {
+    if (!poll) return;
+    poll.title = data.title;
+    poll.options = data.options;
+    if (poll.my_vote !== null && poll.my_vote >= poll.options.length) poll.my_vote = null;
+    renderPoll();
+});
+
+socket.on('poll_state', (data) => {
+    if (!poll) return;
+    poll.state = data.state;
+    if (data.results) poll.results = data.results;
+    if (data.state === 'open') vibrate([30, 50, 30]);
+    if (data.state === 'closed') vibrate([40, 60, 40, 60, 80]);
+    showPoll();
+});
+
+socket.on('vote_saved', (data) => {
+    if (!poll) return;
+    poll.my_vote = data.option;
+    renderPoll();
+});
+
+socket.on('poll_deleted', (data) => {
+    poll = null;
+    leaveGame();
+    showError(data.message || 'Die Abstimmung wurde beendet.');
+});
+
+document.getElementById('poll-options').addEventListener('click', (e) => {
+    const btn = e.target.closest('.poll-option');
+    if (!btn || !poll) return;
+    soundManager.init();
+    if (poll.state !== 'open') {
+        const status = document.getElementById('poll-status');
+        status.classList.remove('nudge');
+        void status.offsetWidth;   // Animation neu starten
+        status.classList.add('nudge');
+        vibrate([10, 40, 10]);
+        return;
+    }
+    const index = parseInt(btn.dataset.index, 10);
+    if (index === poll.my_vote) return;
+    // Sofort markieren, der Server bestätigt mit vote_saved
+    document.querySelectorAll('.poll-option').forEach(b => b.classList.toggle('selected', b === btn));
+    socket.emit('cast_vote', { code: gameCode, option: index });
+    soundManager.playPopSound().catch(() => {});
+    vibrate(15);
+});
+
+document.getElementById('poll-leave-btn').addEventListener('click', () => {
+    poll = null;
+    leaveGame();
 });
 
 // Prevent zoom on double tap, but allow input fields to work properly

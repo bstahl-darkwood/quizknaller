@@ -21,6 +21,7 @@ Ein Kahoot-ähnliches Quiz-Spiel mit einer mobil-optimierten Spieleransicht und 
 - 🏆 **Podium & Konfetti** - Feierliches Spielende
 - 💾 **SQLite Persistenz** - Spieldaten werden in Datenbank gespeichert
 - 🔄 **Reconnect-Funktion** - Spieler können nach Verbindungsabbruch wieder einsteigen
+- 🗳️ **Abstimmung (SmartVote)** - Eigene Abstimmung unter `/vote`, z. B. bestes Lebkuchenhaus: QR-Code, Namen, eine Stimme pro Person, Siegerehrung
 - 🔁 **Quizwechsel ohne neuen Code** - Host kann in derselben Session ein neues Quiz wählen, Spieler bleiben verbunden
 
 ## Schnellstart (Lokal)

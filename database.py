@@ -69,6 +69,15 @@ def init_db():
         )
     """)
     
+    # Abstimmungen (z. B. "Bestes Lebkuchenhaus"): kompletter Zustand als JSON
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS polls (
+            code TEXT PRIMARY KEY,
+            data TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
     # Migration: secret token that authorises a host to reconnect to its game
     columns = {row[1] for row in cursor.execute("PRAGMA table_info(games)")}
     if "host_token" not in columns:
@@ -520,3 +529,47 @@ def cleanup_old_games(hours: int = 24) -> int:
     except Exception as e:
         print(f"Error cleaning up old games: {e}")
         return 0
+
+
+# ---------- Abstimmungen ----------
+
+def save_poll(code: str, data: dict) -> None:
+    """Speichert den Zustand einer Abstimmung (überlebt so einen Neustart/Deploy)."""
+    try:
+        conn = get_connection()
+        conn.execute(
+            "INSERT INTO polls (code, data, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) "
+            "ON CONFLICT(code) DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP",
+            (code, json.dumps(data)),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error saving poll: {e}")
+
+
+def load_polls(hours: int = 48) -> Dict[str, dict]:
+    """Lädt alle Abstimmungen der letzten Stunden, ältere werden gelöscht."""
+    try:
+        conn = get_connection()
+        conn.execute(
+            "DELETE FROM polls WHERE datetime(updated_at) < datetime('now', '-' || ? || ' hours')",
+            (hours,),
+        )
+        rows = conn.execute("SELECT code, data FROM polls").fetchall()
+        conn.commit()
+        conn.close()
+        return {row[0]: json.loads(row[1]) for row in rows}
+    except Exception as e:
+        print(f"Error loading polls: {e}")
+        return {}
+
+
+def delete_poll(code: str) -> None:
+    try:
+        conn = get_connection()
+        conn.execute("DELETE FROM polls WHERE code = ?", (code,))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Error deleting poll: {e}")

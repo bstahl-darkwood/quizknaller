@@ -35,6 +35,7 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import database as db
+import poll
 
 # Create Socket.IO server
 # Erlaubte Browser-Origins für Socket.IO (Produktion: CORS_ORIGINS=https://quiz.benjamin-stahl.de).
@@ -109,9 +110,11 @@ def generate_game_code() -> str:
     """Generate a 6-character game code that is not in use yet."""
     while True:
         code = str(uuid.uuid4())[:6].upper()
-        if code not in games and not db.get_game(code):
+        if code not in games and code not in poll.polls and not db.get_game(code):
             return code
 
+
+poll.register(sio, generate_game_code)
 
 MAX_NAME_LENGTH = 20
 RUNNING_STATES = ("starting", "reading", "question")
@@ -240,6 +243,12 @@ async def host():
     return render_page("host.html")
 
 
+@app.get("/vote", response_class=HTMLResponse)
+async def vote():
+    """Serve the poll host interface (Abstimmung, z. B. bestes Lebkuchenhaus)."""
+    return render_page("vote.html")
+
+
 @app.get("/creator", response_class=HTMLResponse)
 async def creator():
     """Serve the quiz creator interface."""
@@ -255,7 +264,7 @@ async def favicon():
 @app.get("/api/health")
 async def health():
     """Health check for Docker/Compose."""
-    return {"status": "ok", "games": len(games)}
+    return {"status": "ok", "games": len(games), "polls": len(poll.polls)}
 
 
 @app.get("/api/qrcode")
@@ -423,6 +432,10 @@ async def reconnect_player(sid, data):
     game_code = str(data.get("code") or "").upper()
     player_name = str(data.get("name") or "").strip()
 
+    if game_code in poll.polls:
+        await poll.rejoin(sid, game_code, player_name, data.get("token"))
+        return
+
     # Try to load from database if not in memory
     if game_code not in games:
         if not load_game_from_db(game_code):
@@ -526,6 +539,8 @@ async def send_current_question(game: dict, sid: str):
 @sio.event
 async def disconnect(sid):
     print(f"Client disconnected: {sid}")
+    if await poll.on_disconnect(sid):
+        return
     # Mark player as disconnected in database
     db.set_player_connected(sid, False)
     
@@ -732,6 +747,10 @@ async def join_game(sid, data):
 
     if not player_name:
         await sio.emit("error", {"message": "Bitte gib einen Namen ein"}, to=sid)
+        return
+
+    if game_code in poll.polls:
+        await poll.join(sid, game_code, player_name)
         return
 
     if game_code not in games:
