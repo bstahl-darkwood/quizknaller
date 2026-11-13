@@ -119,6 +119,7 @@ elements.playAgainBtn.addEventListener('click', () => {
     localStorage.removeItem('playerGameCode');
     localStorage.removeItem('playerName');
     localStorage.removeItem('playerQuizTitle');
+    localStorage.removeItem('playerToken');
     elements.gameCodeInput.value = '';
     elements.playerNameInput.value = '';
     showScreen('join');
@@ -132,6 +133,7 @@ socket.on('error', (data) => {
     if (data.message && (data.message.includes('nicht gefunden') || data.message.includes('not found'))) {
         localStorage.removeItem('playerGameCode');
         localStorage.removeItem('playerQuizTitle');
+    localStorage.removeItem('playerToken');
     }
 });
 
@@ -201,7 +203,7 @@ window.addEventListener('load', () => {
         // Pre-fill the inputs for visual feedback
         elements.gameCodeInput.value = savedGameCode;
         elements.playerNameInput.value = savedPlayerName;
-        socket.emit('reconnect_player', { code: savedGameCode, name: savedPlayerName });
+        socket.emit('reconnect_player', { code: savedGameCode, name: savedPlayerName, token: localStorage.getItem('playerToken') });
     }
 });
 
@@ -216,13 +218,16 @@ socket.on('connect', () => {
     const savedGameCode = localStorage.getItem('playerGameCode');
     const savedPlayerName = localStorage.getItem('playerName');
     if (savedGameCode && savedPlayerName) {
-        socket.emit('reconnect_player', { code: savedGameCode, name: savedPlayerName });
+        socket.emit('reconnect_player', { code: savedGameCode, name: savedPlayerName, token: localStorage.getItem('playerToken') });
     }
 });
 
 // Reconnection handlers
 socket.on('reconnected_player', (data) => {
     gameCode = data.code;
+    if (data.player_token) localStorage.setItem('playerToken', data.player_token);
+    if (data.name) localStorage.setItem('playerName', data.name);
+    localStorage.setItem('playerGameCode', data.code);
     elements.playerNameInput.value = localStorage.getItem('playerName');
     elements.waitingQuizTitle.textContent = data.quiz_title;
     
@@ -248,6 +253,7 @@ socket.on('reconnect_failed', (data) => {
     localStorage.removeItem('playerGameCode');
     localStorage.removeItem('playerName');
     localStorage.removeItem('playerQuizTitle');
+    localStorage.removeItem('playerToken');
     showError(data.message || 'Verbindung fehlgeschlagen');
     showScreen('join');
 });
@@ -258,6 +264,7 @@ socket.on('joined_game', (data) => {
     localStorage.setItem('playerGameCode', data.code);
     localStorage.setItem('playerName', elements.playerNameInput.value.trim());
     localStorage.setItem('playerQuizTitle', data.quiz_title);
+    if (data.player_token) localStorage.setItem('playerToken', data.player_token);
     
     elements.waitingQuizTitle.textContent = data.quiz_title;
     
@@ -536,6 +543,7 @@ socket.on('game_ended', (data) => {
         localStorage.removeItem('playerGameCode');
         localStorage.removeItem('playerName');
         localStorage.removeItem('playerQuizTitle');
+    localStorage.removeItem('playerToken');
         alert(data.reason || data.message || 'Das Spiel wurde beendet.');
         elements.gameCodeInput.value = '';
         elements.playerNameInput.value = '';

@@ -80,6 +80,12 @@ lobby → starting (3 s Countdown) → reading → question → results ─┐
 
 Spiele, die älter als 24 h sind, löscht der Server beim Start.
 
+## Sicherheit
+
+- **Host und Spieler haben je einen geheimen Token** (im `localStorage` des Geräts). Nur damit lässt sich eine laufende Verbindung übernehmen – Spiel-Code und Name allein reichen nicht, weil beides auf dem Beamer steht. Ohne Token klappt der Wiedereinstieg mit gleichem Namen nur, wenn der Spieler wirklich getrennt ist.
+- **Obergrenzen:** 200 Fragen pro Quiz, Titel 100 / Frage 300 / Antwort 150 Zeichen, 200 Spieler pro Spiel, 300 gleichzeitige Spiele, 20 Teams.
+- **Produktion:** Socket.IO nimmt nur Verbindungen von `https://quiz.benjamin-stahl.de` an (`CORS_ORIGINS` in `docker-compose.prod.yml`); die App setzt `X-Frame-Options`, `X-Content-Type-Options` und `Referrer-Policy`.
+
 ## Eigene Quizze
 
 Im **Creator** erstellen und auf „Im Browser speichern“ klicken. Das Quiz erscheint dann im selben Browser unter `/host`. Alternativ als JSON exportieren und unter `/host` per „Quiz hochladen“ importieren. Dauerhaft für alle verfügbar wird ein Quiz, wenn man es in `quizzes.json` einträgt:

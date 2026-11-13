@@ -19,20 +19,40 @@ sys.path = [p for p in sys.path if _should_keep_path(p)]
 import asyncio
 import io
 import json
+import os
+import re
+import secrets
 import uuid
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import qrcode
 import socketio
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import database as db
 
 # Create Socket.IO server
-sio = socketio.AsyncServer(async_mode="asgi", cors_allowed_origins="*")
-app = FastAPI(title="QuizKnaller", description="Wissen macht BUMM! 💥")
+# Erlaubte Browser-Origins für Socket.IO (Produktion: CORS_ORIGINS=https://quiz.benjamin-stahl.de).
+# Lokal ohne Variable: alles erlaubt.
+_cors = [o.strip() for o in os.environ.get("CORS_ORIGINS", "").split(",") if o.strip()]
+sio = socketio.AsyncServer(
+    async_mode="asgi",
+    cors_allowed_origins=_cors or "*",
+    max_http_buffer_size=300_000,  # größte Nachricht (ein eigenes Quiz) – Standard wäre 1 MB
+)
+@asynccontextmanager
+async def lifespan(_app):
+    """Beim Start alte Spiele (> 24 h) aus der Datenbank löschen."""
+    deleted = db.cleanup_old_games(24)
+    if deleted > 0:
+        print(f"Cleaned up {deleted} old games")
+    yield
+
+
+app = FastAPI(title="QuizKnaller", description="Wissen macht BUMM! 💥", lifespan=lifespan)
 socket_app = socketio.ASGIApp(sio, other_asgi_app=app)
 
 # Initialize database
@@ -52,6 +72,16 @@ MAX_READING_TIME = 8  # maximum seconds for reading phase
 DEFAULT_INACTIVITY_THRESHOLD = 3  # default number of questions without answer to be considered inactive
 MIN_TIME_LIMIT = 5  # minimum time limit for questions in seconds
 MAX_TIME_LIMIT = 120  # maximum time limit for questions in seconds
+
+# Obergrenzen gegen Speicher-/Datenbank-Flutung (Spiele lassen sich ohne Login anlegen)
+MAX_QUESTIONS = 200
+MAX_TITLE_LENGTH = 100
+MAX_QUESTION_LENGTH = 300
+MAX_ANSWER_LENGTH = 150
+MAX_ACTIVE_GAMES = 300
+MAX_PLAYERS_PER_GAME = 200
+MAX_TEAMS = 20
+GAME_CODE_RE = re.compile(r"^[A-Z0-9]{6}$")
 
 # Load quiz data
 QUIZ_FILE = Path(__file__).parent / "quizzes.json"
@@ -95,17 +125,21 @@ def validate_quiz(quiz) -> str | None:
     if (not isinstance(quiz, dict) or
         not isinstance(quiz.get("title"), str) or
         not quiz["title"].strip() or
+        len(quiz["title"]) > MAX_TITLE_LENGTH or
         not isinstance(quiz.get("questions"), list) or
         not quiz["questions"]):
         return "Ungültiges Quiz-Format"
+    if len(quiz["questions"]) > MAX_QUESTIONS:
+        return f"Zu viele Fragen (maximal {MAX_QUESTIONS})"
 
     for i, q in enumerate(quiz["questions"]):
         if (not isinstance(q, dict) or
             not isinstance(q.get("question"), str) or
             not q["question"].strip() or
+            len(q["question"]) > MAX_QUESTION_LENGTH or
             not isinstance(q.get("answers"), list) or
             len(q["answers"]) != 4 or
-            not all(isinstance(a, str) and a.strip() for a in q["answers"]) or
+            not all(isinstance(a, str) and a.strip() and len(a) <= MAX_ANSWER_LENGTH for a in q["answers"]) or
             not _is_int(q.get("correct")) or
             not 0 <= q["correct"] <= 3 or
             not _is_int(q.get("time_limit")) or
@@ -146,6 +180,15 @@ def player_list(game: dict) -> list[dict]:
     return [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
 
 
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    return response
+
+
 # Serve static files
 static_path = Path(__file__).parent / "static"
 app.mount("/static", StaticFiles(directory=static_path), name="static")
@@ -184,6 +227,9 @@ async def health():
 @app.get("/api/qrcode")
 async def get_qrcode(request: Request, code: str):
     """Generate a QR code for the game join URL."""
+    code = code.upper()
+    if not GAME_CODE_RE.match(code):
+        raise HTTPException(status_code=400, detail="Ungültiger Spiel-Code")
     # Get the base URL from the request
     base_url = f"{request.url.scheme}://{request.headers.get('host', 'localhost:8000')}"
     join_url = f"{base_url}/?code={code}"
@@ -248,6 +294,7 @@ def load_game_from_db(game_code: str) -> bool:
             "score": p["score"],
             "team": p["team"],
             "streak": 0,  # Reset streak on load
+            "token": p.get("token"),
         }
     
     game = new_game_state(game_data["host_sid"], game_data["quiz"], game_data.get("host_token"))
@@ -272,7 +319,7 @@ def load_game_from_db(game_code: str) -> bool:
 @sio.event
 async def reconnect_host(sid, data):
     """Host reconnects to their game."""
-    game_code = data.get("code")
+    game_code = str(data.get("code") or "").upper()
     
     # Try to load from database if not in memory
     if game_code not in games:
@@ -284,7 +331,7 @@ async def reconnect_host(sid, data):
 
     # Only the original host (who holds the secret token) may take over the game.
     # Without this check every player knowing the game code could hijack the host view.
-    if not game.get("host_token") or data.get("token") != game["host_token"]:
+    if not game.get("host_token") or not secrets.compare_digest(str(data.get("token") or ""), game["host_token"]):
         await sio.emit("reconnect_failed", {"message": "Keine Berechtigung für dieses Spiel"}, to=sid)
         return
 
@@ -366,6 +413,18 @@ async def reconnect_player(sid, data):
         await sio.emit("reconnect_failed", {"message": "Spieler nicht gefunden"}, to=sid)
         return
 
+    if old_sid == sid:
+        return
+
+    # Nur wer den geheimen Spieler-Token hat, darf eine bestehende Verbindung übernehmen.
+    # Code und Name stehen auf dem Beamer – ohne Token könnte jeder andere Spieler übernehmen.
+    # Ohne passenden Token gilt dieselbe Regel wie beim Beitritt mit gleichem Namen
+    # (nur erlaubt, wenn der Spieler tatsächlich getrennt ist).
+    stored_token = game["players"][old_sid].get("token") or ""
+    if not stored_token or not secrets.compare_digest(str(data.get("token") or ""), stored_token):
+        await join_game(sid, {"code": game_code, "name": player_name})
+        return
+
     transfer_player(game, old_sid, sid)
     player_data = game["players"][sid]
     db.update_player_session(game_code, player_data["name"], sid)
@@ -379,6 +438,8 @@ async def reconnect_player(sid, data):
     # Send current game state
     await sio.emit("reconnected_player", {
         "code": game_code,
+        "name": player_data["name"],
+        "player_token": player_data["token"],
         "quiz_title": game["quiz"]["title"],
         "state": game["state"],
         "score": player_data["score"],
@@ -517,8 +578,11 @@ async def create_game(sid, data):
 
 
 async def _create_game_with_quiz(sid: str, quiz: dict):
+    if len(games) >= MAX_ACTIVE_GAMES:
+        await sio.emit("error", {"message": "Gerade laufen zu viele Spiele – bitte später nochmal versuchen"}, to=sid)
+        return
     game_code = generate_game_code()
-    host_token = uuid.uuid4().hex
+    host_token = secrets.token_hex(16)
 
     db.create_game(game_code, sid, quiz["title"], quiz, host_token=host_token)
     games[game_code] = new_game_state(sid, quiz, host_token)
@@ -662,7 +726,9 @@ async def join_game(sid, data):
 
         transfer_player(game, existing_sid, sid)
         player_data = game["players"][sid]
+        player_data["token"] = secrets.token_urlsafe(16)  # alter Token verliert seine Gültigkeit
         db.update_player_session(game_code, player_data["name"], sid)
+        db.set_player_token(game_code, player_data["name"], player_data["token"])
 
         await sio.enter_room(sid, game_code)
         
@@ -675,6 +741,8 @@ async def join_game(sid, data):
         # Send current game state (same as reconnect_player)
         await sio.emit("reconnected_player", {
             "code": game_code,
+            "name": player_data["name"],
+            "player_token": player_data["token"],
             "quiz_title": game["quiz"]["title"],
             "state": game["state"],
             "score": player_data["score"],
@@ -684,6 +752,7 @@ async def join_game(sid, data):
         }, to=sid)
         
         print(f"Player {player_name} reconnected to game {game_code}")
+        await send_current_question(game, sid)
         return
     
     # New player - only allow in lobby state
@@ -691,8 +760,14 @@ async def join_game(sid, data):
         await sio.emit("error", {"message": "Spiel hat bereits begonnen"}, to=sid)
         return
     
+    if len(game["players"]) >= MAX_PLAYERS_PER_GAME:
+        await sio.emit("error", {"message": "Das Spiel ist voll"}, to=sid)
+        return
+
+    player_token = secrets.token_urlsafe(16)
+
     # Add to database
-    if not db.add_player(game_code, sid, player_name):
+    if not db.add_player(game_code, sid, player_name, token=player_token):
         await sio.emit("error", {"message": "Fehler beim Beitreten"}, to=sid)
         return
     
@@ -701,11 +776,14 @@ async def join_game(sid, data):
         "score": 0,
         "streak": 0,
         "team": None,
+        "token": player_token,
     }
     
     await sio.enter_room(sid, game_code)
     await sio.emit("joined_game", {
         "code": game_code,
+        "name": player_name,
+        "player_token": player_token,
         "quiz_title": game["quiz"]["title"],
         "team_mode": game["team_mode"],
         "teams": game["teams"]
@@ -1119,7 +1197,7 @@ async def configure_teams(sid, data):
     
     if not isinstance(teams, list):
         teams = []
-    teams = list(dict.fromkeys(str(t).strip()[:30] for t in teams if str(t).strip()))
+    teams = list(dict.fromkeys(str(t).strip()[:30] for t in teams if str(t).strip()))[:MAX_TEAMS]
     team_mode = bool(team_mode) and len(teams) > 0
     if not _is_int(top_n_players) or top_n_players < 1:
         top_n_players = 3
@@ -1303,15 +1381,6 @@ async def end_game(game_code: str):
     
     # Update final state in database
     db.update_game(game_code, state="ended")
-
-
-# Startup cleanup
-@app.on_event("startup")
-async def startup_cleanup():
-    """Clean up old games on startup."""
-    deleted = db.cleanup_old_games(24)
-    if deleted > 0:
-        print(f"Cleaned up {deleted} old games")
 
 
 if __name__ == "__main__":

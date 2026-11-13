@@ -74,6 +74,11 @@ def init_db():
     if "host_token" not in columns:
         cursor.execute("ALTER TABLE games ADD COLUMN host_token TEXT")
 
+    # Migration: secret token that authorises a player to reconnect (code + name are public)
+    player_columns = {row[1] for row in cursor.execute("PRAGMA table_info(players)")}
+    if "player_token" not in player_columns:
+        cursor.execute("ALTER TABLE players ADD COLUMN player_token TEXT")
+
     # Create indexes for better query performance
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_players_game_code 
@@ -218,7 +223,8 @@ def delete_game(game_code: str) -> bool:
 
 
 # Player operations
-def add_player(game_code: str, session_id: str, name: str, team: Optional[str] = None) -> bool:
+def add_player(game_code: str, session_id: str, name: str, team: Optional[str] = None,
+               token: Optional[str] = None) -> bool:
     """Add a player to the database."""
     import time
     max_retries = 5
@@ -238,14 +244,14 @@ def add_player(game_code: str, session_id: str, name: str, team: Optional[str] =
             if existing:
                 # Update existing player's session_id instead of inserting
                 cursor.execute("""
-                    UPDATE players SET session_id = ?, connected = 1, updated_at = CURRENT_TIMESTAMP
+                    UPDATE players SET session_id = ?, player_token = ?, connected = 1, updated_at = CURRENT_TIMESTAMP
                     WHERE game_code = ? AND LOWER(name) = LOWER(?)
-                """, (session_id, game_code, name))
+                """, (session_id, token, game_code, name))
             else:
                 cursor.execute("""
-                    INSERT INTO players (game_code, session_id, name, team)
-                    VALUES (?, ?, ?, ?)
-                """, (game_code, session_id, name, team))
+                    INSERT INTO players (game_code, session_id, name, team, player_token)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (game_code, session_id, name, team, token))
             
             conn.commit()
             conn.close()
@@ -256,9 +262,9 @@ def add_player(game_code: str, session_id: str, name: str, team: Optional[str] =
                 conn2 = get_connection()
                 cursor2 = conn2.cursor()
                 cursor2.execute("""
-                    UPDATE players SET session_id = ?, connected = 1, updated_at = CURRENT_TIMESTAMP
+                    UPDATE players SET session_id = ?, player_token = ?, connected = 1, updated_at = CURRENT_TIMESTAMP
                     WHERE game_code = ? AND LOWER(name) = LOWER(?)
-                """, (session_id, game_code, name))
+                """, (session_id, token, game_code, name))
                 conn2.commit()
                 conn2.close()
                 return True
@@ -297,7 +303,8 @@ def get_players(game_code: str) -> List[Dict[str, Any]]:
         "score": row["score"],
         "team": row["team"],
         "session_id": row["session_id"],
-        "connected": bool(row["connected"])
+        "connected": bool(row["connected"]),
+        "token": row["player_token"],
     } for row in rows]
 
 
@@ -319,6 +326,22 @@ def get_player_by_session(session_id: str) -> Optional[Dict[str, Any]]:
             "connected": bool(row["connected"])
         }
     return None
+
+
+def set_player_token(game_code: str, name: str, token: str) -> bool:
+    """Store a new reconnect token for a player."""
+    try:
+        conn = get_connection()
+        conn.execute(
+            "UPDATE players SET player_token = ? WHERE game_code = ? AND LOWER(name) = LOWER(?)",
+            (token, game_code, name),
+        )
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error setting player token: {e}")
+        return False
 
 
 def update_player_session(game_code: str, name: str, new_session_id: str) -> bool:

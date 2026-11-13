@@ -13,6 +13,7 @@ services:
       options: { max-size: "10m", max-file: "5" }
     environment:
       TZ: Europe/Berlin
+      CORS_ORIGINS: https://quiz.benjamin-stahl.de
     volumes:
       - data:/data
     networks:

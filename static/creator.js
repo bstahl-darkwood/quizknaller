@@ -7,9 +7,13 @@ let questions = [];
 
 // Helper function to escape HTML to prevent XSS
 function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    // Auch Anführungszeichen escapen – das Ergebnis landet teils in HTML-Attributen (value="…")
+    return String(text ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // DOM Elements
