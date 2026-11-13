@@ -1,0 +1,10 @@
+.git
+.venv
+.claude
+.envrc
+__pycache__
+*.pyc
+*.db
+*.db-*
+backups
+netcup_deploy

@@ -33,7 +33,21 @@ uv run python main.py
 
 Der Server startet auf `http://localhost:8000` (Port per `PORT=…` änderbar).
 
-## Deployment auf Netcup
+## Produktion: quiz.benjamin-stahl.de
+
+Läuft auf dem Hetzner-Server von bs-tree (`deploy@37.27.40.64`) in `~/quizknaller` mit `docker-compose.prod.yml`.
+HTTPS macht der bs-tree-Proxy (Cloudflare-Origin-Zertifikat), er leitet über das Docker-Netz `edge` an `quiz-web:8000` weiter.
+Die Route steht in bs-tree unter `deploy/Caddyfile.prod`.
+
+Update ausrollen (nach `git push`, nicht während eines laufenden Quizabends – ein Neustart beendet laufende Spiele):
+
+```bash
+ssh deploy@37.27.40.64 'cd ~/quizknaller && ./deploy/deploy.sh'
+```
+
+Die SQLite-Datenbank liegt im Docker-Volume `quizknaller_data` (`/data/quizknaller.db`).
+
+## Deployment auf Netcup (alt)
 
 **Live:** https://rubberducking.ninja
 

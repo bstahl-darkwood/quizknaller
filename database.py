@@ -3,13 +3,15 @@ Database module for QuizKnaller persistence
 Handles SQLite operations for games, players, and quizzes
 """
 
+import os
 import sqlite3
 import json
 from datetime import datetime
 from pathlib import Path
 from typing import Optional, List, Dict, Any
 
-DB_PATH = Path(__file__).parent / "quizknaller.db"
+# In Docker zeigt QUIZ_DB_PATH auf ein Volume (/data/quizknaller.db), damit die Datenbank Updates überlebt
+DB_PATH = Path(os.environ.get("QUIZ_DB_PATH", Path(__file__).parent / "quizknaller.db"))
 
 
 def init_db():

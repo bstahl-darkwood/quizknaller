@@ -169,6 +169,12 @@ async def creator():
     return FileResponse(static_path / "creator.html")
 
 
+@app.get("/api/health")
+async def health():
+    """Health check for Docker/Compose."""
+    return {"status": "ok", "games": len(games)}
+
+
 @app.get("/api/qrcode")
 async def get_qrcode(request: Request, code: str):
     """Generate a QR code for the game join URL."""

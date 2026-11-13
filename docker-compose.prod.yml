@@ -1,0 +1,34 @@
+# Produktion auf dem Hetzner-Server hinter dem bs-tree-Proxy (quiz.benjamin-stahl.de). Start/Update: ./deploy/deploy.sh
+# Kein eigener Port nach außen: HTTPS macht der bs-tree-Caddy mit dem Cloudflare-Origin-Zertifikat und
+# leitet über das Docker-Netz "edge" an "quiz-web:8000" weiter (inkl. WebSockets für Socket.IO).
+name: quizknaller
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "5" }
+    environment:
+      TZ: Europe/Berlin
+    volumes:
+      - data:/data
+    networks:
+      default: {}
+      edge:
+        aliases: [quiz-web]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  data:
+
+networks:
+  edge:
+    external: true
