@@ -1,6 +1,11 @@
 // SmartVote – Abstimmung (Host/Beamer)
 const socket = io();
 
+// Login abgelaufen (oder anderes Gerät abgemeldet): zurück zur Anmeldung
+socket.on('auth_required', () => {
+    location.href = '/login?next=' + encodeURIComponent(location.pathname);
+});
+
 const DRAFT_KEY = 'smartvote_draft';
 const MAX_OPTIONS = 40;
 

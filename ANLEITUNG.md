@@ -21,6 +21,7 @@ Handys im selben WLAN erreichen den Server über die IP des Rechners (z. B. `htt
 
 ```
 main.py          Server: FastAPI (HTTP) + python-socketio (Echtzeit), komplette Spiellogik
+auth.py          Admin-Login: Passwort, signiertes Cookie, Schutz der Host-Befehle
 poll.py          Abstimmung (SmartVote): Optionen, Stimmen, Auswertung
 database.py      SQLite-Persistenz (quizknaller.db): Spiele, Spieler, Antworten, Abstimmungen
 quizzes.json     Eingebaute Quizze (Titel + Fragen)
@@ -81,6 +82,20 @@ lobby → starting (3 s Countdown) → reading → question → results ─┐
 | Auto-Remove aktiv | Wer X Fragen in Folge nicht antwortet, fliegt raus und bekommt einen Hinweis |
 
 Spiele, die älter als 24 h sind, löscht der Server beim Start.
+
+## Login (Admin-Bereich)
+
+`/host`, `/vote` und `/creator` sind nur mit Passwort erreichbar; die Spielerseite `/` bleibt offen. Nach dem Anmelden bleibt das Gerät 30 Tage angemeldet, „Abmelden“ steht auf der Quiz-Auswahl und bei der Abstimmung.
+
+- **Passwort setzen (Server):** in `~/quizknaller/.env` (nicht im Git):
+  ```bash
+  umask 077; echo 'ADMIN_PASSWORD=dein-passwort' > ~/quizknaller/.env
+  ```
+  danach `./deploy/deploy.sh`. Ohne Passwort (mind. 8 Zeichen) bricht das Deploy-Skript ab, bevor es etwas ändert.
+- **Passwort ändern** meldet alle Geräte ab. Ein Neustart/Deploy tut das nicht.
+- **Geschützt sind auch die Befehle selbst**, nicht nur die Seiten: Spiel erstellen/starten/beenden, Abstimmung erstellen/öffnen/beenden/löschen usw. werden vom Server ohne gültiges Admin-Cookie ignoriert.
+- **Fehlversuche:** nach 8 falschen Passwörtern ist die Anmeldung von dieser IP für 15 Minuten gesperrt.
+- **Lokal** ohne `ADMIN_PASSWORD` ist der Login aus (Hinweis im Terminal). Zum Ausprobieren: `ADMIN_PASSWORD=test1234 uv run python main.py`.
 
 ## Sicherheit
 

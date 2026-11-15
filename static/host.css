@@ -900,3 +900,5 @@ body.scrolled .night-bg .lights { opacity: 0; }
 
 /* Einstieg Abstimmung: hervorgehoben neben „Eigenes Quiz“ */
 .creator-link-vote { border-color: var(--lime); color: var(--lime); }
+.logout-link { opacity: 0.7; }
+.logout-link:hover { opacity: 1; }

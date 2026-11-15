@@ -16,6 +16,13 @@ if [ -z "${DEPLOY_REEXEC:-}" ] && ! git diff --quiet "$BEFORE" HEAD -- deploy/de
   DEPLOY_REEXEC=1 exec "$0" "$@"
 fi
 
+# Ohne Admin-Passwort würde die App nicht starten – vorher abbrechen, solange die alte Version noch läuft
+if ! grep -qE '^ADMIN_PASSWORD=.{8,}' .env 2>/dev/null; then
+  echo "ADMIN_PASSWORD fehlt in ~/quizknaller/.env (mind. 8 Zeichen). Anlegen mit:"
+  echo "  umask 077; echo 'ADMIN_PASSWORD=dein-passwort' > ~/quizknaller/.env"
+  exit 1
+fi
+
 echo "→ Bauen und starten"
 $COMPOSE build --pull
 $COMPOSE up -d --remove-orphans

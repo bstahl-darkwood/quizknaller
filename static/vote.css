@@ -19,6 +19,7 @@
     top: clamp(16px, 3vh, 30px);
     right: clamp(16px, 3.5vw, 56px);
 }
+.setup-top { display: flex; gap: 10px; }
 .setup-badge {
     width: clamp(64px, 7vw, 88px);
     height: clamp(72px, 7.8vw, 98px);

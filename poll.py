@@ -225,8 +225,9 @@ def _drop_old_polls():
         db.delete_poll(code)
 
 
-def register(server, new_code):
-    """Socket-Events anmelden. new_code() liefert einen freien Spiel-Code."""
+def register(server, new_code, admin_only):
+    """Socket-Events anmelden. new_code() liefert einen freien Spiel-Code,
+    admin_only schützt die Host-Befehle (Login, siehe auth.py)."""
     global sio
     sio = server
 
@@ -239,6 +240,7 @@ def register(server, new_code):
             voter["connected"] = False
 
     @sio.event
+    @admin_only
     async def create_poll(sid, data):
         checked = validate_options(data)
         if isinstance(checked, str):
@@ -265,6 +267,7 @@ def register(server, new_code):
         await _update_host(code)
 
     @sio.event
+    @admin_only
     async def reconnect_poll_host(sid, data):
         code = str((data or {}).get("code") or "").upper()
         poll = polls.get(code)
@@ -275,6 +278,7 @@ def register(server, new_code):
         await _update_host(code)
 
     @sio.event
+    @admin_only
     async def update_poll_options(sid, data):
         """Optionen nachträglich ändern – nur solange noch niemand abstimmen konnte."""
         code = str((data or {}).get("code") or "").upper()
@@ -294,6 +298,7 @@ def register(server, new_code):
         await _update_host(code)
 
     @sio.event
+    @admin_only
     async def open_poll(sid, data):
         code = str((data or {}).get("code") or "").upper()
         poll = polls.get(code)
@@ -305,6 +310,7 @@ def register(server, new_code):
         await _update_host(code)
 
     @sio.event
+    @admin_only
     async def close_poll(sid, data):
         code = str((data or {}).get("code") or "").upper()
         poll = polls.get(code)
@@ -316,6 +322,7 @@ def register(server, new_code):
         await _update_host(code)
 
     @sio.event
+    @admin_only
     async def delete_poll(sid, data):
         code = str((data or {}).get("code") or "").upper()
         poll = polls.get(code)

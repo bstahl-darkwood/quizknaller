@@ -11,9 +11,12 @@ services:
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "5" }
+    # ADMIN_PASSWORD steht in ~/quizknaller/.env auf dem Server (nicht im Git, chmod 600)
+    env_file: .env
     environment:
       TZ: Europe/Berlin
       CORS_ORIGINS: https://quiz.benjamin-stahl.de
+      REQUIRE_LOGIN: "1"   # ohne ADMIN_PASSWORD startet die App nicht
     volumes:
       - data:/data
     networks:

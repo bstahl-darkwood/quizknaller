@@ -1,6 +1,11 @@
 // SmartQuiz - Host Client
 const socket = io();
 
+// Login abgelaufen (oder anderes Gerät abgemeldet): zurück zur Anmeldung
+socket.on('auth_required', () => {
+    location.href = '/login?next=' + encodeURIComponent(location.pathname);
+});
+
 // Configuration
 const AUTOPLAY_COUNTDOWN_SECONDS = 10;
 const CUSTOM_QUIZZES_STORAGE_KEY = 'quizknaller_custom_quizzes';

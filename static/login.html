@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SmartQuiz – Anmelden</title>
+    <meta name="robots" content="noindex">
+    <meta name="theme-color" content="#071a3d">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="/static/login.css">
+</head>
+<body>
+    <div class="night-bg"></div>
+    <div class="ss-corner"><img src="/static/smart-solutions-logo.png" alt="Smart Solutions"></div>
+    <main class="login">
+        <svg class="login-logo" viewBox="0 0 64 64" aria-hidden="true"><use href="#sq-logo"/></svg>
+        <h1 class="wordmark login-wordmark">Smart<span>Quiz</span></h1>
+        <p class="spaced login-spaced">Admin-Bereich</p>
+        <form class="login-card" method="post" action="/login">
+            <input type="hidden" name="next" value="{{NEXT}}">
+            <label class="login-label" for="password">Passwort</label>
+            <input class="login-field" id="password" name="password" type="password"
+                   autocomplete="current-password" required autofocus>
+            <div class="login-error" role="alert" {{ERROR_HIDDEN}}>{{ERROR}}</div>
+            <button class="login-btn" type="submit">Anmelden <i data-icon="arrow-right"></i></button>
+        </form>
+        <a class="login-back" href="/">Zum Mitspielen geht's hier entlang</a>
+    </main>
+    <script src="/static/theme.js"></script>
+</body>
+</html>

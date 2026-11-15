@@ -31,9 +31,11 @@ from pathlib import Path
 import qrcode
 import socketio
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
+from urllib.parse import parse_qs, quote
 from fastapi.staticfiles import StaticFiles
 
+import auth
 import database as db
 import poll
 
@@ -46,12 +48,18 @@ sio = socketio.AsyncServer(
     cors_allowed_origins=_cors or "*",
     max_http_buffer_size=300_000,  # größte Nachricht (ein eigenes Quiz) – Standard wäre 1 MB
 )
+# Host-Befehle nur mit Admin-Login (siehe auth.py)
+admin_only = auth.admin_only(sio)
+
+
 @asynccontextmanager
 async def lifespan(_app):
     """Beim Start alte Spiele (> 24 h) aus der Datenbank löschen."""
     deleted = db.cleanup_old_games(24)
     if deleted > 0:
         print(f"Cleaned up {deleted} old games")
+    if not auth.ENABLED:
+        print("WARNUNG: ADMIN_PASSWORD nicht gesetzt – Host, Abstimmung und Creator sind ohne Login erreichbar")
     yield
 
 
@@ -114,7 +122,7 @@ def generate_game_code() -> str:
             return code
 
 
-poll.register(sio, generate_game_code)
+poll.register(sio, generate_game_code, admin_only)
 
 MAX_NAME_LENGTH = 20
 RUNNING_STATES = ("starting", "reading", "question")
@@ -187,6 +195,9 @@ def player_list(game: dict) -> list[dict]:
 
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
+    # Die Seiten gibt es nur über ihre Routen (dort mit Login-Prüfung), nicht als /static/*.html
+    if request.url.path.startswith("/static/") and request.url.path.endswith(".html"):
+        return HTMLResponse("Not Found", status_code=404)
     response = await call_next(request)
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
@@ -237,22 +248,88 @@ async def index():
     return render_page("player.html")
 
 
+# ---------- Admin-Login ----------
+ADMIN_PAGES = {"/host": "host.html", "/vote": "vote.html", "/creator": "creator.html"}
+
+
+def is_admin(request: Request) -> bool:
+    return auth.valid_session(request.cookies.get(auth.COOKIE_NAME))
+
+
+def admin_page(request: Request, path: str):
+    if not is_admin(request):
+        return RedirectResponse(f"/login?next={quote(path)}", status_code=303)
+    return render_page(ADMIN_PAGES[path])
+
+
+def client_ip(request: Request) -> str:
+    # Hinter Cloudflare steht die echte IP in CF-Connecting-IP
+    return request.headers.get("cf-connecting-ip") or (request.client.host if request.client else "?")
+
+
+def safe_next(target: str | None) -> str:
+    return target if target in ADMIN_PAGES else "/host"
+
+
+def login_page(next_path: str, error: str = "", status: int = 200) -> HTMLResponse:
+    html = render_page("login.html").body.decode()
+    html = html.replace("{{NEXT}}", next_path).replace("{{ERROR}}", error)
+    html = html.replace("{{ERROR_HIDDEN}}", "" if error else "hidden")
+    return HTMLResponse(html, status_code=status, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_form(request: Request, next: str | None = None):
+    target = safe_next(next)
+    if not auth.ENABLED or is_admin(request):
+        return RedirectResponse(target, status_code=303)
+    return login_page(target)
+
+
+@app.post("/login")
+async def login_submit(request: Request):
+    form = parse_qs((await request.body())[:4096].decode("utf-8", "replace"))
+    target = safe_next((form.get("next") or [None])[0])
+    password = (form.get("password") or [""])[0]
+    ip = client_ip(request)
+    if auth.locked(ip):
+        return login_page(target, "Zu viele Fehlversuche. Bitte in 15 Minuten nochmal probieren.", 429)
+    if not auth.check_password(password):
+        auth.record_failure(ip)
+        await asyncio.sleep(1)  # Raten zusätzlich bremsen
+        return login_page(target, "Das Passwort stimmt nicht.", 401)
+    auth.clear_failures(ip)
+    response = RedirectResponse(target, status_code=303)
+    response.set_cookie(
+        auth.COOKIE_NAME, auth.new_session(), max_age=auth.SESSION_SECONDS,
+        httponly=True, samesite="lax", secure=request.url.scheme == "https", path="/",
+    )
+    return response
+
+
+@app.get("/logout")
+async def logout():
+    response = RedirectResponse("/login" if auth.ENABLED else "/host", status_code=303)
+    response.delete_cookie(auth.COOKIE_NAME, path="/")
+    return response
+
+
 @app.get("/host", response_class=HTMLResponse)
-async def host():
+async def host(request: Request):
     """Serve the host (beamer) interface."""
-    return render_page("host.html")
+    return admin_page(request, "/host")
 
 
 @app.get("/vote", response_class=HTMLResponse)
-async def vote():
+async def vote(request: Request):
     """Serve the poll host interface (Abstimmung, z. B. bestes Lebkuchenhaus)."""
-    return render_page("vote.html")
+    return admin_page(request, "/vote")
 
 
 @app.get("/creator", response_class=HTMLResponse)
-async def creator():
+async def creator(request: Request):
     """Serve the quiz creator interface."""
-    return render_page("creator.html")
+    return admin_page(request, "/creator")
 
 
 @app.get("/favicon.ico", include_in_schema=False)
@@ -302,6 +379,8 @@ async def get_quizzes():
 # Socket.IO events
 @sio.event
 async def connect(sid, environ):
+    if auth.session_from_environ(environ):
+        auth.admin_sids.add(sid)
     print(f"Client connected: {sid}")
 
 
@@ -360,6 +439,7 @@ def load_game_from_db(game_code: str) -> bool:
 
 
 @sio.event
+@admin_only
 async def reconnect_host(sid, data):
     """Host reconnects to their game."""
     game_code = str(data.get("code") or "").upper()
@@ -539,6 +619,7 @@ async def send_current_question(game: dict, sid: str):
 @sio.event
 async def disconnect(sid):
     print(f"Client disconnected: {sid}")
+    auth.admin_sids.discard(sid)
     if await poll.on_disconnect(sid):
         return
     # Mark player as disconnected in database
@@ -617,6 +698,7 @@ async def disconnect(sid):
 
 
 @sio.event
+@admin_only
 async def create_game(sid, data):
     """Host creates a new game."""
     quiz = get_builtin_quiz(data.get("quiz_id", 0))
@@ -646,6 +728,7 @@ async def _create_game_with_quiz(sid: str, quiz: dict):
 
 
 @sio.event
+@admin_only
 async def create_custom_game(sid, data):
     """Host creates a new game with a custom quiz."""
     quiz = data.get("quiz")
@@ -719,6 +802,7 @@ async def _switch_quiz(sid: str, game_code, quiz: dict):
 
 
 @sio.event
+@admin_only
 async def switch_game_quiz(sid, data):
     """Host switches the quiz within an existing game session."""
     quiz = get_builtin_quiz(data.get("quiz_id", 0))
@@ -729,6 +813,7 @@ async def switch_game_quiz(sid, data):
 
 
 @sio.event
+@admin_only
 async def switch_custom_game_quiz(sid, data):
     """Host switches to a custom quiz within an existing game session."""
     quiz = data.get("quiz")
@@ -851,6 +936,7 @@ async def join_game(sid, data):
 
 
 @sio.event
+@admin_only
 async def start_game(sid, data):
     """Host starts the game."""
     game_code = data.get("code")
@@ -1024,6 +1110,7 @@ async def submit_answer(sid, data):
 
 
 @sio.event
+@admin_only
 async def autoplay_started(sid, data):
     """Host signals autoplay countdown has started - forward to players."""
     game_code = data.get("code")
@@ -1044,6 +1131,7 @@ async def autoplay_started(sid, data):
 
 
 @sio.event
+@admin_only
 async def time_up(sid, data):
     """Host signals time is up."""
     game_code = data.get("code")
@@ -1230,6 +1318,7 @@ async def show_results(game_code: str):
 
 
 @sio.event
+@admin_only
 async def configure_teams(sid, data):
     """Host configures team mode."""
     game_code = data.get("code")
@@ -1270,6 +1359,7 @@ async def configure_teams(sid, data):
 
 
 @sio.event
+@admin_only
 async def configure_auto_remove(sid, data):
     """Host configures auto-remove inactive users settings."""
     game_code = data.get("code")
@@ -1339,6 +1429,7 @@ async def select_team(sid, data):
 
 
 @sio.event
+@admin_only
 async def next_question_request(sid, data):
     """Host requests next question."""
     game_code = data.get("code")
@@ -1360,6 +1451,7 @@ async def next_question_request(sid, data):
 
 
 @sio.event
+@admin_only
 async def end_game_request(sid, data):
     """Host requests to end the game early."""
     game_code = data.get("code")
