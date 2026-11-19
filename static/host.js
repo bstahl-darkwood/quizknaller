@@ -762,24 +762,52 @@ socket.on('show_question_reading', (data) => {
     elements.timerProgress.style.strokeDashoffset = '0';
     elements.timerProgress.classList.remove('warning', 'danger');
     elements.timerProgress.classList.add('reading');
-    elements.timerText.innerHTML = SQ.icon('book-open', 'timer-icon');
-    
+    elements.timerText.innerHTML = HOURGLASS_SVG;
+    const hourglass = elements.timerText.querySelector('.hourglass');
+    setHourglass(hourglass, 0);
+
     showScreen('question');
-    
+
     // Animate reading countdown
     let readingTimeLeft = data.reading_time;
     const circumference = 283;
-    
+
     timerInterval = setInterval(() => {
         readingTimeLeft -= 0.1;
-        const progress = readingTimeLeft / data.reading_time;
+        const progress = Math.max(readingTimeLeft / data.reading_time, 0);
         elements.timerProgress.style.strokeDashoffset = circumference * (1 - progress);
-        
+        setHourglass(hourglass, 1 - progress);
+
         if (readingTimeLeft <= 0) {
             clearInterval(timerInterval);
         }
     }, 100);
 });
+
+// Sanduhr für die Lesephase: oben läuft der Sand im Takt der Lesezeit leer, unten füllt er sich.
+const HOURGLASS_SVG = `
+<svg class="timer-icon hourglass" viewBox="0 0 24 32" aria-hidden="true">
+    <defs>
+        <clipPath id="hg-top"><path d="M6.6 5 H17.4 C17.4 9.6 13.4 12.6 12.4 16 H11.6 C10.6 12.6 6.6 9.6 6.6 5 Z"/></clipPath>
+        <clipPath id="hg-bottom"><path d="M11.6 16 H12.4 C13.4 19.4 17.4 22.4 17.4 27 H6.6 C6.6 22.4 10.6 19.4 11.6 16 Z"/></clipPath>
+    </defs>
+    <g clip-path="url(#hg-top)"><rect class="hg-sand hg-sand-top" x="4" y="8" width="16" height="8.2"/></g>
+    <line class="hg-stream" x1="12" y1="15.6" x2="12" y2="27"/>
+    <g clip-path="url(#hg-bottom)"><rect class="hg-sand hg-sand-bottom" x="4" y="19.5" width="16" height="7.5"/></g>
+    <path class="hg-glass" d="M6.6 4.5 H17.4 C17.4 9.6 13.4 12.6 12.4 16 C13.4 19.4 17.4 22.4 17.4 27.5 H6.6 C6.6 22.4 10.6 19.4 11.6 16 C10.6 12.6 6.6 9.6 6.6 4.5 Z"/>
+    <rect class="hg-cap" x="4.5" y="2" width="15" height="2.5" rx="1"/>
+    <rect class="hg-cap" x="4.5" y="27.5" width="15" height="2.5" rx="1"/>
+</svg>`;
+
+// done: 0 = Lesezeit beginnt (oben voll), 1 = Lesezeit vorbei (oben leer)
+function setHourglass(svg, done) {
+    if (!svg) return;
+    done = Math.min(Math.max(done, 0), 1);
+    svg.style.setProperty('--hg-top', 1 - done);
+    svg.style.setProperty('--hg-bottom', done);
+    svg.classList.toggle('running', done > 0 && done < 1);
+    svg.classList.toggle('empty', done >= 1);
+}
 
 // Show answers after reading phase
 socket.on('show_answers', (data) => {
