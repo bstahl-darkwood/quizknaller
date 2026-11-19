@@ -290,8 +290,9 @@ button { cursor: pointer; }
     clip-path: var(--hex);
     background: var(--lime-grad);
 }
-.player-chip:nth-child(3n+2)::before { background: linear-gradient(135deg, #ffc66b, #ffb547); }
-.player-chip:nth-child(3n)::before { background: linear-gradient(135deg, #a9c8ff, #4f86e8); }
+/* Farbe fest je Name (host.js: SQ.tone), nicht nach Position – sonst wechseln sie, wenn jemand geht */
+.player-chip[data-tone="1"]::before { background: linear-gradient(135deg, #ffc66b, #ffb547); }
+.player-chip[data-tone="2"]::before { background: linear-gradient(135deg, #a9c8ff, #4f86e8); }
 .player-chip.no-team { opacity: 0.7; }
 .team-header {
     width: 100%;

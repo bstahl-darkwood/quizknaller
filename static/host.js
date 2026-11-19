@@ -633,64 +633,36 @@ socket.on('game_quiz_switched', (data) => {
 
 // Helper function to update player display
 function updatePlayerDisplay(players) {
-    elements.playersGrid.innerHTML = '';
-    
-    // Group players by team if team mode is active
+    // Abgleichen statt neu aufbauen: sonst ploppen bei jedem neuen Spieler alle Kacheln neu auf
+    const chip = (player, extra = '') => ({
+        key: 'p:' + player.name.toLowerCase(),
+        className: 'player-chip' + extra,
+        text: player.name,
+        tone: SQ.tone(player.name),
+    });
+    const items = [];
     const teamMode = players.some(p => p.team !== null && p.team !== undefined);
-    
+
     if (teamMode) {
-        // Group players by team
         const teams = {};
         const noTeam = [];
-        
         players.forEach(player => {
-            if (player.team) {
-                if (!teams[player.team]) teams[player.team] = [];
-                teams[player.team].push(player);
-            } else {
-                noTeam.push(player);
-            }
+            if (player.team) (teams[player.team] = teams[player.team] || []).push(player);
+            else noTeam.push(player);
         });
-        
-        // Display teams
         Object.keys(teams).forEach(teamName => {
-            const teamHeader = document.createElement('div');
-            teamHeader.className = 'team-header';
-            teamHeader.textContent = teamName;
-            elements.playersGrid.appendChild(teamHeader);
-            
-            teams[teamName].forEach(player => {
-                const chip = document.createElement('div');
-                chip.className = 'player-chip';
-                chip.textContent = player.name;
-                elements.playersGrid.appendChild(chip);
-            });
+            items.push({ key: 't:' + teamName, className: 'team-header', text: teamName });
+            teams[teamName].forEach(player => items.push(chip(player)));
         });
-        
-        // Display players without team
         if (noTeam.length > 0) {
-            const teamHeader = document.createElement('div');
-            teamHeader.className = 'team-header no-team';
-            teamHeader.textContent = 'Kein Team';
-            elements.playersGrid.appendChild(teamHeader);
-            
-            noTeam.forEach(player => {
-                const chip = document.createElement('div');
-                chip.className = 'player-chip no-team';
-                chip.textContent = player.name;
-                elements.playersGrid.appendChild(chip);
-            });
+            items.push({ key: 't:', className: 'team-header no-team', text: 'Kein Team' });
+            noTeam.forEach(player => items.push(chip(player, ' no-team')));
         }
     } else {
-        // Normal display
-        players.forEach(player => {
-            const chip = document.createElement('div');
-            chip.className = 'player-chip';
-            chip.textContent = player.name;
-            elements.playersGrid.appendChild(chip);
-        });
+        players.forEach(player => items.push(chip(player)));
     }
-    
+    SQ.syncList(elements.playersGrid, items);
+
     totalPlayers = players.length;
     elements.playerCount.textContent = totalPlayers;
     elements.startGameBtn.disabled = totalPlayers < 1;

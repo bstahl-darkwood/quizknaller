@@ -182,6 +182,40 @@ window.SQ = window.SQ || {};
     };
     SQ.renderIcons();
 
+    // Liste abgleichen statt neu aufbauen: vorhandene Elemente (per key) bleiben stehen,
+    // nur neue werden eingefügt und spielen ihre Einblend-Animation. Ein kompletter
+    // Neuaufbau (innerHTML) ließ bei jedem Update alle Kacheln neu aufploppen.
+    // items: [{ key, className, text }] in gewünschter Reihenfolge.
+    SQ.syncList = function (container, items) {
+        const existing = new Map();
+        [...container.children].forEach(el => {
+            if (el.dataset.key !== undefined) existing.set(el.dataset.key, el);
+            else el.remove();
+        });
+        const wanted = new Set(items.map(it => String(it.key)));
+        existing.forEach((el, key) => { if (!wanted.has(key)) { el.remove(); existing.delete(key); } });
+        let ref = container.firstChild;
+        items.forEach(it => {
+            const key = String(it.key);
+            let el = existing.get(key);
+            if (!el) {
+                el = document.createElement(it.tag || 'div');
+                el.dataset.key = key;
+            }
+            if (el.className !== it.className) el.className = it.className;
+            if (el.textContent !== it.text) el.textContent = it.text;
+            if (it.tone !== undefined && el.dataset.tone !== String(it.tone)) el.dataset.tone = it.tone;
+            if (el === ref) ref = ref.nextSibling;
+            else container.insertBefore(el, ref);  // nur neue (oder echt verschobene) Elemente bewegen sich
+        });
+    };
+    // Feste Farbe je Name (statt nach Position – sonst wechseln Farben, wenn jemand geht)
+    SQ.tone = function (name) {
+        let h = 0;
+        for (const ch of String(name)) h = (h * 31 + ch.codePointAt(0)) >>> 0;
+        return h % 3;
+    };
+
     // Bestätigung in der Seite statt confirm(): eingebettete Browser (z. B. das Browser-Panel
     // der Claude-App) lehnen confirm() teils ohne Dialog ab – der Klick blieb dann wirkungslos.
     // Verwendung: if (await SQ.confirm('Wirklich löschen?', 'Löschen')) { … }

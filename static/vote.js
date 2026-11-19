@@ -208,11 +208,19 @@ function renderLive(p) {
     $('votes-fill').style.width = voters ? `${Math.round(p.votes_cast / voters * 100)}%` : '0';
     $('voter-count').textContent = voters;
 
-    $('option-chips').innerHTML = p.options.map((o, i) => `
+    // Nur neu zeichnen, was sich geändert hat – sonst flackert bei jedem Update alles
+    const chipsHtml = p.options.map((o, i) => `
         <span class="option-chip"><span class="num">${i + 1}</span><span>${escapeHtml(o.name)}${o.detail ? `<small>${escapeHtml(o.detail)}</small>` : ''}</span></span>`).join('');
+    if ($('option-chips').dataset.html !== chipsHtml) {
+        $('option-chips').innerHTML = chipsHtml;
+        $('option-chips').dataset.html = chipsHtml;
+    }
 
-    $('voters-grid').innerHTML = p.voters.map(v =>
-        `<div class="player-chip voter-chip${v.voted ? ' voted' : ''}${v.connected ? '' : ' offline'}">${escapeHtml(v.name)}</div>`).join('');
+    SQ.syncList($('voters-grid'), p.voters.map(v => ({
+        key: v.name.toLowerCase(),
+        className: `player-chip voter-chip${v.voted ? ' voted' : ''}${v.connected ? '' : ' offline'}`,
+        text: v.name,
+    })));
 
     const isOpen = p.state === 'open';
     $('open-btn').hidden = isOpen;
@@ -224,8 +232,15 @@ function renderLive(p) {
 }
 
 // ---------- Ergebnis ----------
+let shownResultKey = null;  // welches Ergebnis gerade angezeigt wird
+
 function renderResult(p) {
     const r = p.results;
+    // Nach dem Beenden kommen weiter Updates (z. B. wenn Leute ihr Handy zumachen). Das Ergebnis
+    // ist dann dasselbe – nicht neu aufbauen, sonst laufen Balken und Einblendung jedes Mal neu.
+    const key = JSON.stringify([p.code, p.title, r]);
+    if (key === shownResultKey && screens.result.classList.contains('active')) return;
+    shownResultKey = key;
     const winners = r.ranking.filter(row => r.winners.includes(row.index));
     $('result-title').innerHTML = escapeHtml(p.title);
     $('result-kicker').textContent = r.total_votes === 0
