@@ -417,6 +417,9 @@ def load_game_from_db(game_code: str) -> bool:
             "team": p["team"],
             "streak": 0,  # Reset streak on load
             "token": p.get("token"),
+            # Nach einem Neustart lebt keine alte Verbindung mehr. Ohne dieses Flag
+            # galten alle als verbunden: Namen blieben "vergeben", Plätze belegt.
+            "disconnected": True,
         }
     
     game = new_game_state(game_data["host_sid"], game_data["quiz"], game_data.get("host_token"))
