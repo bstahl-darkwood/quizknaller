@@ -832,7 +832,9 @@ button { cursor: pointer; }
     .ss-corner { padding: 10px 44px 10px 16px; }
     .ss-corner img { height: 38px; }
     .header-brand { display: none; }
-    .btn-team-config { display: none; }
+    /* Panel ist hier aus, Einstellungen stehen aufklappbar in der Lobby. Höhere Spezifität,
+       sonst blendet die Icon-Regel weiter unten (.btn-team-config: inline-flex) den Button wieder ein */
+    .header-actions .btn-team-config { display: none; }
     .team-config-offcanvas, .offcanvas-backdrop { display: none !important; }
     .team-config-mobile { display: block; }
     .header-actions { min-height: 46px; }
@@ -873,6 +875,31 @@ button { cursor: pointer; }
 .stat-icon { line-height: 0; }
 .stat-icon .icon { width: 1.3rem; height: 1.3rem; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35)); }
 .timer-icon { width: 42%; height: 42%; }
+
+/* Bestätigungsdialog (host.js: askConfirm) */
+.confirm-dialog {
+    margin: auto;
+    width: min(420px, calc(100vw - 32px));
+    padding: 26px 24px 20px;
+    border: 0;
+    border-radius: 18px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.confirm-dialog::backdrop { background: rgba(4, 16, 42, 0.65); }
+.confirm-message { font: 700 1.1rem/1.4 var(--font-body); margin: 0 0 22px; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.confirm-actions button {
+    padding: 11px 20px;
+    border-radius: 999px;
+    font: 700 0.95rem/1 var(--font-body);
+    cursor: pointer;
+}
+.confirm-cancel { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+.confirm-cancel:hover { background: #f3f6fb; }
+.confirm-ok { background: var(--red); color: #fff; border: 1px solid var(--red); }
+.confirm-ok:hover { filter: brightness(1.08); }
 
 /* Sanduhr in der Lesephase (host.js: HOURGLASS_SVG / setHourglass) */
 /* .timer-circle svg dreht den Ring um -90° und zieht ihn auf 100 % – die Sanduhr nicht */
