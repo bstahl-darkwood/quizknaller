@@ -31,9 +31,8 @@
     <meta property="og:image:height" content="630">
     <meta property="og:image:alt" content="SmartQuiz – Smart Solutions">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link rel="preload" href="/static/fonts/montserrat-171d0413.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/inter-b370644f.woff2" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="/static/theme.css">
     <link rel="stylesheet" href="/static/player.css">
 </head>
@@ -67,7 +66,7 @@
                 <button id="join-btn" type="submit" class="btn-primary">Los geht's <i data-icon="arrow-right"></i></button>
                 <div id="error-message" class="error-message" role="alert"></div>
             </form>
-            <img class="ss-footer" src="/static/smart-solutions-logo-hell.png" alt="Smart Solutions" width="640" height="169">
+            <img class="ss-footer" src="/static/smart-solutions-logo-hell-sm.png" alt="Smart Solutions" width="197" height="52">
         </div>
 
         <!-- Team Selection Screen -->
@@ -84,7 +83,7 @@
         <div id="waiting-screen" class="screen">
             <div class="center-content">
                 <div class="hex-icon"><i data-icon="check"></i></div>
-                <h2 class="screen-title">Du bist dabei!</h2>
+                <h2 class="screen-title" id="waiting-title">Du bist dabei!</h2>
                 <p class="quiz-title" id="waiting-quiz-title"></p>
                 <div class="pulse-text">Warte auf den Start …</div>
             </div>
@@ -196,7 +195,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/static/socket.io-4.7.2.min.js"></script>
     <script src="/static/theme.js"></script>
     <script src="/static/sounds.js"></script>
     <script src="/static/player.js"></script>

@@ -219,6 +219,7 @@ button { cursor: pointer; touch-action: manipulation; user-select: none; -webkit
     .join-spaced, .join-hand { display: none; }
     .ss-footer { display: none; }
     #join-screen { justify-content: flex-start; }
+    .night-bg .lights { display: none; }  /* sonst liegt das Logo über der Lichterkette */
 }
 
 /* ---------- Team ---------- */

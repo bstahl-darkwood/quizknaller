@@ -199,6 +199,13 @@ async def security_headers(request: Request, call_next):
     if request.url.path.startswith("/static/") and request.url.path.endswith(".html"):
         return HTMLResponse("Not Found", status_code=404)
     response = await call_next(request)
+    # Versionierte Dateien (?v=Hash) und Schriften (Hash im Dateinamen) ändern sich nie unter derselben
+    # URL: ein Jahr cachen. Wer nächste Woche wieder mitspielt, lädt dann nur noch die HTML-Seite.
+    path = request.url.path
+    if response.status_code == 200 and path.startswith("/static/") and (
+        "v" in request.query_params or path.startswith("/static/fonts/")
+    ):
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -1256,6 +1263,7 @@ async def show_results(game_code: str):
             results.append({
                 "sid": player_sid,
                 "name": player["name"],
+                "answered": True,
                 "correct": True,
                 "score_gained": score,
                 "total_score": player["score"],
@@ -1266,6 +1274,7 @@ async def show_results(game_code: str):
             results.append({
                 "sid": player_sid,
                 "name": player["name"],
+                "answered": True,
                 "correct": False,
                 "score_gained": 0,
                 "total_score": player["score"],
@@ -1282,6 +1291,7 @@ async def show_results(game_code: str):
             results.append({
                 "sid": player_sid,
                 "name": player["name"],
+                "answered": False,
                 "correct": False,
                 "score_gained": 0,
                 "total_score": player["score"],
@@ -1307,6 +1317,7 @@ async def show_results(game_code: str):
     # Send individual results to players
     for result in results:
         await sio.emit("your_result", {
+            "answered": result["answered"],
             "correct": result["correct"],
             "correct_answer": question["answers"][correct_index],
             "score_gained": result["score_gained"],

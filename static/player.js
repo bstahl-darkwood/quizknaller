@@ -30,6 +30,7 @@ const elements = {
     errorMessage: document.getElementById('error-message'),
     teamList: document.getElementById('team-list'),
     waitingQuizTitle: document.getElementById('waiting-quiz-title'),
+    waitingTitle: document.getElementById('waiting-title'),
     startCountdown: document.getElementById('start-countdown'),
     questionNumber: document.getElementById('question-number'),
     timerFill: document.getElementById('timer-fill'),
@@ -312,6 +313,7 @@ socket.on('reconnected_player', (data) => {
     localStorage.setItem('playerGameCode', data.code);
     elements.playerNameInput.value = localStorage.getItem('playerName');
     elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
+    if (data.name) elements.waitingTitle.textContent = `Du bist dabei, ${data.name}!`;
     enteredGame();
     
     // Restore to appropriate screen based on state
@@ -347,6 +349,7 @@ socket.on('joined_game', (data) => {
     if (data.player_token) localStorage.setItem('playerToken', data.player_token);
     
     elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
+    if (data.name) elements.waitingTitle.textContent = `Du bist dabei, ${data.name}!`;
     enteredGame();
     vibrate(20);
     
@@ -367,6 +370,7 @@ socket.on('quiz_switched', (data) => {
     localStorage.setItem('playerQuizTitle', data.quiz_title);
 
     elements.waitingQuizTitle.textContent = SQ.plain(data.quiz_title);
+    if (data.name) elements.waitingTitle.textContent = `Du bist dabei, ${data.name}!`;
 
     if (data.team_mode && data.teams && data.teams.length > 0 && !data.team) {
         showTeamSelection(data.teams);
@@ -567,15 +571,18 @@ socket.on('your_result', (data) => {
     } else {
         elements.resultScreen.classList.remove('correct');
         elements.resultScreen.classList.add('incorrect');
-        elements.resultIcon.innerHTML = SQ.icon('x');
-        elements.resultTitle.textContent = 'Leider falsch';
+        // Gar nicht geantwortet (Zeit um) ist etwas anderes als falsch geantwortet
+        const tooLate = data.answered === false;
+        elements.resultIcon.innerHTML = SQ.icon(tooLate ? 'clock' : 'x');
+        elements.resultTitle.textContent = tooLate ? 'Zeit abgelaufen' : 'Leider falsch';
         vibrate(120);
         // Play error sound for incorrect answer
         soundManager.playErrorSound().catch(() => {}); // Silently ignore sound errors
     }
     
     elements.correctAnswer.textContent = `Richtige Antwort: ${data.correct_answer}`;
-    elements.scoreGained.textContent = data.score_gained > 0 ? `+ ${data.score_gained.toLocaleString('de-DE')} Punkte` : 'keine Punkte';
+    elements.scoreGained.textContent = data.score_gained > 0 ? `+ ${data.score_gained.toLocaleString('de-DE')} Punkte`
+        : data.answered === false ? 'keine Antwort, keine Punkte' : 'keine Punkte';
     elements.totalScore.textContent = Number(data.total_score).toLocaleString('de-DE');
     elements.rankDisplay.textContent = `${data.rank}.`;
     elements.streakDisplay.innerHTML = data.streak > 1 ? `${SQ.icon('flame', 'streak-icon')}${data.streak}` : '–';
