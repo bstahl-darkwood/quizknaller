@@ -181,4 +181,39 @@ window.SQ = window.SQ || {};
             .trim();
     };
     SQ.renderIcons();
+
+    // Bestätigung in der Seite statt confirm(): eingebettete Browser (z. B. das Browser-Panel
+    // der Claude-App) lehnen confirm() teils ohne Dialog ab – der Klick blieb dann wirkungslos.
+    // Verwendung: if (await SQ.confirm('Wirklich löschen?', 'Löschen')) { … }
+    let dialog = null;
+    function ensureDialog() {
+        if (dialog) return dialog;
+        dialog = document.createElement('dialog');
+        dialog.className = 'confirm-dialog';
+        dialog.setAttribute('aria-labelledby', 'sq-confirm-message');
+        dialog.innerHTML =
+            '<form method="dialog">' +
+            '<p id="sq-confirm-message" class="confirm-message"></p>' +
+            '<div class="confirm-actions">' +
+            '<button value="cancel" class="confirm-cancel" type="submit">Abbrechen</button>' +
+            '<button value="ok" class="confirm-ok" type="submit">OK</button>' +
+            '</div></form>';
+        // Klick neben den Dialog = Abbrechen
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close('cancel'); });
+        document.body.appendChild(dialog);
+        return dialog;
+    }
+    SQ.confirm = function (message, okLabel) {
+        const d = ensureDialog();
+        if (typeof d.showModal !== 'function') return Promise.resolve(window.confirm(message));
+        if (d.open) d.close('cancel');  // ein noch offener Dialog gilt als abgebrochen
+        d.querySelector('.confirm-message').textContent = message;
+        d.querySelector('.confirm-ok').textContent = okLabel || 'OK';
+        d.returnValue = '';
+        return new Promise((resolve) => {
+            d.addEventListener('close', () => resolve(d.returnValue === 'ok'), { once: true });
+            d.showModal();
+            d.querySelector('.confirm-ok').focus();
+        });
+    };
 })();

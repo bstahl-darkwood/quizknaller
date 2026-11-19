@@ -131,11 +131,11 @@ $('add-option').addEventListener('click', () => { addOptionRow('', '', true); sa
 optionList.addEventListener('input', () => { updateOptionCount(); saveDraft(); });
 $('poll-title').addEventListener('input', saveDraft);
 
-$('quick-fill').addEventListener('click', () => {
+$('quick-fill').addEventListener('click', async () => {
     const n = Math.max(2, Math.min(MAX_OPTIONS, parseInt($('quick-count').value, 10) || 2));
     const existing = readForm().options;
     const hasCustom = existing.some((o, i) => o.detail || (o.name && o.name !== `Haus ${i + 1}`));
-    if (hasCustom && !confirm(`Liste durch „Haus 1“ bis „Haus ${n}“ ersetzen? Eingetragene Erbauer bleiben erhalten.`)) return;
+    if (hasCustom && !await SQ.confirm(`Liste durch „Haus 1“ bis „Haus ${n}“ ersetzen? Eingetragene Erbauer bleiben erhalten.`, 'Ersetzen')) return;
     optionList.innerHTML = '';
     for (let i = 0; i < n; i++) addOptionRow(`Haus ${i + 1}`, existing[i]?.detail || '');
     saveDraft();
@@ -169,8 +169,8 @@ $('cancel-edit').addEventListener('click', () => {
 // ---------- Live ----------
 $('edit-btn').addEventListener('click', () => openSetup(true));
 
-$('delete-btn').addEventListener('click', () => {
-    if (!confirm('Abstimmung wirklich beenden? Alle Anmeldungen und Stimmen gehen verloren.')) return;
+$('delete-btn').addEventListener('click', async () => {
+    if (!await SQ.confirm('Abstimmung wirklich beenden? Alle Anmeldungen und Stimmen gehen verloren.', 'Abstimmung beenden')) return;
     if (pollCode) socket.emit('delete_poll', { code: pollCode });
     clearSession();
     openSetup(false);
@@ -181,13 +181,13 @@ $('open-btn').addEventListener('click', () => {
     socket.emit('open_poll', { code: pollCode });
 });
 
-$('close-btn').addEventListener('click', () => {
+$('close-btn').addEventListener('click', async () => {
     soundManager.init();
     if (!current) return;
     const missing = current.voters.length - current.votes_cast;
-    if (current.votes_cast === 0 && !confirm('Es hat noch niemand abgestimmt. Trotzdem beenden?')) return;
+    if (current.votes_cast === 0 && !await SQ.confirm('Es hat noch niemand abgestimmt. Trotzdem beenden?', 'Trotzdem beenden')) return;
     if (current.votes_cast > 0 && missing > 0 &&
-        !confirm(`${missing} ${missing === 1 ? 'Person hat' : 'Personen haben'} noch nicht abgestimmt. Trotzdem beenden?`)) return;
+        !await SQ.confirm(`${missing} ${missing === 1 ? 'Person hat' : 'Personen haben'} noch nicht abgestimmt. Trotzdem beenden?`, 'Trotzdem beenden')) return;
     socket.emit('close_poll', { code: pollCode });
 });
 

@@ -101,11 +101,11 @@ function armBackGuard() {
     backGuardActive = true;
     history.pushState({ smartquiz: true }, '');
 }
-window.addEventListener('popstate', () => {
+window.addEventListener('popstate', async () => {
     if (!backGuardActive) return;
     backGuardActive = false;
     if (gameCode && !screens.join.classList.contains('active')) {
-        if (confirm('Spiel wirklich verlassen?')) {
+        if (await SQ.confirm('Spiel wirklich verlassen?', 'Verlassen')) {
             leaveGame();
         } else {
             armBackGuard();

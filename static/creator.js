@@ -147,8 +147,8 @@ function attachQuestionListeners(card, questionId) {
     });
 }
 
-function removeQuestion(questionId) {
-    if (!confirm('Möchtest du diese Frage wirklich löschen?')) {
+async function removeQuestion(questionId) {
+    if (!await SQ.confirm('Möchtest du diese Frage wirklich löschen?', 'Löschen')) {
         return;
     }
     
@@ -254,7 +254,7 @@ function saveToLocalStorage() {
     }
 }
 
-function loadFromLocalStorage() {
+async function loadFromLocalStorage() {
     try {
         const data = localStorage.getItem(STORAGE_KEY);
         
@@ -263,7 +263,7 @@ function loadFromLocalStorage() {
             return;
         }
         
-        if (!confirm('Möchtest du das gespeicherte Quiz laden? Aktuelle Änderungen gehen verloren!')) {
+        if (!await SQ.confirm('Möchtest du das gespeicherte Quiz laden? Aktuelle Änderungen gehen verloren!', 'Laden')) {
             return;
         }
         
@@ -305,7 +305,7 @@ function handleFileUpload(event) {
     
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
             
@@ -345,7 +345,7 @@ function handleFileUpload(event) {
                 }
             }
             
-            if (!confirm('Möchtest du dieses Quiz laden? Aktuelle Änderungen gehen verloren!')) {
+            if (!await SQ.confirm('Möchtest du dieses Quiz laden? Aktuelle Änderungen gehen verloren!', 'Laden')) {
                 return;
             }
             
@@ -376,8 +376,8 @@ function loadQuizData(quizData) {
     updateUI();
 }
 
-function clearAll() {
-    if (!confirm('Möchtest du wirklich alles löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+async function clearAll() {
+    if (!await SQ.confirm('Möchtest du wirklich alles löschen? Diese Aktion kann nicht rückgängig gemacht werden!', 'Alles löschen')) {
         return;
     }
     

@@ -231,7 +231,7 @@ function createQuizCard(quiz, isCustom) {
         const deleteBtn = card.querySelector('.delete-quiz-btn');
         deleteBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (await askConfirm(`Möchtest du das Quiz "${quiz.title}" wirklich löschen?`, 'Löschen')) {
+            if (await SQ.confirm(`Möchtest du das Quiz "${quiz.title}" wirklich löschen?`, 'Löschen')) {
                 deleteCustomQuiz(quiz.id);
                 loadQuizzes();
             }
@@ -399,28 +399,8 @@ elements.startGameBtn.addEventListener('click', () => {
     socket.emit('start_game', { code: gameCode });
 });
 
-// Bestätigung in der Seite statt confirm(): eingebettete Browser lehnen confirm() teils
-// ohne Dialog ab – dann passierte beim Klick auf "Beenden" einfach nichts.
-function askConfirm(message, okLabel = 'OK') {
-    const dialog = document.getElementById('confirm-dialog');
-    if (!dialog || typeof dialog.showModal !== 'function') {
-        return Promise.resolve(confirm(message));  // alte Seite im Cache oder sehr alter Browser
-    }
-    document.getElementById('confirm-message').textContent = message;
-    document.getElementById('confirm-ok').textContent = okLabel;
-    dialog.returnValue = '';
-    return new Promise((resolve) => {
-        dialog.addEventListener('close', () => resolve(dialog.returnValue === 'ok'), { once: true });
-        dialog.showModal();
-    });
-}
-// Klick neben den Dialog = Abbrechen
-document.getElementById('confirm-dialog')?.addEventListener('click', (e) => {
-    if (e.target === e.currentTarget) e.currentTarget.close('cancel');
-});
-
 async function confirmEndGame() {
-    if (!await askConfirm('Möchtest du das Spiel wirklich beenden?', 'Spiel beenden')) return;
+    if (!await SQ.confirm('Möchtest du das Spiel wirklich beenden?', 'Spiel beenden')) return;
     socket.emit('end_game_request', { code: gameCode });
     clearHostSession();
     showScreen('select');

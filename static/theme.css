@@ -152,3 +152,28 @@ body { background: transparent; }
 }
 .icon-solid { fill: currentColor; stroke: none; }
 [data-icon] { display: inline-flex; align-items: center; justify-content: center; line-height: 0; }
+
+/* Bestätigungsdialog für alle Seiten (theme.js: SQ.confirm) */
+.confirm-dialog {
+    margin: auto;
+    width: min(420px, calc(100vw - 32px));
+    padding: 26px 24px 20px;
+    border: 0;
+    border-radius: 18px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.confirm-dialog::backdrop { background: rgba(4, 16, 42, 0.65); }
+.confirm-message { font: 700 1.1rem/1.4 var(--font-body); margin: 0 0 22px; }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+.confirm-actions button {
+    padding: 11px 20px;
+    border-radius: 999px;
+    font: 700 0.95rem/1 var(--font-body);
+    cursor: pointer;
+}
+.confirm-cancel { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+.confirm-cancel:hover { background: #f3f6fb; }
+.confirm-ok { background: var(--red); color: #fff; border: 1px solid var(--red); }
+.confirm-ok:hover { filter: brightness(1.08); }
