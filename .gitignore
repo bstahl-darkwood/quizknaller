@@ -22,5 +22,6 @@ wheels/
 .installed.cfg
 *.egg
 
-netcup_deploy/*.db-wal
+netcup_deploy/
+*.db-wal
 *.db-shm
