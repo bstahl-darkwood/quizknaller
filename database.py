@@ -108,16 +108,32 @@ def init_db():
     conn.close()
 
 
-def get_connection():
-    """Get a database connection with row factory and better concurrency settings."""
-    conn = sqlite3.connect(DB_PATH, timeout=30.0)
-    conn.row_factory = sqlite3.Row
-    # Enable WAL mode for better concurrent access
-    conn.execute("PRAGMA journal_mode=WAL")
-    conn.execute("PRAGMA busy_timeout=30000")
-    # Needed so ON DELETE CASCADE actually removes players/responses of deleted games
-    conn.execute("PRAGMA foreign_keys=ON")
-    return conn
+_conn: Optional[sqlite3.Connection] = None
+
+
+def get_connection() -> sqlite3.Connection:
+    """Die eine, dauerhaft offene Datenbankverbindung des Prozesses.
+
+    Früher wurde pro Aufruf eine Verbindung geöffnet und geschlossen. Das kostete
+    (Öffnen, Pragmas, beim Schließen WAL-Checkpoint) rund 10 ms – und weil alle
+    Aufrufe in der Event-Loop laufen, standen in der Zeit sämtliche Spieler still.
+    Alle Zugriffe kommen aus der einen Event-Loop, daher reicht eine Verbindung.
+    """
+    global _conn
+    if _conn is None:
+        _conn = sqlite3.connect(DB_PATH, timeout=30.0, check_same_thread=False)
+        _conn.row_factory = sqlite3.Row
+        _conn.execute("PRAGMA journal_mode=WAL")
+        # In WAL reicht NORMAL: kein fsync pro Commit, die DB bleibt trotzdem konsistent
+        _conn.execute("PRAGMA synchronous=NORMAL")
+        _conn.execute("PRAGMA busy_timeout=30000")
+        # Needed so ON DELETE CASCADE actually removes players/responses of deleted games
+        _conn.execute("PRAGMA foreign_keys=ON")
+    elif _conn.in_transaction:
+        # Ein vorheriger Aufruf ist mitten in einer Änderung gescheitert (kein Commit) –
+        # die halbe Änderung nicht in den nächsten Commit mitschleppen.
+        _conn.rollback()
+    return _conn
 
 
 # Game operations
@@ -145,7 +161,6 @@ def create_game(game_code: str, host_sid: str, quiz_name: str, quiz_data: dict,
         ))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error creating game: {e}")
@@ -159,7 +174,6 @@ def get_game(game_code: str) -> Optional[Dict[str, Any]]:
     
     cursor.execute("SELECT * FROM games WHERE game_code = ?", (game_code,))
     row = cursor.fetchone()
-    conn.close()
     
     if row:
         return {
@@ -210,7 +224,6 @@ def update_game(game_code: str, **updates) -> bool:
         cursor.execute(query, values)
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error updating game: {e}")
@@ -224,7 +237,6 @@ def delete_game(game_code: str) -> bool:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM games WHERE game_code = ?", (game_code,))
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error deleting game: {e}")
@@ -263,7 +275,6 @@ def add_player(game_code: str, session_id: str, name: str, team: Optional[str] =
                 """, (game_code, session_id, name, team, token))
             
             conn.commit()
-            conn.close()
             return True
         except sqlite3.IntegrityError:
             # Player name already exists - try update instead
@@ -275,7 +286,6 @@ def add_player(game_code: str, session_id: str, name: str, team: Optional[str] =
                     WHERE game_code = ? AND LOWER(name) = LOWER(?)
                 """, (session_id, token, game_code, name))
                 conn2.commit()
-                conn2.close()
                 return True
             except Exception:
                 pass
@@ -305,7 +315,6 @@ def get_players(game_code: str) -> List[Dict[str, Any]]:
     """, (game_code,))
     
     rows = cursor.fetchall()
-    conn.close()
     
     return [{
         "name": row["name"],
@@ -324,7 +333,6 @@ def get_player_by_session(session_id: str) -> Optional[Dict[str, Any]]:
     
     cursor.execute("SELECT * FROM players WHERE session_id = ?", (session_id,))
     row = cursor.fetchone()
-    conn.close()
     
     if row:
         return {
@@ -346,7 +354,6 @@ def set_player_token(game_code: str, name: str, token: str) -> bool:
             (token, game_code, name),
         )
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error setting player token: {e}")
@@ -366,30 +373,27 @@ def update_player_session(game_code: str, name: str, new_session_id: str) -> boo
         """, (new_session_id, game_code, name))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error updating player session: {e}")
         return False
 
 
-def update_player_score(game_code: str, name: str, score: int) -> bool:
-    """Update player's score."""
+def update_player_scores(game_code: str, scores: List[tuple]) -> bool:
+    """Mehrere Punktestände [(name, score), …] in einem einzigen Commit speichern."""
+    if not scores:
+        return True
     try:
         conn = get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute("""
-            UPDATE players 
+        conn.executemany("""
+            UPDATE players
             SET score = ?, updated_at = CURRENT_TIMESTAMP
             WHERE game_code = ? AND name = ?
-        """, (score, game_code, name))
-        
+        """, [(score, game_code, name) for name, score in scores])
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
-        print(f"Error updating player score: {e}")
+        print(f"Error updating player scores: {e}")
         return False
 
 
@@ -406,7 +410,6 @@ def update_player_team(game_code: str, name: str, team: str) -> bool:
         """, (team, game_code, name))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error updating player team: {e}")
@@ -435,7 +438,6 @@ def reset_game_progress(game_code: str, reset_teams: bool = False) -> bool:
         cursor.execute("DELETE FROM question_responses WHERE game_code = ?", (game_code,))
 
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error resetting game progress: {e}")
@@ -455,7 +457,6 @@ def set_player_connected(session_id: str, connected: bool) -> bool:
         """, (connected, session_id))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error setting player connected status: {e}")
@@ -478,7 +479,6 @@ def record_answer(game_code: str, player_name: str, question_index: int,
         """, (game_code, player_name, question_index, answer_index, is_correct, time_taken_ms, points_awarded))
         
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
         print(f"Error recording answer: {e}")
@@ -500,7 +500,6 @@ def get_game_statistics(game_code: str) -> Dict[str, Any]:
     """, (game_code,))
     
     stats = cursor.fetchone()
-    conn.close()
     
     return {
         "total_responses": stats["total_responses"],
@@ -524,7 +523,6 @@ def cleanup_old_games(hours: int = 24) -> int:
         
         deleted = cursor.rowcount
         conn.commit()
-        conn.close()
         return deleted
     except Exception as e:
         print(f"Error cleaning up old games: {e}")
@@ -543,7 +541,6 @@ def save_poll(code: str, data: dict) -> None:
             (code, json.dumps(data)),
         )
         conn.commit()
-        conn.close()
     except Exception as e:
         print(f"Error saving poll: {e}")
 
@@ -558,7 +555,6 @@ def load_polls(hours: int = 48) -> Dict[str, dict]:
         )
         rows = conn.execute("SELECT code, data FROM polls").fetchall()
         conn.commit()
-        conn.close()
         return {row[0]: json.loads(row[1]) for row in rows}
     except Exception as e:
         print(f"Error loading polls: {e}")
@@ -570,6 +566,5 @@ def delete_poll(code: str) -> None:
         conn = get_connection()
         conn.execute("DELETE FROM polls WHERE code = ?", (code,))
         conn.commit()
-        conn.close()
     except Exception as e:
         print(f"Error deleting poll: {e}")

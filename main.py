@@ -560,7 +560,7 @@ async def reconnect_player(sid, data):
     await sio.emit("player_reconnected", {
         "name": player_data["name"],
         "message": f"{player_data['name']} ist wieder verbunden"
-    }, room=game_code)
+    }, to=game["host_sid"])  # nur der Host braucht das
 
     # Send current game state
     await sio.emit("reconnected_player", {
@@ -641,7 +641,7 @@ async def disconnect(sid):
                 await sio.emit("player_left", {
                     "name": player_name,
                     "players": players_payload
-                }, room=game_code)
+                }, to=game["host_sid"])  # nur der Host braucht das
             else:
                 # Game is active - mark player as disconnected but keep their data
                 game["players"][sid]["disconnected"] = True
@@ -651,7 +651,7 @@ async def disconnect(sid):
                 await sio.emit("player_disconnected", {
                     "name": player_name,
                     "message": f"{player_name} hat die Verbindung verloren"
-                }, room=game_code)
+                }, to=game["host_sid"])  # nur der Host braucht das
             break
         elif sid == game["host_sid"]:
             # Host disconnected - start grace period for reconnection
@@ -874,7 +874,7 @@ async def join_game(sid, data):
         await sio.emit("player_reconnected", {
             "name": player_name,
             "message": f"{player_name} ist wieder verbunden"
-        }, room=game_code)
+        }, to=game["host_sid"])  # nur der Host braucht das
         
         # Send current game state (same as reconnect_player)
         await sio.emit("reconnected_player", {
@@ -932,7 +932,7 @@ async def join_game(sid, data):
     await sio.emit("player_joined", {
         "name": player_name,
         "players": players_payload
-    }, room=game_code)
+    }, to=game["host_sid"])  # nur der Host braucht das
 
 
 @sio.event
@@ -1230,7 +1230,8 @@ async def show_results(game_code: str):
     
     results = []
     answer_counts = [0, 0, 0, 0]
-    
+    changed_scores = []  # gesammelt und unten in einem Commit gespeichert
+
     for player_sid, answer_data in game["answers"].items():
         player = game["players"][player_sid]
         is_correct = answer_data["answer"] == correct_index
@@ -1247,10 +1248,8 @@ async def show_results(game_code: str):
             if player["streak"] > 1:
                 score += min(player["streak"] * 50, 200)
             player["score"] += score
-            
-            # Update database
-            db.update_player_score(game_code, player["name"], player["score"])
-            
+            changed_scores.append((player["name"], player["score"]))
+
             results.append({
                 "sid": player_sid,
                 "name": player["name"],
@@ -1270,6 +1269,8 @@ async def show_results(game_code: str):
                 "streak": 0,
             })
     
+    db.update_player_scores(game_code, changed_scores)
+
     # Players who didn't answer
     for player_sid in game["players"]:
         if player_sid not in game["answers"]:
@@ -1421,11 +1422,11 @@ async def select_team(sid, data):
     # Update database
     db.update_player_team(game_code, game["players"][sid]["name"], team)
     
-    # Notify host and all players
+    # Notify host (player.js wertet die Liste nicht aus)
     players_payload = player_list(game)
     await sio.emit("player_updated", {
         "players": players_payload
-    }, room=game_code)
+    }, to=game["host_sid"])  # nur der Host braucht das
 
 
 @sio.event
