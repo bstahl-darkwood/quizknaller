@@ -180,19 +180,25 @@ class SoundManager {
         });
     }
 
-    // Start playful background music for rounds
+    // Hintergrundmusik während des Quiz: Weihnachts-Medley, live erzeugt (xmas-music.js, nur auf der
+    // Host-Seite geladen) – keine Musikdatei zum Herunterladen. Ohne xmas-music.js: alte MP3.
     async startBackgroundMusic() {
         if (this.isMuted) return;
 
         // Stop existing music if any
         this.stopBackgroundMusic();
 
-        // Create HTML5 Audio element for host.mp3
+        if (window.XmasMusic) {
+            await this.ensureContext();
+            if (!this.audioContext) return;
+            this.backgroundMusic = new window.XmasMusic(this.audioContext, this.masterVolume);
+            this.backgroundMusic.start();
+            return;
+        }
+
         this.backgroundMusic = new Audio('/static/host.mp3');
         this.backgroundMusic.loop = true;
         this.backgroundMusic.volume = this.masterVolume;
-        
-        // Play the music
         try {
             await this.backgroundMusic.play();
         } catch (e) {
@@ -205,7 +211,7 @@ class SoundManager {
     stopBackgroundMusic() {
         if (this.backgroundMusic) {
             this.backgroundMusic.pause();
-            this.backgroundMusic.currentTime = 0;
+            if ('currentTime' in this.backgroundMusic) this.backgroundMusic.currentTime = 0;
             this.backgroundMusic = null;
         }
     }
