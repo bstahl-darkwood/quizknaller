@@ -30,7 +30,7 @@ static/
   vote.html/js/css     Beamer-Ansicht der Abstimmung (/vote)
   player.html/js/css   Handy-Ansicht
   creator.html/js/css  Quiz-Editor (rein im Browser, speichert in localStorage)
-  sounds.js, host.mp3  Soundeffekte & Hintergrundmusik
+  sounds.js, xmas-music.js  Soundeffekte & live erzeugte Weihnachtsmusik
 passenger_wsgi.py  Einstieg für Netcup-Hosting · render.yaml  Einstieg für Render
 ```
 
@@ -77,11 +77,12 @@ lobby → starting (3 s Countdown) → reading → question → results ─┐
 | Spieler kommt mitten in einer Frage zurück | Server schickt die laufende Frage nach: in der Lesezeit den Fragetext, in der Antwortzeit auch die Antworten mit der Restzeit. Wer schon geantwortet hat, sieht „beantwortet“ und kann nicht doppelt antworten |
 | Spieler lädt im Spiel neu oder öffnet die Seite erneut | Punkte bleiben erhalten; Wiedereinstieg mit gespeicherter Sitzung oder gleichem Namen |
 | Host lädt neu | übernimmt per Token wieder, der aktuelle Bildschirm wird wiederhergestellt |
-| Host länger als 60 s weg | Spiel endet für alle |
+| Host verliert die Verbindung (WLAN, Ruhezustand) | Host-Seite verbindet sich von selbst neu und meldet sich wieder als Host an; solange zeigt sie oben einen Hinweis, die Handys „Host getrennt“ mit Restzeit |
+| Host länger als 10 min weg | Spiel endet für alle |
 | Server-Neustart | Spiele werden aus SQLite geladen; eine laufende Frage wird übersprungen, der Host macht mit „Weiter“ weiter |
 | Auto-Remove aktiv | Wer X Fragen in Folge nicht antwortet, fliegt raus und bekommt einen Hinweis |
 
-Spiele, die älter als 24 h sind, löscht der Server beim Start.
+Spiele (samt Spielernamen und Antworten) löscht der Server 24 h nach der letzten Aktivität – beim Start und danach stündlich. Abstimmungen nach 48 h. Der Host kann in der Lobby Spieler per Klick entfernen; der Name ist danach für dieses Spiel gesperrt.
 
 ## Login (Admin-Bereich)
 
@@ -97,6 +98,20 @@ Spiele, die älter als 24 h sind, löscht der Server beim Start.
 - **Fehlversuche:** nach 8 falschen Passwörtern ist die Anmeldung von dieser IP für 15 Minuten gesperrt.
 - **Lokal** ohne `ADMIN_PASSWORD` ist der Login aus (Hinweis im Terminal). Zum Ausprobieren: `ADMIN_PASSWORD=test1234 uv run python main.py`.
 
+## Impressum und Datenschutz
+
+`/impressum` und `/datenschutz` sind von allen Seiten unten verlinkt. Die Angaben stehen **nicht im Git** (das Repository ist öffentlich), sondern in `~/quizknaller/.env` auf dem Server:
+
+```bash
+cat >> ~/quizknaller/.env <<'EOT'
+IMPRESSUM_NAME=Vorname Nachname
+IMPRESSUM_STRASSE=Straße Hausnummer
+IMPRESSUM_ORT=PLZ Ort
+IMPRESSUM_EMAIL=kontakt@example.de
+EOT
+```
+Optional `IMPRESSUM_TELEFON`. Danach `./deploy/deploy.sh`. Fehlt etwas, steht auf der Seite „noch nicht eingetragen“ und beim Start eine Warnung im Log. Die Datenschutzerklärung beschreibt, was die App tatsächlich verarbeitet – bei Änderungen (neue Daten, andere Anbieter, andere Löschfristen) bitte mit anpassen. Der App-Server protokolliert keine IP-Adressen (`--no-access-log`) und keine Spielernamen.
+
 ## Sicherheit
 
 - **Host und Spieler haben je einen geheimen Token** (im `localStorage` des Geräts). Nur damit lässt sich eine laufende Verbindung übernehmen – Spiel-Code und Name allein reichen nicht, weil beides auf dem Beamer steht. Ohne Token klappt der Wiedereinstieg mit gleichem Namen nur, wenn der Spieler wirklich getrennt ist.
@@ -105,7 +120,14 @@ Spiele, die älter als 24 h sind, löscht der Server beim Start.
 
 ## Eigene Quizze
 
-Im **Creator** erstellen und auf „Im Browser speichern“ klicken. Das Quiz erscheint dann im selben Browser unter `/host`. Alternativ als JSON exportieren und unter `/host` per „Quiz hochladen“ importieren. Dauerhaft für alle verfügbar wird ein Quiz, wenn man es in `quizzes.json` einträgt:
+Eigene Quizze liegen **auf dem Server** (Tabelle `custom_quizzes`), nicht im Browser – der Host hat sie also auf jedem Rechner, auf dem er angemeldet ist.
+
+- **Creator:** „Auf dem Server speichern“ legt an bzw. überschreibt das geöffnete Quiz; „Gespeichertes Quiz öffnen“ zeigt die Liste.
+- **/host:** eigene Quizze haben oben rechts „Bearbeiten“ (öffnet den Creator) und „Löschen“. „Quiz hochladen“ (JSON) speichert ebenfalls auf dem Server.
+- **Umzug:** Quizze, die noch aus früheren Versionen im Browser liegen, wandern beim ersten Öffnen von `/host` in diesem Browser automatisch auf den Server.
+- Schnittstelle (nur mit Admin-Login): `GET/POST /api/custom-quizzes`, `GET/DELETE /api/custom-quizzes/{id}`.
+
+Fest eingebaut (für alle, ohne Login) wird ein Quiz, wenn man es in `quizzes.json` einträgt:
 
 ```json
 { "title": "Mein Quiz", "questions": [

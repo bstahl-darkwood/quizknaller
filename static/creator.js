@@ -1,9 +1,8 @@
 // SmartQuiz - Quiz Creator
 
-const STORAGE_KEY = 'quizknaller_custom_quiz';
-
 // State
 let questions = [];
+let currentQuizId = null;   // id des Quiz auf dem Server, wenn es schon gespeichert/geöffnet wurde
 
 // Helper function to escape HTML to prevent XSS
 function escapeHtml(text) {
@@ -34,14 +33,99 @@ init();
 function init() {
     // Add event listeners
     addQuestionBtn.addEventListener('click', addQuestion);
-    saveLocalBtn.addEventListener('click', saveToLocalStorage);
-    loadLocalBtn.addEventListener('click', loadFromLocalStorage);
+    saveLocalBtn.addEventListener('click', saveToServer);
+    loadLocalBtn.addEventListener('click', openSavedQuiz);
     downloadBtn.addEventListener('click', downloadAsJSON);
     uploadInput.addEventListener('change', handleFileUpload);
     clearBtn.addEventListener('click', clearAll);
     
     // Show empty state
     updateUI();
+
+    // Von der Quiz-Auswahl aus „Bearbeiten“: /creator?id=…
+    const id = new URLSearchParams(location.search).get('id');
+    if (id) openQuizById(id);
+}
+
+// ---------- Eigene Quizze auf dem Server ----------
+async function quizApi(path, options = {}) {
+    const res = await fetch(path, { credentials: 'same-origin', ...options });
+    if (res.status === 401) {
+        location.href = '/login?next=' + encodeURIComponent('/creator');
+        throw new Error('Bitte als Admin anmelden');
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
+    return data;
+}
+
+async function openQuizById(id) {
+    try {
+        const quiz = await quizApi(`/api/custom-quizzes/${encodeURIComponent(id)}`);
+        loadQuizData(quiz);
+        currentQuizId = quiz.id;
+        showToast(`„${quiz.title}“ geöffnet – Änderungen mit „Auf dem Server speichern“ übernehmen.`, 'success');
+    } catch (e) {
+        showToast('Quiz konnte nicht geladen werden: ' + e.message, 'error');
+    }
+}
+
+async function saveToServer() {
+    if (!validateQuiz()) {
+        return;
+    }
+    const quizData = getQuizData();
+    try {
+        const saved = await quizApi('/api/custom-quizzes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(currentQuizId ? { id: currentQuizId, ...quizData } : quizData),
+        });
+        currentQuizId = saved.id;
+        // Adresse merken, damit Neuladen dasselbe Quiz wieder öffnet
+        history.replaceState(null, '', `/creator?id=${encodeURIComponent(saved.id)}`);
+        showToast('Auf dem Server gespeichert – steht jetzt auf jedem Rechner in der Quiz-Auswahl.', 'success');
+    } catch (e) {
+        showToast('Speichern fehlgeschlagen: ' + e.message, 'error');
+    }
+}
+
+// Auswahl der gespeicherten Quizze (Dialog)
+async function openSavedQuiz() {
+    let list;
+    try {
+        list = await quizApi('/api/custom-quizzes');
+    } catch (e) {
+        showToast('Liste konnte nicht geladen werden: ' + e.message, 'error');
+        return;
+    }
+    if (!list.length) {
+        showToast('Auf dem Server liegen noch keine eigenen Quizze.', 'error');
+        return;
+    }
+    let dialog = document.getElementById('open-quiz-dialog');
+    if (!dialog) {
+        dialog = document.createElement('dialog');
+        dialog.id = 'open-quiz-dialog';
+        dialog.className = 'confirm-dialog open-quiz-dialog';
+        dialog.addEventListener('click', (e) => { if (e.target === dialog) dialog.close(); });
+        document.body.appendChild(dialog);
+    }
+    dialog.innerHTML = `
+        <p class="confirm-message">Welches Quiz möchtest du öffnen?</p>
+        <ul class="open-quiz-list">
+            ${list.map(q => `<li><button type="button" data-id="${escapeHtml(q.id)}">
+                <b>${escapeHtml(q.title)}</b><small>${q.questions.length} ${q.questions.length === 1 ? 'Frage' : 'Fragen'}</small></button></li>`).join('')}
+        </ul>
+        <div class="confirm-actions"><button type="button" class="confirm-cancel">Abbrechen</button></div>`;
+    dialog.querySelector('.confirm-cancel').addEventListener('click', () => dialog.close());
+    dialog.querySelectorAll('[data-id]').forEach(btn => btn.addEventListener('click', async () => {
+        dialog.close();
+        if (questions.length && !await SQ.confirm('Das geöffnete Quiz ersetzt den Inhalt des Formulars. Nicht gespeicherte Änderungen gehen verloren.', 'Öffnen')) return;
+        await openQuizById(btn.dataset.id);
+        history.replaceState(null, '', `/creator?id=${encodeURIComponent(btn.dataset.id)}`);
+    }));
+    dialog.showModal();
 }
 
 function addQuestion() {
@@ -74,7 +158,7 @@ function renderQuestion(question, index) {
     questionCard.innerHTML = `
         <div class="question-header">
             <span class="question-number">Frage ${index + 1}</span>
-            <button class="btn-remove" onclick="removeQuestion(${question.id})">${SQ.icon('trash')} Löschen</button>
+            <button class="btn-remove" type="button" data-remove="${question.id}">${SQ.icon('trash')} Löschen</button>
         </div>
         
         <div class="form-group">
@@ -227,54 +311,6 @@ function getQuizData() {
     };
 }
 
-function saveToLocalStorage() {
-    if (!validateQuiz()) {
-        return;
-    }
-    
-    const quizData = getQuizData();
-    
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(quizData));
-        // Also publish to the host's quiz list (same browser) - before, the creator used a
-        // different storage key, so saved quizzes never showed up on /host.
-        const hostKey = 'quizknaller_custom_quizzes';
-        const hostQuizzes = JSON.parse(localStorage.getItem(hostKey) || '[]');
-        const existing = hostQuizzes.findIndex(q => q.title === quizData.title);
-        const entry = {
-            id: existing >= 0 ? hostQuizzes[existing].id : `custom_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
-            ...quizData,
-            isCustom: true
-        };
-        if (existing >= 0) hostQuizzes[existing] = entry; else hostQuizzes.push(entry);
-        localStorage.setItem(hostKey, JSON.stringify(hostQuizzes));
-        showToast('Quiz gespeichert – erscheint jetzt auch in der Quiz-Auswahl.', 'success');
-    } catch (e) {
-        showToast('Fehler beim Speichern: ' + e.message, 'error');
-    }
-}
-
-async function loadFromLocalStorage() {
-    try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        
-        if (!data) {
-            showToast('Kein gespeichertes Quiz gefunden!', 'error');
-            return;
-        }
-        
-        if (!await SQ.confirm('Möchtest du das gespeicherte Quiz laden? Aktuelle Änderungen gehen verloren!', 'Laden')) {
-            return;
-        }
-        
-        const quizData = JSON.parse(data);
-        loadQuizData(quizData);
-        showToast('Quiz geladen.', 'success');
-    } catch (e) {
-        showToast('Fehler beim Laden: ' + e.message, 'error');
-    }
-}
-
 function downloadAsJSON() {
     if (!validateQuiz()) {
         return;
@@ -350,7 +386,9 @@ function handleFileUpload(event) {
             }
             
             loadQuizData(quizData);
-            showToast('Quiz importiert.', 'success');
+            currentQuizId = null;   // importiert = neues Quiz, überschreibt nichts auf dem Server
+            history.replaceState(null, '', '/creator');
+            showToast('Quiz importiert – mit „Auf dem Server speichern“ übernehmen.', 'success');
         } catch (e) {
             showToast('Fehler beim Lesen der Datei: ' + e.message, 'error');
         }
@@ -377,14 +415,16 @@ function loadQuizData(quizData) {
 }
 
 async function clearAll() {
-    if (!await SQ.confirm('Möchtest du wirklich alles löschen? Diese Aktion kann nicht rückgängig gemacht werden!', 'Alles löschen')) {
+    if (!await SQ.confirm('Formular leeren und ein neues Quiz beginnen? Auf dem Server gespeicherte Quizze bleiben erhalten.', 'Formular leeren')) {
         return;
     }
     
     quizTitleInput.value = '';
     questions = [];
+    currentQuizId = null;   // sonst würde das nächste Speichern das zuletzt geöffnete Quiz überschreiben
+    history.replaceState(null, '', '/creator');
     updateUI();
-    showToast('Alles gelöscht.', 'success');
+    showToast('Formular geleert.', 'success');
 }
 
 function showToast(message, type = 'success') {
@@ -396,5 +436,9 @@ function showToast(message, type = 'success') {
     }, 3000);
 }
 
-// Make removeQuestion globally accessible
-window.removeQuestion = removeQuestion;
+// Löschen-Knöpfe der Fragen: Event-Delegation statt onclick-Attribut (die Content-Security-Policy
+// erlaubt keine Inline-Handler)
+questionsContainer.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-remove]');
+    if (btn) removeQuestion(Number(btn.dataset.remove));
+});

@@ -25,4 +25,5 @@ EXPOSE 8000
 
 # Genau ein Prozess: die laufenden Spiele liegen im Arbeitsspeicher (mehrere Worker würden sie nicht teilen).
 # --proxy-headers: hinter dem Proxy kommt https über X-Forwarded-Proto, sonst zeigt der QR-Code auf http://
-CMD ["/opt/venv/bin/uvicorn", "main:socket_app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*"]
+# --no-access-log: keine IP-Adressen der Mitspielenden in den Server-Protokollen (Datenschutz, siehe /datenschutz)
+CMD ["/opt/venv/bin/uvicorn", "main:socket_app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips", "*", "--no-access-log"]

@@ -216,6 +216,24 @@ window.SQ = window.SQ || {};
         return h % 3;
     };
 
+    // Bildschirm wachhalten, solange ein Spiel/eine Abstimmung läuft: sonst geht der Host-Laptop
+    // am Beamer in den Ruhezustand, die Verbindung bricht ab. Die Sperre fällt weg, wenn der Tab
+    // im Hintergrund ist – beim Zurückkommen wird sie neu angefordert.
+    let wakeLock = null, wantAwake = false;
+    async function requestWake() {
+        if (!wantAwake || wakeLock || !('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+        try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            wakeLock.addEventListener('release', () => { wakeLock = null; });
+        } catch (e) { /* z. B. Energiesparmodus – dann eben nicht */ }
+    }
+    document.addEventListener('visibilitychange', requestWake);
+    SQ.keepAwake = function (on) {
+        wantAwake = !!on;
+        if (wantAwake) requestWake();
+        else if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
+    };
+
     // Bestätigung in der Seite statt confirm(): eingebettete Browser (z. B. das Browser-Panel
     // der Claude-App) lehnen confirm() teils ohne Dialog ab – der Klick blieb dann wirkungslos.
     // Verwendung: if (await SQ.confirm('Wirklich löschen?', 'Löschen')) { … }

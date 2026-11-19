@@ -214,9 +214,10 @@ socket.on('error', (data) => {
 socket.on('host_disconnected', (data) => {
     const gracePeriod = data.grace_period || 60;
     let countdown = gracePeriod;
+    const mmss = (s) => `${Math.floor(Math.max(s, 0) / 60)}:${String(Math.max(s, 0) % 60).padStart(2, '0')}`;
     
     if (elements.hostDisconnectOverlay && elements.hostReconnectTimer) {
-        elements.hostReconnectTimer.textContent = countdown;
+        elements.hostReconnectTimer.textContent = mmss(countdown);
         elements.hostDisconnectOverlay.style.display = 'flex';
         
         // Clear any existing countdown
@@ -226,7 +227,7 @@ socket.on('host_disconnected', (data) => {
         
         hostReconnectCountdownInterval = setInterval(() => {
             countdown--;
-            elements.hostReconnectTimer.textContent = countdown;
+            elements.hostReconnectTimer.textContent = mmss(countdown);
             
             if (countdown <= 0) {
                 clearInterval(hostReconnectCountdownInterval);
@@ -653,11 +654,43 @@ socket.on('game_ended', (data) => {
     
     elements.finalRank.innerHTML = rankHtml;
     elements.finalScore.textContent = finalText;
+    renderFinalBoard(data, myName);
     releaseScreen();
     vibrate([40, 60, 40, 60, 80]);
     
     showScreen('final');
 });
+
+// Endstand auf dem Handy: Top 5 (bei Teams zusätzlich die Team-Wertung) und der eigene Platz,
+// auch wenn man weiter hinten liegt
+const FINAL_TOP = 5;
+function renderFinalBoard(data, myName) {
+    const board = document.getElementById('final-board');
+    const me = myName.toLowerCase();
+    const row = (place, name, score, mine) => `
+        <li class="final-row${mine ? ' mine' : ''}">
+            <span class="place">${place}.</span>
+            <span class="name">${escapeHtml(name)}${mine ? ' <small>(du)</small>' : ''}</span>
+            <span class="score">${Number(score).toLocaleString('de-DE')}</span>
+        </li>`;
+    let html = '';
+    if (data.team_mode && Array.isArray(data.team_leaderboard) && data.team_leaderboard.length) {
+        html += '<h3>Teams</h3><ol class="final-list">'
+            + data.team_leaderboard.slice(0, FINAL_TOP).map((t, i) => row(i + 1, t.team, t.score, false)).join('')
+            + '</ol>';
+    }
+    const list = data.leaderboard || [];
+    const myIndex = list.findIndex(p => p.name.toLowerCase() === me);
+    html += '<h3>Endstand</h3><ol class="final-list">'
+        + list.slice(0, FINAL_TOP).map((p, i) => row(i + 1, p.name, p.score, i === myIndex)).join('');
+    if (myIndex >= FINAL_TOP) {
+        if (myIndex > FINAL_TOP) html += '<li class="final-gap" aria-hidden="true">…</li>';
+        html += row(myIndex + 1, list[myIndex].name, list[myIndex].score, true);
+    }
+    html += '</ol>';
+    board.innerHTML = html;
+    board.hidden = list.length === 0;
+}
 
 // ---------- Abstimmung (z. B. bestes Lebkuchenhaus) ----------
 let poll = null;   // { title, options, state, my_vote, results }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SmartQuiz – Impressum</title>
+    <meta name="theme-color" content="#071a3d">
+    <link rel="icon" href="/favicon.ico" sizes="48x48">
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="/static/fonts/montserrat-171d0413.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="/static/fonts/inter-b370644f.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/static/theme.css">
+    <link rel="stylesheet" href="/static/legal.css">
+</head>
+<body>
+    <div class="night-bg" data-lights="off"></div>
+    <main class="legal">
+        <a class="legal-back" href="/">← Zum Quiz</a>
+        <article class="legal-card">
+            <h1>Impressum</h1>
+
+            <h2>Angaben gemäß § 5 DDG</h2>
+            <p>
+                {{IMPRESSUM_NAME}}<br>
+                {{IMPRESSUM_STRASSE}}<br>
+                {{IMPRESSUM_ORT}}
+            </p>
+
+            <h2>Kontakt</h2>
+            <p>
+                E-Mail: {{IMPRESSUM_EMAIL_LINK}}
+                {{IMPRESSUM_TELEFON_ZEILE}}
+            </p>
+
+            <h2>Hinweis</h2>
+            <p>
+                SmartQuiz ist ein privat betriebenes, nicht kommerzielles Quiz- und Abstimmungsspiel
+                für Veranstaltungen. Es gibt keine Werbung und kein Tracking.
+                Wie mit deinen Daten umgegangen wird, steht in der <a href="/datenschutz">Datenschutzerklärung</a>.
+            </p>
+        </article>
+        <nav class="legal-nav"><a href="/datenschutz">Datenschutz</a></nav>
+    </main>
+    <script src="/static/theme.js"></script>
+</body>
+</html>

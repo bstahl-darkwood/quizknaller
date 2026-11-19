@@ -479,6 +479,44 @@ body[data-screen="poll"] .night-bg .lights { opacity: 0; }
     font: 700 1.3rem/1.3 var(--font-body);
     color: var(--lime);
 }
+/* Endstand-Liste */
+#final-screen .center-content { width: 100%; }
+.final-board {
+    width: 100%;
+    max-width: 420px;
+    margin-top: 14px;
+    padding: 14px 14px 10px;
+    border-radius: 20px;
+    background: #fff;
+    color: var(--ink);
+    text-align: left;
+}
+.final-board h3 {
+    margin: 2px 4px 8px;
+    font: 800 0.8rem/1 var(--font-body);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--blue-600);
+}
+.final-board h3:not(:first-child) { margin-top: 14px; }
+.final-list { list-style: none; margin: 0; padding: 0; }
+.final-row {
+    display: grid;
+    grid-template-columns: 2.2em 1fr auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 8px 8px;
+    border-radius: 10px;
+    font: 600 1rem/1.25 var(--font-body);
+}
+.final-row + .final-row { border-top: 1px solid var(--line); }
+.final-row .place { font: 900 1rem/1 var(--font-head); color: var(--navy-800); }
+.final-row .name { overflow-wrap: anywhere; }
+.final-row .name small { font-weight: 500; color: var(--muted); }
+.final-row .score { font-variant-numeric: tabular-nums; font-weight: 700; }
+.final-row.mine { background: #eaf9dc; border-top-color: transparent; }
+.final-row.mine + .final-row { border-top-color: transparent; }
+.final-gap { text-align: center; color: var(--muted); line-height: 1; padding: 2px 0; }
 
 /* ---------- Host getrennt ---------- */
 .host-disconnect-overlay {

@@ -11,7 +11,6 @@ const AUTOPLAY_COUNTDOWN_SECONDS = 10;
 const CUSTOM_QUIZZES_STORAGE_KEY = 'quizknaller_custom_quizzes';
 const MIN_TIME_LIMIT = 5;  // minimum time limit for questions in seconds
 const MAX_TIME_LIMIT = 120;  // maximum time limit for questions in seconds
-const ID_RANDOM_LENGTH = 9;  // length of random string in ID generation
 
 let gameCode = null;
 let correctIndex = null;
@@ -122,55 +121,73 @@ function escapeHtml(text) {
 
 function clearHostSession() {
     gameCode = null;
+    SQ.keepAwake(false);
     localStorage.removeItem('hostGameCode');
     localStorage.removeItem('hostQuizTitle');
     localStorage.removeItem('hostToken');
     updateHeaderGameCodes(null);
 }
 
-// Custom quiz management
-function getCustomQuizzes() {
-    try {
-        const data = localStorage.getItem(CUSTOM_QUIZZES_STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (e) {
-        console.error('Error loading custom quizzes:', e);
-        return [];
+// Eigene Quizze liegen auf dem Server (/api/custom-quizzes, nur mit Admin-Login) – so hat der Host
+// sie auf jedem Rechner. Früher lagen sie nur im Browser (localStorage) des Host-Laptops.
+async function quizApi(path, options = {}) {
+    const res = await fetch(path, { credentials: 'same-origin', ...options });
+    if (res.status === 401) {
+        location.href = '/login?next=' + encodeURIComponent(location.pathname);
+        throw new Error('Bitte als Admin anmelden');
     }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Fehler ${res.status}`);
+    return data;
 }
 
-function saveCustomQuizzes(quizzes) {
-    try {
-        localStorage.setItem(CUSTOM_QUIZZES_STORAGE_KEY, JSON.stringify(quizzes));
-    } catch (e) {
-        console.error('Error saving custom quizzes:', e);
-        alert('Fehler beim Speichern der Quizze: ' + e.message);
-    }
-}
-
-function addCustomQuiz(quizData) {
-    const customQuizzes = getCustomQuizzes();
-    const newQuiz = {
-        id: `custom_${Date.now()}_${Math.random().toString(36).substring(2, 2 + ID_RANDOM_LENGTH)}`,
-        ...quizData,
-        isCustom: true
-    };
-    customQuizzes.push(newQuiz);
-    saveCustomQuizzes(customQuizzes);
-    return newQuiz;
+function saveCustomQuiz(quizData) {
+    return quizApi('/api/custom-quizzes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(quizData),
+    });
 }
 
 function deleteCustomQuiz(quizId) {
-    const customQuizzes = getCustomQuizzes();
-    const filtered = customQuizzes.filter(q => q.id !== quizId);
-    saveCustomQuizzes(filtered);
+    return quizApi(`/api/custom-quizzes/${encodeURIComponent(quizId)}`, { method: 'DELETE' });
+}
+
+// Einmaliger Umzug: Quizze, die noch im Browser liegen, auf den Server übernehmen
+async function migrateBrowserQuizzes() {
+    let local;
+    try {
+        local = JSON.parse(localStorage.getItem(CUSTOM_QUIZZES_STORAGE_KEY) || '[]');
+    } catch (e) {
+        local = [];
+    }
+    if (!Array.isArray(local) || local.length === 0) return 0;
+    let moved = 0;
+    const failed = [];
+    for (const quiz of local) {
+        try {
+            await saveCustomQuiz(quiz);   // gleiche id -> mehrfacher Umzug legt nichts doppelt an
+            moved++;
+        } catch (e) {
+            failed.push(quiz);
+            console.warn('Quiz konnte nicht übernommen werden', quiz && quiz.title, e);
+        }
+    }
+    // Nur was nicht geklappt hat, bleibt im Browser
+    if (failed.length) localStorage.setItem(CUSTOM_QUIZZES_STORAGE_KEY, JSON.stringify(failed));
+    else localStorage.removeItem(CUSTOM_QUIZZES_STORAGE_KEY);
+    return moved;
 }
 
 // Load quizzes
 async function loadQuizzes() {
-    const response = await fetch('/api/quizzes');
-    const defaultQuizzes = await response.json();
-    const customQuizzes = getCustomQuizzes();
+    const [defaultQuizzes, customQuizzes] = await Promise.all([
+        fetch('/api/quizzes').then(r => r.json()),
+        quizApi('/api/custom-quizzes').catch(e => {
+            console.error('Eigene Quizze konnten nicht geladen werden', e);
+            return [];
+        }),
+    ]);
     
     elements.quizList.innerHTML = '';
     
@@ -198,15 +215,18 @@ function createQuizCard(quiz, isCustom) {
     card.innerHTML = `
         <div class="quiz-card-icon">${SQ.icon(isCustom ? 'pencil' : SQ.topicIcon(quiz.title))}</div>
         <h3>${escapeHtml(SQ.plain(quiz.title))}</h3>
-        <span>${questionCount} Fragen</span>
-        ${isCustom ? '<button class="delete-quiz-btn" aria-label="Quiz löschen" title="Quiz löschen">' + SQ.icon('trash') + '</button>' : ''}
+        <span>${questionCount} ${questionCount === 1 ? 'Frage' : 'Fragen'}</span>
+        ${isCustom ? '<div class="custom-quiz-actions">'
+            + '<a class="edit-quiz-btn" href="/creator?id=' + encodeURIComponent(quiz.id) + '" aria-label="Quiz bearbeiten" title="Quiz bearbeiten">' + SQ.icon('pencil') + '</a>'
+            + '<button class="delete-quiz-btn" aria-label="Quiz löschen" title="Quiz löschen">' + SQ.icon('trash') + '</button>'
+            + '</div>' : ''}
     `;
     
     // Add click handler for playing the quiz
     const cardClickArea = card;
     cardClickArea.addEventListener('click', (e) => {
-        // Don't trigger if clicking delete button
-        if (e.target.closest('.delete-quiz-btn')) {
+        // Don't trigger if clicking delete or edit
+        if (e.target.closest('.delete-quiz-btn, .edit-quiz-btn')) {
             return;
         }
         
@@ -231,8 +251,12 @@ function createQuizCard(quiz, isCustom) {
         const deleteBtn = card.querySelector('.delete-quiz-btn');
         deleteBtn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (await SQ.confirm(`Möchtest du das Quiz "${quiz.title}" wirklich löschen?`, 'Löschen')) {
-                deleteCustomQuiz(quiz.id);
+            if (await SQ.confirm(`Möchtest du das Quiz "${quiz.title}" wirklich löschen? Es ist dann für alle Rechner weg.`, 'Löschen')) {
+                try {
+                    await deleteCustomQuiz(quiz.id);
+                } catch (err) {
+                    alert('Löschen fehlgeschlagen: ' + err.message);
+                }
                 loadQuizzes();
             }
         });
@@ -247,7 +271,7 @@ function handleQuizUpload(event) {
     if (!file) return;
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
             
@@ -304,8 +328,13 @@ function handleQuizUpload(event) {
                 }
                 
                 if (valid) {
-                    addCustomQuiz(quizData);
-                    addedCount++;
+                    try {
+                        // ohne id: Upload legt immer ein neues Quiz an
+                        await saveCustomQuiz({ title: quizData.title, questions: quizData.questions });
+                        addedCount++;
+                    } catch (err) {
+                        alert(`„${quizData.title}“ konnte nicht gespeichert werden: ${err.message}`);
+                    }
                 }
             }
             
@@ -329,20 +358,35 @@ elements.uploadQuizBtn.addEventListener('click', () => {
 
 elements.uploadQuizInput.addEventListener('change', handleQuizUpload);
 
-// Initialize
-loadQuizzes();
+// Initialize: erst Browser-Quizze auf den Server umziehen, dann Liste laden
+migrateBrowserQuizzes()
+    .then(moved => {
+        if (moved > 0) {
+            alert(`${moved} eigene${moved === 1 ? 's Quiz' : ' Quizze'} aus diesem Browser auf den Server übernommen – jetzt auf jedem Rechner verfügbar.`);
+        }
+    })
+    .catch(() => {})
+    .finally(loadQuizzes);
 
-// Try to reconnect on page load
-window.addEventListener('load', () => {
+// Bei JEDER (Wieder-)Verbindung als Host anmelden – nicht nur beim Laden der Seite. Nach einem
+// WLAN-Aussetzer verbindet Socket.IO von selbst neu, bekommt aber eine neue Verbindungs-ID; ohne
+// erneutes reconnect_host hielt der Server den Host weiter für weg und beendete das Spiel.
+const hostOffline = document.getElementById('host-offline-toast');
+socket.on('connect', () => {
+    hostOffline.classList.remove('show');
     const savedGameCode = localStorage.getItem('hostGameCode');
     if (savedGameCode) {
         socket.emit('reconnect_host', { code: savedGameCode, token: localStorage.getItem('hostToken') });
     }
 });
+socket.on('disconnect', () => {
+    if (gameCode) hostOffline.classList.add('show');
+});
 
 // Reconnection handlers
 socket.on('reconnected_host', (data) => {
     gameCode = data.code;
+    SQ.keepAwake(true);
     
     // Update localStorage
     localStorage.setItem('hostGameCode', data.code);
@@ -597,6 +641,7 @@ elements.newGameBtn.addEventListener('click', () => {
 // Socket Events
 socket.on('game_created', (data) => {
     gameCode = data.code;
+    SQ.keepAwake(true);
     // Save to localStorage for reconnection
     localStorage.setItem('hostGameCode', data.code);
     localStorage.setItem('hostToken', data.host_token);
@@ -667,6 +712,16 @@ function updatePlayerDisplay(players) {
     elements.playerCount.textContent = totalPlayers;
     elements.startGameBtn.disabled = totalPlayers < 1;
 }
+
+// Spieler entfernen (z. B. unpassender Name): Klick auf die Kachel in der Lobby
+elements.playersGrid.addEventListener('click', async (e) => {
+    const chip = e.target.closest('.player-chip');
+    if (!chip || !gameCode) return;
+    const name = chip.textContent;
+    if (await SQ.confirm(`„${name}“ aus dem Spiel entfernen? Mit diesem Namen kann niemand mehr beitreten.`, 'Entfernen')) {
+        socket.emit('kick_player', { code: gameCode, name });
+    }
+});
 
 socket.on('player_joined', (data) => {
     updatePlayerDisplay(data.players);

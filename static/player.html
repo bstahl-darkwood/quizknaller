@@ -67,6 +67,7 @@
                 <div id="error-message" class="error-message" role="alert"></div>
             </form>
             <img class="ss-footer" src="/static/smart-solutions-logo-hell-sm.png" alt="Smart Solutions" width="197" height="52">
+            <nav class="legal-links"><a href="/impressum">Impressum</a><span aria-hidden="true">·</span><a href="/datenschutz">Datenschutz</a></nav>
         </div>
 
         <!-- Team Selection Screen -->
@@ -156,6 +157,8 @@
                 <span class="lime-line center"></span>
                 <div class="final-rank" id="final-rank"></div>
                 <div class="final-score" id="final-score"></div>
+                <!-- Endstand: Top 5 und, falls weiter hinten, der eigene Platz -->
+                <div class="final-board" id="final-board" hidden></div>
             </div>
             <button id="play-again-btn" class="btn-primary btn-bottom" type="button"><i data-icon="rotate"></i>Neues Spiel beitreten</button>
         </div>
@@ -190,7 +193,7 @@
                 <div class="hex-icon hex-amber"><i data-icon="alert"></i></div>
                 <h2>Host getrennt</h2>
                 <p>Der Host hat die Verbindung verloren.<br>Warte auf Wiederverbindung …</p>
-                <div class="reconnect-countdown">Spiel endet in <span id="host-reconnect-timer">60</span> s</div>
+                <div class="reconnect-countdown">Spiel endet in <span id="host-reconnect-timer">10:00</span> min</div>
             </div>
         </div>
     </div>

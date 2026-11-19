@@ -31,7 +31,7 @@ from pathlib import Path
 import qrcode
 import socketio
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from urllib.parse import parse_qs, quote
 from fastapi.staticfiles import StaticFiles
 
@@ -52,15 +52,45 @@ sio = socketio.AsyncServer(
 admin_only = auth.admin_only(sio)
 
 
+CLEANUP_INTERVAL = 3600   # Sekunden
+GAME_RETENTION_HOURS = 24  # danach werden Spiele samt Spielernamen gelöscht
+
+
+def cleanup_old_data() -> int:
+    """Spiele (samt Spielernamen und Antworten) nach 24 h löschen, Abstimmungen nach 48 h."""
+    deleted = db.cleanup_old_games(GAME_RETENTION_HOURS)
+    # Was nicht mehr in der Datenbank steht, auch aus dem Speicher nehmen
+    for code in [c for c in games if not db.get_game(c)]:
+        games.pop(code, None)
+    poll.drop_old_polls()
+    return deleted
+
+
+async def cleanup_loop():
+    while True:
+        await asyncio.sleep(CLEANUP_INTERVAL)
+        try:
+            deleted = cleanup_old_data()
+            if deleted:
+                print(f"Cleaned up {deleted} old games")
+        except Exception as e:  # Aufräumen darf den Server nie stoppen
+            print(f"Cleanup failed: {e}")
+
+
 @asynccontextmanager
 async def lifespan(_app):
-    """Beim Start alte Spiele (> 24 h) aus der Datenbank löschen."""
-    deleted = db.cleanup_old_games(24)
+    """Beim Start und danach stündlich alte Daten löschen (vorher nur beim Start – lief der
+    Server wochenlang, blieben Spielernamen entsprechend lange gespeichert)."""
+    deleted = cleanup_old_data()
     if deleted > 0:
         print(f"Cleaned up {deleted} old games")
+    if any(not os.environ.get(k, "").strip() for k in LEGAL_FIELDS):
+        print("WARNUNG: Impressum unvollständig – IMPRESSUM_* in .env eintragen (siehe ANLEITUNG.md)")
     if not auth.ENABLED:
         print("WARNUNG: ADMIN_PASSWORD nicht gesetzt – Host, Abstimmung und Creator sind ohne Login erreichbar")
+    task = asyncio.create_task(cleanup_loop())
     yield
+    task.cancel()
 
 
 app = FastAPI(title="SmartQuiz", description="Das Smart-Solutions-Quiz", lifespan=lifespan)
@@ -76,7 +106,9 @@ games: dict[str, dict] = {}
 host_disconnect_tasks: dict[str, asyncio.Task] = {}
 
 # Configuration
-HOST_RECONNECT_GRACE_PERIOD = 60  # seconds to wait before ending game after host disconnect
+# Wie lange ein Spiel ohne Host weiterlebt. Großzügig: Laptop im Ruhezustand, WLAN-Aussetzer am Beamer,
+# Browser neu gestartet – nach 60 s war vorher das ganze Quiz samt Punkten weg.
+HOST_RECONNECT_GRACE_PERIOD = 600
 READING_SPEED_WPM = 150  # words per minute for reading phase (lower = more time)
 MIN_READING_TIME = 2  # minimum seconds for reading phase
 MAX_READING_TIME = 8  # maximum seconds for reading phase
@@ -193,6 +225,22 @@ def player_list(game: dict) -> list[dict]:
     return [{"name": p["name"], "score": p["score"], "team": p["team"]} for p in game["players"].values()]
 
 
+_HOST_RE = re.compile(r"^[A-Za-z0-9.-]+(:\d+)?$")
+
+
+def content_security_policy(request: Request) -> str:
+    """Nur eigene Skripte, Schriften und Verbindungen – kein fremder Code, keine Inline-Skripte.
+    Inline-Styles bleiben erlaubt (style-Attribute in HTML/Vorlagen, z. B. animation-delay)."""
+    host = request.headers.get("host", "")
+    ws = f" wss://{host} ws://{host}" if _HOST_RE.match(host) else ""  # ältere Safaris zählen ws: nicht zu 'self'
+    return (
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; font-src 'self'; media-src 'self'; manifest-src 'self'; "
+        f"connect-src 'self'{ws}; object-src 'none'; base-uri 'none'; form-action 'self'; "
+        "frame-ancestors 'none'"
+    )
+
+
 @app.middleware("http")
 async def security_headers(request: Request, call_next):
     # Die Seiten gibt es nur über ihre Routen (dort mit Login-Prüfung), nicht als /static/*.html
@@ -206,6 +254,7 @@ async def security_headers(request: Request, call_next):
         "v" in request.query_params or path.startswith("/static/fonts/")
     ):
         response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    response.headers.setdefault("Content-Security-Policy", content_security_policy(request))
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("X-Frame-Options", "DENY")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
@@ -285,6 +334,42 @@ def login_page(next_path: str, error: str = "", status: int = 200) -> HTMLRespon
     return HTMLResponse(html, status_code=status, headers={"Cache-Control": "no-store"})
 
 
+# ---------- Impressum und Datenschutz ----------
+# Die Angaben (private Anschrift) stehen NICHT im Git – das Repository ist öffentlich –, sondern in
+# ~/quizknaller/.env auf dem Server: IMPRESSUM_NAME, IMPRESSUM_STRASSE, IMPRESSUM_ORT, IMPRESSUM_EMAIL,
+# optional IMPRESSUM_TELEFON.
+LEGAL_FIELDS = ("IMPRESSUM_NAME", "IMPRESSUM_STRASSE", "IMPRESSUM_ORT", "IMPRESSUM_EMAIL")
+
+
+def _esc(text: str) -> str:
+    return (text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&#39;"))
+
+
+def legal_page(name: str) -> HTMLResponse:
+    html = render_page(name).body.decode()
+    missing = '<span class="legal-missing">noch nicht eingetragen</span>'
+    values = {k: _esc(os.environ.get(k, "").strip()) for k in LEGAL_FIELDS}
+    for key in ("IMPRESSUM_NAME", "IMPRESSUM_STRASSE", "IMPRESSUM_ORT"):
+        html = html.replace("{{%s}}" % key, values[key] or missing)
+    email = values["IMPRESSUM_EMAIL"]
+    html = html.replace("{{IMPRESSUM_EMAIL_LINK}}",
+                        f'<a href="mailto:{email}">{email}</a>' if email else missing)
+    phone = _esc(os.environ.get("IMPRESSUM_TELEFON", "").strip())
+    html = html.replace("{{IMPRESSUM_TELEFON_ZEILE}}", f"<br>Telefon: {phone}" if phone else "")
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
+
+
+@app.get("/impressum", response_class=HTMLResponse)
+async def impressum():
+    return legal_page("impressum.html")
+
+
+@app.get("/datenschutz", response_class=HTMLResponse)
+async def datenschutz():
+    return legal_page("datenschutz.html")
+
+
 @app.get("/login", response_class=HTMLResponse)
 async def login_form(request: Request, next: str | None = None):
     target = safe_next(next)
@@ -343,6 +428,85 @@ async def creator(request: Request):
 async def favicon():
     """Browser fragen das Icon oft direkt unter /favicon.ico an."""
     return FileResponse(static_path / "favicon.ico", headers={"Cache-Control": "public, max-age=86400"})
+
+
+# ---------- Eigene Quizze (nur mit Admin-Login) ----------
+MAX_CUSTOM_QUIZZES = 200
+MAX_QUIZ_BODY = 300_000  # Bytes, entspricht max_http_buffer_size von Socket.IO
+CUSTOM_ID_RE = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def normalize_quiz(quiz: dict) -> dict:
+    """Nur die Felder speichern, die ein Spiel braucht."""
+    return {
+        "title": quiz["title"].strip(),
+        "questions": [
+            {"question": q["question"].strip(), "answers": [a.strip() for a in q["answers"]],
+             "correct": q["correct"], "time_limit": q["time_limit"]}
+            for q in quiz["questions"]
+        ],
+    }
+
+
+def admin_json_guard(request: Request) -> JSONResponse | None:
+    if not is_admin(request):
+        return JSONResponse({"error": "Bitte als Admin anmelden"}, status_code=401)
+    return None
+
+
+@app.get("/api/custom-quizzes")
+async def list_custom_quizzes(request: Request):
+    if (denied := admin_json_guard(request)):
+        return denied
+    return JSONResponse(db.list_custom_quizzes(), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/custom-quizzes/{quiz_id}")
+async def get_custom_quiz(request: Request, quiz_id: str):
+    if (denied := admin_json_guard(request)):
+        return denied
+    quiz = db.get_custom_quiz(quiz_id) if CUSTOM_ID_RE.match(quiz_id) else None
+    if not quiz:
+        return JSONResponse({"error": "Quiz nicht gefunden"}, status_code=404)
+    return JSONResponse(quiz, headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/custom-quizzes")
+async def save_custom_quiz(request: Request):
+    """Quiz anlegen oder (mit bekannter id) überschreiben."""
+    if (denied := admin_json_guard(request)):
+        return denied
+    # Nur echtes JSON: ein fremdes Formular kann diesen Content-Type nicht setzen (Schutz vor CSRF)
+    if request.headers.get("content-type", "").split(";")[0].strip() != "application/json":
+        return JSONResponse({"error": "JSON erwartet"}, status_code=415)
+    body = await request.body()
+    if len(body) > MAX_QUIZ_BODY:
+        return JSONResponse({"error": "Quiz ist zu groß"}, status_code=413)
+    try:
+        quiz = json.loads(body)
+    except ValueError:
+        return JSONResponse({"error": "Ungültiges JSON"}, status_code=400)
+    error = validate_quiz(quiz)
+    if error:
+        return JSONResponse({"error": error}, status_code=400)
+    quiz_id = quiz.get("id")
+    if not (isinstance(quiz_id, str) and CUSTOM_ID_RE.match(quiz_id)):
+        quiz_id = "custom_" + secrets.token_urlsafe(9)
+    if not db.get_custom_quiz(quiz_id) and db.count_custom_quizzes() >= MAX_CUSTOM_QUIZZES:
+        return JSONResponse({"error": f"Höchstens {MAX_CUSTOM_QUIZZES} eigene Quizze"}, status_code=400)
+    clean = normalize_quiz(quiz)
+    if not db.save_custom_quiz(quiz_id, clean):
+        return JSONResponse({"error": "Speichern fehlgeschlagen"}, status_code=500)
+    return JSONResponse({"id": quiz_id, **clean})
+
+
+@app.delete("/api/custom-quizzes/{quiz_id}")
+async def delete_custom_quiz(request: Request, quiz_id: str):
+    if (denied := admin_json_guard(request)):
+        return denied
+    if not CUSTOM_ID_RE.match(quiz_id) or not db.delete_custom_quiz(quiz_id):
+        return JSONResponse({"error": "Quiz nicht gefunden"}, status_code=404)
+    return JSONResponse({"ok": True})
 
 
 @app.get("/api/health")
@@ -655,7 +819,7 @@ async def disconnect(sid):
             else:
                 # Game is active - mark player as disconnected but keep their data
                 game["players"][sid]["disconnected"] = True
-                print(f"Player {player_name} disconnected during active game {game_code}, keeping data for reconnection")
+                print(f"Player disconnected during active game {game_code}, keeping data for reconnection")
                 
                 # Notify host about temporary disconnection
                 await sio.emit("player_disconnected", {
@@ -854,6 +1018,10 @@ async def join_game(sid, data):
 
     game = games[game_code]
 
+    if player_name.lower() in game.get("kicked", ()):
+        await sio.emit("error", {"message": "Mit diesem Namen kannst du diesem Spiel nicht mehr beitreten"}, to=sid)
+        return
+
     # Check if player with same name already exists (potential reconnect)
     existing_sid = None
     for player_sid, player in game["players"].items():
@@ -899,7 +1067,7 @@ async def join_game(sid, data):
             "teams": game["teams"],
         }, to=sid)
         
-        print(f"Player {player_name} reconnected to game {game_code}")
+        print(f"Player reconnected to game {game_code}")
         await send_current_question(game, sid)
         return
     
@@ -1214,7 +1382,7 @@ async def check_and_remove_inactive_players(game_code: str):
             await sio.emit("game_ended", {"reason": "Du wurdest wegen Inaktivität entfernt."}, to=player_sid)
             await sio.leave_room(player_sid, game_code)
             
-            print(f"Removed inactive player {player_name} from game {game_code}")
+            print(f"Removed an inactive player from game {game_code}")
         
         # Notify host about removed players
         await sio.emit("inactive_players_removed", {
@@ -1441,6 +1609,34 @@ async def select_team(sid, data):
     await sio.emit("player_updated", {
         "players": players_payload
     }, to=game["host_sid"])  # nur der Host braucht das
+
+
+@sio.event
+@admin_only
+async def kick_player(sid, data):
+    """Host entfernt einen Spieler (z. B. unpassender Name auf dem Beamer). Der Name bleibt gesperrt."""
+    game_code = str((data or {}).get("code") or "").upper()
+    name = str((data or {}).get("name") or "").strip().lower()
+    game = games.get(game_code)
+    if not game or game["host_sid"] != sid or not name:
+        return
+    target = next((s for s, p in game["players"].items() if p["name"].lower() == name), None)
+    if target is None:
+        return
+    player_name = game["players"].pop(target)["name"]
+    game.get("answer_history", {}).pop(target, None)
+    game.get("answers", {}).pop(target, None)
+    game.setdefault("kicked", set()).add(name)
+    db.remove_player(game_code, player_name)
+
+    await sio.emit("game_ended", {"reason": "Du wurdest vom Host aus dem Spiel entfernt."}, to=target)
+    await sio.leave_room(target, game_code)
+    await sio.emit("player_left", {"name": player_name, "players": player_list(game)}, to=game["host_sid"])
+    print(f"Host removed a player from game {game_code}")
+
+    # Fehlte nur noch die Antwort des Entfernten, geht es jetzt weiter
+    if game["state"] == "question" and game["players"] and len(game["answers"]) >= len(game["players"]):
+        await show_results(game_code)
 
 
 @sio.event

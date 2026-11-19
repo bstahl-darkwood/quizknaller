@@ -118,6 +118,7 @@ function showSetupError(msg) {
 
 function openSetup(edit) {
     editing = !!edit;
+    SQ.keepAwake(false);
     $('cancel-edit').hidden = !editing;
     $('create-poll').innerHTML = editing
         ? `Änderungen übernehmen${SQ.icon('check')}`
@@ -313,6 +314,7 @@ function reveal(p) {
 
 // ---------- Server ----------
 function render(p) {
+    SQ.keepAwake(true);  // Beamer soll während der Abstimmung nicht einschlafen
     const previous = current?.state;
     current = p;
     if (p.state === 'closed') {

@@ -103,6 +103,18 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_responses_game_code 
         ON question_responses(game_code)
     """)
+
+    # Eigene Quizze (aus Creator oder JSON-Upload) – liegen auf dem Server, damit der Host sie von
+    # jedem Rechner aus hat. Bewusst ohne Verknüpfung zu games: das Aufräumen alter Spiele lässt sie stehen.
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS custom_quizzes (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            data TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
     
     conn.commit()
     conn.close()
@@ -379,6 +391,18 @@ def update_player_session(game_code: str, name: str, new_session_id: str) -> boo
         return False
 
 
+def remove_player(game_code: str, name: str) -> bool:
+    """Spieler aus einem Spiel löschen (vom Host entfernt)."""
+    try:
+        conn = get_connection()
+        conn.execute("DELETE FROM players WHERE game_code = ? AND LOWER(name) = LOWER(?)", (game_code, name))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error removing player: {e}")
+        return False
+
+
 def update_player_scores(game_code: str, scores: List[tuple]) -> bool:
     """Mehrere Punktestände [(name, score), …] in einem einzigen Commit speichern."""
     if not scores:
@@ -568,3 +592,49 @@ def delete_poll(code: str) -> None:
         conn.commit()
     except Exception as e:
         print(f"Error deleting poll: {e}")
+
+
+# ---------- Eigene Quizze ----------
+
+def list_custom_quizzes() -> List[Dict[str, Any]]:
+    rows = get_connection().execute(
+        "SELECT id, data FROM custom_quizzes ORDER BY created_at, id"
+    ).fetchall()
+    return [{"id": row["id"], **json.loads(row["data"])} for row in rows]
+
+
+def get_custom_quiz(quiz_id: str) -> Optional[Dict[str, Any]]:
+    row = get_connection().execute("SELECT id, data FROM custom_quizzes WHERE id = ?", (quiz_id,)).fetchone()
+    return {"id": row["id"], **json.loads(row["data"])} if row else None
+
+
+def count_custom_quizzes() -> int:
+    return get_connection().execute("SELECT COUNT(*) FROM custom_quizzes").fetchone()[0]
+
+
+def save_custom_quiz(quiz_id: str, quiz: dict) -> bool:
+    """Anlegen oder überschreiben (gleiche id)."""
+    try:
+        conn = get_connection()
+        conn.execute("""
+            INSERT INTO custom_quizzes (id, title, data) VALUES (?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET title = excluded.title, data = excluded.data,
+                                          updated_at = CURRENT_TIMESTAMP
+        """, (quiz_id, quiz["title"], json.dumps(quiz, ensure_ascii=False)))
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error saving custom quiz: {e}")
+        return False
+
+
+def delete_custom_quiz(quiz_id: str) -> bool:
+    try:
+        conn = get_connection()
+        cur = conn.execute("DELETE FROM custom_quizzes WHERE id = ?", (quiz_id,))
+        conn.commit()
+        return cur.rowcount > 0
+    except Exception as e:
+        print(f"Error deleting custom quiz: {e}")
+        return False
+

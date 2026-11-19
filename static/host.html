@@ -49,6 +49,7 @@
             </div>
             <h2 class="section-title">Quiz auswählen</h2>
             <div id="quiz-list" class="quiz-list"></div>
+            <nav class="legal-links"><a href="/impressum">Impressum</a><span aria-hidden="true">·</span><a href="/datenschutz">Datenschutz</a></nav>
         </div>
     </div>
 
@@ -136,7 +137,7 @@
             </div>
             <div class="players-section">
                 <h3><span class="player-count" id="player-count">0</span> <span class="spaced">Spieler sind dabei</span></h3>
-                <div class="players-grid" id="players-grid"></div>
+                <div class="players-grid" id="players-grid" title="Zum Entfernen auf einen Namen klicken"></div>
             </div>
         </div>
         <!-- Desktop: offcanvas team config -->
@@ -315,6 +316,11 @@
             <div class="full-leaderboard" id="full-leaderboard"></div>
             <button id="new-game-btn" class="btn-new-game"><i data-icon="rotate"></i>Quiz wechseln</button>
         </div>
+    </div>
+
+    <div id="host-offline-toast" class="host-offline-toast" role="status" aria-live="polite">
+        <span class="spinner"></span>
+        <span>Verbindung weg – verbinde neu … Das Spiel läuft weiter, die Handys warten bis zu 10 Minuten.</span>
     </div>
 
     <script src="/static/socket.io-4.7.2.min.js"></script>

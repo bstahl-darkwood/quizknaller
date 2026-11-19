@@ -205,3 +205,16 @@ body { background: transparent; }
 .confirm-cancel:hover { background: #f3f6fb; }
 .confirm-ok { background: var(--red); color: #fff; border: 1px solid var(--red); }
 .confirm-ok:hover { filter: brightness(1.08); }
+
+/* Links zu Impressum und Datenschutz unten auf allen Seiten */
+.legal-links {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 14px auto calc(6px + env(safe-area-inset-bottom, 0px));
+    font: 500 0.8rem/1.4 var(--font-body);
+    color: rgba(255, 255, 255, 0.6);
+}
+.legal-links a { color: inherit; text-decoration: none; padding: 6px 2px; }
+.legal-links a:hover, .legal-links a:focus-visible { color: #fff; text-decoration: underline; }
+

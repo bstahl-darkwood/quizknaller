@@ -218,7 +218,7 @@ async def on_disconnect(sid: str) -> bool:
     return False
 
 
-def _drop_old_polls():
+def drop_old_polls():
     cutoff = time.time() - 48 * 3600
     for code in [c for c, p in polls.items() if p.get("created", 0) < cutoff]:
         polls.pop(code, None)
@@ -246,7 +246,7 @@ def register(server, new_code, admin_only):
         if isinstance(checked, str):
             await sio.emit("poll_error", {"message": checked}, to=sid)
             return
-        _drop_old_polls()
+        drop_old_polls()
         if len(polls) >= MAX_POLLS:
             await sio.emit("poll_error", {"message": "Zu viele Abstimmungen gleichzeitig"}, to=sid)
             return
