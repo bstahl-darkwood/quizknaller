@@ -73,6 +73,9 @@ const elements = {
     questionGameCode: document.getElementById('question-game-code'),
     resultsGameCode: document.getElementById('results-game-code'),
     endGameBtnResults: document.getElementById('end-game-btn-results'),
+    endGameBtnQuestion: document.getElementById('end-game-btn-question'),
+    finishGameBtnQuestion: document.getElementById('finish-game-btn-question'),
+    finishGameBtnResults: document.getElementById('finish-game-btn-results'),
     countdownNumber: document.getElementById('countdown-number'),
     questionNumber: document.getElementById('question-number'),
     timerProgress: document.getElementById('timer-progress'),
@@ -450,9 +453,36 @@ async function confirmEndGame() {
     showScreen('select');
 }
 
+function stopAutoplay() {
+    if (autoplayTimeout) {
+        clearTimeout(autoplayTimeout);
+        autoplayTimeout = null;
+    }
+    if (autoplayCountdownInterval) {
+        clearInterval(autoplayCountdownInterval);
+        autoplayCountdownInterval = null;
+    }
+    if (elements.autoplayCountdown) {
+        elements.autoplayCountdown.style.display = 'none';
+    }
+}
+
+// End the quiz early but keep the game: the server answers with the final
+// leaderboard (game_ended), which shows the award ceremony as at the regular end.
+async function confirmFinishGame() {
+    if (!await SQ.confirm(
+        'Quiz jetzt beenden und direkt zur Siegerehrung? Eine laufende Frage wird nicht mehr gewertet.',
+        'Zur Siegerehrung'
+    )) return;
+    stopAutoplay();
+    socket.emit('finish_game_request', { code: gameCode });
+}
+
 elements.endGameBtn.addEventListener('click', confirmEndGame);
-// End game button on results screen
 elements.endGameBtnResults.addEventListener('click', confirmEndGame);
+elements.endGameBtnQuestion.addEventListener('click', confirmEndGame);
+elements.finishGameBtnQuestion.addEventListener('click', confirmFinishGame);
+elements.finishGameBtnResults.addEventListener('click', confirmFinishGame);
 
 // Offcanvas toggle
 elements.teamConfigToggle.addEventListener('click', openOffcanvas);
@@ -952,6 +982,8 @@ socket.on('show_results', (data) => {
     
     // Wait a moment to show the highlight, then show results
     setTimeout(() => {
+        // Quiz was ended in the meantime (e.g. "Siegerehrung"): stay on that screen
+        if (!document.getElementById('question-screen').classList.contains('active')) return;
         elements.correctAnswerBox.textContent = data.correct_answer;
         elements.correctAnswerBox.className = `correct-answer-box answer-${data.correct_index}`;
         
@@ -1020,6 +1052,7 @@ socket.on('show_results', (data) => {
 
 socket.on('game_ended', (data) => {
     if (timerInterval) clearInterval(timerInterval);
+    stopAutoplay();
     
     // Stop background music
     soundManager.stopBackgroundMusic();

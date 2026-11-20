@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>SmartQuiz – Abstimmung</title>
-    <meta name="description" content="Abstimmen per Handy: QR-Code scannen, Namen eingeben, Favorit wählen.">
+    <meta name="description" content="Abstimmen und bewerten per Handy: QR-Code scannen, Namen eingeben, loslegen.">
     <meta name="theme-color" content="#071a3d">
     <link rel="icon" href="/favicon.ico" sizes="48x48">
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
@@ -42,22 +42,31 @@
                 <div class="hex-badge setup-badge"><i data-icon="vote"></i></div>
                 <h1 class="wordmark logo">Smart<span>Vote</span></h1>
                 <p class="spaced tagline">Abstimmen. Küren. Feiern.</p>
-                <p class="hand select-hand">Wer hat das schönste Haus?</p>
+                <p class="hand select-hand">Wer überzeugt am meisten?</p>
             </div>
+
+            <h2 class="section-title" id="template-heading">Voting auswählen</h2>
+            <div id="template-list" class="quiz-list template-list" role="radiogroup" aria-labelledby="template-heading"></div>
 
             <form id="setup-form" class="setup-card" novalidate>
                 <label class="setup-label" for="poll-title">Worüber wird abgestimmt?</label>
                 <input id="poll-title" class="setup-input setup-title" type="text" maxlength="100"
                        placeholder="z. B. Das schönste Lebkuchenhaus" autocomplete="off">
 
+                <div id="criteria-section" class="criteria-section" hidden>
+                    <span class="setup-label">Kriterien mit je 1–4 Punkten <b id="criteria-count">0</b></span>
+                    <p class="setup-hint" id="scale-hint"></p>
+                    <ol id="criteria-preview" class="criteria-preview"></ol>
+                </div>
+
                 <div class="setup-row-head">
-                    <span class="setup-label">Zur Wahl stehen <b id="option-count">0</b></span>
+                    <span class="setup-label"><span id="options-label">Zur Wahl stehen</span> <b id="option-count">0</b></span>
                     <span class="setup-quick">
                         <input id="quick-count" type="number" min="2" max="40" value="8" aria-label="Anzahl">
-                        <button id="quick-fill" type="button" class="link-btn"><i data-icon="house"></i>Häuser 1–n anlegen</button>
+                        <button id="quick-fill" type="button" class="link-btn"><i data-icon="house"></i><span id="quick-fill-label">Häuser 1–n anlegen</span></button>
                     </span>
                 </div>
-                <p class="setup-hint">Name ist Pflicht, die Zeile darunter optional – z. B. wer gebaut hat.</p>
+                <p class="setup-hint" id="options-hint">Name ist Pflicht, die Zeile darunter optional – z. B. wer gebaut hat.</p>
                 <ol id="option-list" class="option-list"></ol>
                 <button id="add-option" type="button" class="add-option"><i data-icon="plus"></i>Option hinzufügen</button>
 
@@ -113,7 +122,7 @@
                     </div>
                     <div class="vote-meter-bar"><div id="votes-fill"></div></div>
                 </div>
-                <div class="section-sub"><i data-icon="house"></i>Zur Wahl</div>
+                <div class="section-sub" id="chips-sub"><i data-icon="house"></i><span id="chips-label">Zur Wahl</span></div>
                 <div class="option-chips" id="option-chips"></div>
                 <div class="section-sub"><i data-icon="users"></i>Dabei <b id="voter-count">0</b></div>
                 <div class="players-grid" id="voters-grid"></div>
@@ -130,7 +139,7 @@
     <div id="reveal-screen" class="screen">
         <div class="countdown-container reveal-container">
             <div class="spaced">Die Stimmen sind ausgezählt</div>
-            <h2>Und gewonnen hat …</h2>
+            <h2 id="reveal-head">Und gewonnen hat …</h2>
             <div class="big-countdown" id="reveal-number">3</div>
         </div>
     </div>
@@ -146,10 +155,11 @@
             </div>
             <div class="winner-row" id="winner-row"></div>
             <div class="ranking-card">
-                <div class="card-title">Alle Stimmen <small id="total-votes"></small></div>
+                <div class="card-title"><span id="ranking-title">Alle Stimmen</span> <small id="total-votes"></small></div>
                 <span class="lime-line"></span>
                 <ol class="ranking" id="ranking"></ol>
             </div>
+            <div id="answers" class="answers"></div>
             <div class="result-actions">
                 <button id="new-poll-btn" class="btn-new-game"><i data-icon="rotate"></i>Neue Abstimmung</button>
             </div>

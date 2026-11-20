@@ -1686,6 +1686,28 @@ async def end_game_request(sid, data):
     await sio.emit("game_ended", {"message": "Das Spiel wurde vom Host beendet."}, room=game_code)
 
 
+@sio.event
+@admin_only
+async def finish_game_request(sid, data):
+    """Host ends the quiz early and goes straight to the award ceremony.
+
+    Unlike end_game_request this keeps the game and shows the final leaderboard
+    with the points scored so far. A question that is still open is not scored.
+    """
+    game_code = data.get("code")
+    game = games.get(game_code)
+    if not game or game["host_sid"] != sid:
+        return
+    if game["state"] not in ("reading", "question", "results"):
+        return
+
+    # Leaving "reading"/"question" stops the running reading sleep and the
+    # server-side question timer, which both check the state before acting.
+    game["state"] = "ended"
+    game["answers"] = {}
+    await end_game(game_code)
+
+
 async def end_game(game_code: str):
     """End the game and show final leaderboard."""
     if game_code not in games:

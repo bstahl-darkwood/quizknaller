@@ -62,6 +62,18 @@ button { cursor: pointer; }
 }
 .btn-end-game:hover, .btn-team-config:hover { background: rgba(255, 255, 255, 0.16); }
 .btn-end-game:hover { border-color: var(--red); }
+.btn-finish-game {
+    border: 1px solid var(--lime);
+    border-radius: 999px;
+    padding: 10px 18px;
+    background: var(--glass);
+    color: #fff;
+    font: 600 0.95rem/1 var(--font-body);
+    transition: background 0.15s;
+}
+.btn-finish-game:hover { background: rgba(255, 255, 255, 0.16); }
+.btn-finish-game [data-icon="trophy"] .icon { color: var(--lime); }
+.host-game-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 
 /* ================= Quiz auswählen ================= */
 #select-screen { overflow-y: auto; padding-top: 0; }
@@ -869,7 +881,7 @@ button { cursor: pointer; }
 }
 
 /* ---------- Icons (Host) ---------- */
-.btn-start, .btn-next, .btn-new-game, .btn-end-game, .btn-team-config {
+.btn-start, .btn-next, .btn-new-game, .btn-end-game, .btn-finish-game, .btn-team-config {
     display: inline-flex;
     align-items: center;
     justify-content: center;

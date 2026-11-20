@@ -693,7 +693,7 @@ function renderFinalBoard(data, myName) {
 }
 
 // ---------- Abstimmung (z. B. bestes Lebkuchenhaus) ----------
-let poll = null;   // { title, options, state, my_vote, results }
+let poll = null;   // { kind, title, options, criteria, texts, state, my_vote, my_scores, my_notes, results }
 
 function escapeHtml(text) {
     return String(text ?? '')
@@ -701,8 +701,103 @@ function escapeHtml(text) {
         .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function pollFromServer(data) {
+    return {
+        kind: data.kind || 'choice', title: data.title, options: data.options || [],
+        criteria: data.criteria || [], texts: data.texts || [],
+        state: data.state, my_vote: data.my_vote, results: data.results,
+        my_scores: { ...(data.my_scores || {}) }, my_notes: { ...(data.my_notes || {}) }
+    };
+}
+
+function fmt(n) {
+    return Number(n || 0).toLocaleString('de-DE', { maximumFractionDigits: 1 });
+}
+
+// ----- Bewertung: je Eintrag und Kriterium 1–4, dazu Freitexte -----
+function ratingEntries() {
+    return poll.options.length ? poll.options : [{ name: poll.title, detail: '' }];
+}
+
+function ratingRequired() {
+    return ratingEntries().length * poll.criteria.length;
+}
+
+function ratingDone() {
+    return Object.keys(poll.my_scores).length;
+}
+
+function renderRatingStatus() {
+    const status = document.getElementById('poll-status');
+    const done = ratingDone();
+    const required = ratingRequired();
+    status.classList.toggle('saved', poll.state === 'open' && done >= required);
+    if (poll.state === 'lobby') {
+        status.textContent = 'Gleich geht’s los – sobald der Host startet, kannst du hier bewerten.';
+    } else if (done >= required) {
+        status.textContent = 'Alles bewertet und gespeichert. Bis zum Ende kannst du noch ändern.';
+    } else {
+        status.textContent = `${done} von ${required} bewertet – 1 = schwach, 4 = top. Gespeichert wird sofort.`;
+    }
+}
+
+function noteField(entry, t) {
+    const text = poll.texts[t];
+    const key = `${entry === null ? '-' : entry}:${t}`;
+    return `
+        <label class="rate-text">
+            <span class="rate-q"><span class="emoji">✍️</span><b>${escapeHtml(text.question)}</b></span>
+            <textarea maxlength="300" rows="2" data-entry="${entry === null ? '' : entry}" data-text="${t}"
+                      placeholder="Deine Antwort …" ${poll.state === 'open' ? '' : 'readonly'}>${escapeHtml(poll.my_notes[key] || '')}</textarea>
+        </label>`;
+}
+
+function renderRating() {
+    const box = document.getElementById('poll-rating');
+    const entries = ratingEntries();
+    const single = poll.options.length === 0;
+    box.classList.toggle('locked', poll.state !== 'open');
+    let html = entries.map((entry, e) => `
+        <section class="rate-entry">
+            ${single ? '' : `<h3 class="rate-head"><span class="num">${e + 1}</span><span>${escapeHtml(entry.name)}${entry.detail ? `<small>${escapeHtml(entry.detail)}</small>` : ''}</span></h3>`}
+            ${poll.criteria.map((c, k) => {
+                const mine = poll.my_scores[`${e}:${k}`];
+                return `
+                <div class="rate-crit">
+                    <div class="rate-q"><span class="emoji">${escapeHtml(c.emoji || '•')}</span><span><b>${escapeHtml(c.name)}</b>${c.question ? `<small>${escapeHtml(c.question)}</small>` : ''}</span></div>
+                    <div class="rate-scale" role="radiogroup" aria-label="${escapeHtml(c.name)}">
+                        ${[1, 2, 3, 4].map(v => `<button type="button" class="rate-btn${mine === v ? ' selected' : ''}" role="radio"
+                            aria-checked="${mine === v}" data-entry="${e}" data-criterion="${k}" data-value="${v}">${v}</button>`).join('')}
+                    </div>
+                    ${c.low || c.high ? `<div class="rate-ends"><span>${escapeHtml(c.low)}</span><span>${escapeHtml(c.high)}</span></div>` : ''}
+                </div>`;
+            }).join('')}
+            ${poll.texts.map((t, i) => t.per_entry ? noteField(e, i) : '').join('')}
+        </section>`).join('');
+    const once = poll.texts.map((t, i) => t.per_entry ? '' : noteField(null, i)).join('');
+    if (once) html += `<section class="rate-entry rate-final">${once}</section>`;
+    box.innerHTML = html;
+    renderRatingStatus();
+}
+
+function nudgeStatus() {
+    const status = document.getElementById('poll-status');
+    status.classList.remove('nudge');
+    void status.offsetWidth;   // Animation neu starten
+    status.classList.add('nudge');
+    vibrate([10, 40, 10]);
+}
+
 function renderPoll() {
     document.getElementById('poll-title').textContent = poll.title;
+    const rating = poll.kind === 'rating';
+    document.getElementById('poll-options').hidden = rating;
+    document.getElementById('poll-rating').hidden = !rating;
+    document.querySelector('#poll-screen .poll-head .chip').lastChild.textContent = rating ? 'Bewertung' : 'Abstimmung';
+    if (rating) {
+        renderRating();
+        return;
+    }
     const status = document.getElementById('poll-status');
     const voted = poll.my_vote !== null && poll.my_vote !== undefined;
     status.classList.toggle('saved', poll.state === 'open' && voted);
@@ -724,7 +819,43 @@ function renderPoll() {
         </button>`).join('');
 }
 
+function renderRatingResult() {
+    const r = poll.results;
+    const kicker = document.getElementById('poll-result-kicker');
+    const winnerEl = document.getElementById('poll-winner');
+    const detailEl = document.getElementById('poll-winner-detail');
+    const votesEl = document.getElementById('poll-winner-votes');
+    if (r.total_votes === 0) {
+        kicker.textContent = 'Bewertung beendet';
+        winnerEl.textContent = 'Keine Bewertungen';
+        detailEl.textContent = '';
+        votesEl.textContent = '';
+    } else if (poll.options.length === 0) {
+        const rated = r.ranking[0].averages.filter(a => a !== null);
+        const avg = rated.length ? rated.reduce((a, b) => a + b, 0) / rated.length : 0;
+        kicker.textContent = 'Euer Ergebnis';
+        winnerEl.textContent = `Ø ${fmt(avg)} von 4`;
+        detailEl.textContent = poll.title;
+        votesEl.textContent = `${fmt(r.ranking[0].total)} von ${r.max_total} Punkten`;
+    } else {
+        const winners = r.ranking.filter(row => r.winners.includes(row.index));
+        kicker.textContent = winners.length > 1 ? 'Gleichstand! Gewonnen haben' : 'Gewonnen hat';
+        winnerEl.textContent = winners.map(w => w.name).join(' & ');
+        detailEl.textContent = winners.length === 1 ? (winners[0].detail || '') : '';
+        votesEl.textContent = `${fmt(winners[0].total)} von ${r.max_total} Punkten`;
+    }
+    document.getElementById('poll-mine').textContent = ratingDone() > 0
+        ? 'Danke fürs Bewerten! Alle Details siehst du auf der Leinwand.'
+        : 'Du hast nicht bewertet.';
+    releaseScreen();
+    showScreen('pollResult');
+}
+
 function renderPollResult() {
+    if (poll.kind === 'rating') {
+        renderRatingResult();
+        return;
+    }
     const r = poll.results;
     const winners = r.ranking.filter(row => r.winners.includes(row.index));
     const kicker = document.getElementById('poll-result-kicker');
@@ -769,7 +900,7 @@ socket.on('poll_joined', (data) => {
     localStorage.setItem('playerName', data.name);
     localStorage.setItem('playerToken', data.player_token);
     elements.playerNameInput.value = data.name;
-    poll = { title: data.title, options: data.options, state: data.state, my_vote: data.my_vote, results: data.results };
+    poll = pollFromServer(data);
     enteredGame();
     vibrate(20);
     showPoll();
@@ -777,9 +908,8 @@ socket.on('poll_joined', (data) => {
 
 socket.on('poll_options', (data) => {
     if (!poll) return;
-    poll.title = data.title;
-    poll.options = data.options;
-    if (poll.my_vote !== null && poll.my_vote >= poll.options.length) poll.my_vote = null;
+    // Der Host hat in der Lobby etwas geändert – der Server setzt dabei alle Angaben zurück
+    poll = { ...pollFromServer({ ...data, state: poll.state }), my_vote: null };
     renderPoll();
 });
 
@@ -804,18 +934,72 @@ socket.on('poll_deleted', (data) => {
     showError(data.message || 'Die Abstimmung wurde beendet.');
 });
 
+socket.on('rating_saved', (data) => {
+    if (!poll || poll.kind !== 'rating') return;
+    poll.my_scores[`${data.entry}:${data.criterion}`] = data.value;
+    renderRatingStatus();
+});
+
+socket.on('note_saved', (data) => {
+    if (!poll || poll.kind !== 'rating') return;
+    const key = `${data.entry === null ? '-' : data.entry}:${data.text}`;
+    if (data.value) poll.my_notes[key] = data.value; else delete poll.my_notes[key];
+});
+
+const ratingBox = document.getElementById('poll-rating');
+ratingBox.addEventListener('click', (e) => {
+    const btn = e.target.closest('.rate-btn');
+    if (!btn || !poll) return;
+    soundManager.init();
+    if (poll.state !== 'open') { nudgeStatus(); return; }
+    const entry = parseInt(btn.dataset.entry, 10);
+    const criterion = parseInt(btn.dataset.criterion, 10);
+    const value = parseInt(btn.dataset.value, 10);
+    // Sofort markieren, der Server bestätigt mit rating_saved
+    btn.parentElement.querySelectorAll('.rate-btn').forEach(b => {
+        b.classList.toggle('selected', b === btn);
+        b.setAttribute('aria-checked', b === btn);
+    });
+    poll.my_scores[`${entry}:${criterion}`] = value;
+    renderRatingStatus();
+    socket.emit('cast_rating', { code: gameCode, entry, criterion, value });
+    soundManager.playPopSound().catch(() => {});
+    vibrate(15);
+});
+
+// Freitext: kurz nach dem Tippen und beim Verlassen des Felds speichern
+const noteTimers = new Map();
+function sendNote(area) {
+    clearTimeout(noteTimers.get(area));
+    if (!poll || poll.state !== 'open') return;
+    const entry = area.dataset.entry === '' ? null : parseInt(area.dataset.entry, 10);
+    const text = parseInt(area.dataset.text, 10);
+    const key = `${entry === null ? '-' : entry}:${text}`;
+    const value = area.value.trim();
+    if ((poll.my_notes[key] || '') === value && area.dataset.sent === value) return;
+    area.dataset.sent = value;
+    if (value) poll.my_notes[key] = value; else delete poll.my_notes[key];
+    socket.emit('cast_note', { code: gameCode, entry, text, value });
+}
+ratingBox.addEventListener('input', (e) => {
+    const area = e.target.closest('textarea');
+    if (!area) return;
+    clearTimeout(noteTimers.get(area));
+    noteTimers.set(area, setTimeout(() => sendNote(area), 700));
+});
+ratingBox.addEventListener('focusout', (e) => {
+    const area = e.target.closest('textarea');
+    if (area) sendNote(area);
+});
+ratingBox.addEventListener('focusin', (e) => {
+    if (e.target.closest('textarea') && poll && poll.state !== 'open') nudgeStatus();
+});
+
 document.getElementById('poll-options').addEventListener('click', (e) => {
     const btn = e.target.closest('.poll-option');
     if (!btn || !poll) return;
     soundManager.init();
-    if (poll.state !== 'open') {
-        const status = document.getElementById('poll-status');
-        status.classList.remove('nudge');
-        void status.offsetWidth;   // Animation neu starten
-        status.classList.add('nudge');
-        vibrate([10, 40, 10]);
-        return;
-    }
+    if (poll.state !== 'open') { nudgeStatus(); return; }
     const index = parseInt(btn.dataset.index, 10);
     if (index === poll.my_vote) return;
     // Sofort markieren, der Server bestätigt mit vote_saved

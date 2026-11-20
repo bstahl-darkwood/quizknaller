@@ -216,168 +216,168 @@
     "title": "Weihnachtsquiz 🎄🎅",
     "questions": [
       {
-        "question": "An welchem Tag wird in Deutschland traditionell Weihnachten gefeiert?",
+        "question": "Welcher Evangelist erzählt von den Hirten auf dem Feld, denen ein Engel erscheint?",
         "answers": [
-          "23. Dezember",
-          "24. Dezember",
-          "25. Dezember",
-          "26. Dezember"
+          "Markus",
+          "Johannes",
+          "Matthäus",
+          "Lukas"
         ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißen die drei Weisen aus dem Morgenland?",
-        "answers": [
-          "Abraham, Isaak, Jakob",
-          "Caspar, Melchior, Balthasar",
-          "Petrus, Paulus, Johannes",
-          "Adam, Noah, Moses"
-        ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 20
       },
       {
-        "question": "In welcher Stadt wurde Jesus Christus geboren?",
+        "question": "Welcher römische Kaiser ordnete laut Bibel die Volkszählung an, wegen der Maria und Josef nach Bethlehem reisten?",
         "answers": [
-          "Jerusalem",
-          "Nazareth",
-          "Bethlehem",
-          "Kapernaum"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Welcher Brauch gehört NICHT traditionell zur Weihnachtszeit?",
-        "answers": [
-          "Adventskranz",
-          "Weihnachtsbaum",
-          "Osterfeuer",
-          "Krippe"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie viele Kerzen hat ein Adventskranz?",
-        "answers": [
-          "3",
-          "4",
-          "5",
-          "6"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "Welches Tier zieht traditionell den Schlitten des Weihnachtsmanns?",
-        "answers": [
-          "Pferde",
-          "Rentiere",
-          "Huskys",
-          "Elche"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "Wie heißt das berühmteste Rentier des Weihnachtsmanns?",
-        "answers": [
-          "Donner",
-          "Blitzen",
-          "Rudolph",
-          "Dasher"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Welcher Heilige ist der Ursprung des Weihnachtsmann-Mythos?",
-        "answers": [
-          "St. Martin",
-          "St. Nikolaus",
-          "St. Franziskus",
-          "St. Stephanus"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Was bringen die Heiligen Drei Könige dem Jesuskind?",
-        "answers": [
-          "Gold, Weihrauch, Myrrhe",
-          "Silber, Brot, Wein",
-          "Gold, Öl, Gewürze",
-          "Diamanten, Seide, Parfüm"
+          "Augustus",
+          "Caligula",
+          "Tiberius",
+          "Nero"
         ],
         "correct": 0,
         "time_limit": 20
       },
       {
-        "question": "Welches traditionelle Weihnachtsgebäck wird in Häuserform gebacken?",
+        "question": "An welchem Tag ist Nikolaus?",
         "answers": [
-          "Stollen",
-          "Lebkuchen",
-          "Zimtsterne",
-          "Spekulatius"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land steht der größte natürliche Weihnachtsbaum der Welt?",
-        "answers": [
-          "Deutschland",
-          "Schweden",
-          "USA",
-          "Kanada"
-        ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "Welches Lied beginnt mit 'Stille Nacht, Heilige Nacht'?",
-        "answers": [
-          "O Tannenbaum",
-          "Ihr Kinderlein kommet",
-          "Stille Nacht",
-          "Kling Glöckchen"
-        ],
-        "correct": 2,
-        "time_limit": 10
-      },
-      {
-        "question": "Wann beginnt die Adventszeit?",
-        "answers": [
-          "1. Dezember",
-          "Vierter Sonntag vor Weihnachten",
           "6. Dezember",
-          "Erster Sonntag im Dezember"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Was ist ein traditioneller Weihnachtsmarkt-Klassiker?",
-        "answers": [
-          "Glühwein",
-          "Radler",
-          "Eistee",
-          "Limonade"
+          "1. Dezember",
+          "13. Dezember",
+          "24. Dezember"
         ],
         "correct": 0,
         "time_limit": 10
       },
       {
-        "question": "Welche Farben hat der Weihnachtsmann traditionell?",
+        "question": "Am Barbaratag schneidet man Kirschzweige, damit sie an Weihnachten blühen. Wann ist das?",
         "answers": [
-          "Grün und Gold",
-          "Rot und Weiß",
-          "Blau und Silber",
-          "Braun und Beige"
+          "21. Dezember",
+          "8. Dezember",
+          "4. Dezember",
+          "1. Dezember"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "Welches Fest feiern Christen am 6. Januar?",
+        "answers": [
+          "Christi Himmelfahrt",
+          "Allerheiligen",
+          "Mariä Lichtmess",
+          "Heilige Drei Könige (Epiphanias)"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Welcher Baum ist der beliebteste Weihnachtsbaum in Deutschland?",
+        "answers": [
+          "Kiefer",
+          "Fichte",
+          "Nordmanntanne",
+          "Blaufichte"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Was ist Spekulatius?",
+        "answers": [
+          "Ein Christbaumschmuck",
+          "Eine Glühweinsorte",
+          "Ein Gewürzkeks mit Bildmotiv",
+          "Eine Marzipanfigur"
+        ],
+        "correct": 2,
+        "time_limit": 10
+      },
+      {
+        "question": "Woraus wird Marzipan hauptsächlich gemacht?",
+        "answers": [
+          "Mandeln und Zucker",
+          "Pistazien und Sahne",
+          "Haselnüssen und Honig",
+          "Walnüssen und Sirup"
+        ],
+        "correct": 0,
+        "time_limit": 10
+      },
+      {
+        "question": "Aus welchem Land stammt das Lied „O Tannenbaum“?",
+        "answers": [
+          "Österreich",
+          "Deutschland",
+          "Schweiz",
+          "England"
         ],
         "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Was stellen Kinder am Abend vor Nikolaus vor die Tür?",
+        "answers": [
+          "Einen Strumpf",
+          "Einen Teller Kekse",
+          "Einen Stiefel",
+          "Eine Laterne"
+        ],
+        "correct": 2,
+        "time_limit": 10
+      },
+      {
+        "question": "Welche Zeichen schreiben die Sternsinger mit Kreide an die Haustür?",
+        "answers": [
+          "J+M+J",
+          "C+M+B",
+          "K+M+B",
+          "A+B+C"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Welches Tier steht in der Krippe neben dem Ochsen?",
+        "answers": [
+          "Ein Kamel",
+          "Ein Schaf",
+          "Ein Esel",
+          "Ein Pferd"
+        ],
+        "correct": 2,
+        "time_limit": 10
+      },
+      {
+        "question": "Welcher Engel verkündet Maria, dass sie ein Kind bekommen wird?",
+        "answers": [
+          "Gabriel",
+          "Uriel",
+          "Michael",
+          "Raphael"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Was passiert beim Wichteln?",
+        "answers": [
+          "Man schmückt zusammen den Baum",
+          "Man singt von Tür zu Tür",
+          "Man backt gemeinsam Plätzchen",
+          "Man beschenkt sich gegenseitig, meist geheim per Los"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie viele Türchen hat ein klassischer Adventskalender?",
+        "answers": [
+          "31",
+          "25",
+          "12",
+          "24"
+        ],
+        "correct": 3,
         "time_limit": 10
       }
     ]
@@ -386,135 +386,135 @@
     "title": "Weihnachtsfilme & Musik 🎬🎵",
     "questions": [
       {
-        "question": "Wer singt 'Last Christmas'?",
+        "question": "Welche Band veröffentlichte 1973 „Merry Xmas Everybody“?",
         "answers": [
-          "Michael Jackson",
-          "Wham!",
-          "Queen",
-          "The Beatles"
+          "Slade",
+          "T. Rex",
+          "Sweet",
+          "Wizzard"
         ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Film versucht ein Junge allein zu Hause Einbrecher abzuwehren?",
-        "answers": [
-          "Der Grinch",
-          "Kevin - Allein zu Haus",
-          "Drei Haselnüsse für Aschenbrödel",
-          "Die Geister, die ich rief"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welcher grüne Charakter hasst Weihnachten?",
-        "answers": [
-          "Shrek",
-          "Der Grinch",
-          "Kermit",
-          "Hulk"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "In welchem Jahr wurde 'Last Christmas' von Wham! veröffentlicht?",
-        "answers": [
-          "1982",
-          "1984",
-          "1986",
-          "1988"
-        ],
-        "correct": 1,
+        "correct": 0,
         "time_limit": 20
       },
       {
-        "question": "Welches Ballett wird traditionell an Weihnachten aufgeführt?",
+        "question": "Wer singt „Driving Home for Christmas“?",
         "answers": [
-          "Schwanensee",
-          "Der Nussknacker",
-          "Dornröschen",
-          "Giselle"
+          "Chris Rea",
+          "Chris de Burgh",
+          "Phil Collins",
+          "Sting"
         ],
-        "correct": 1,
+        "correct": 0,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land spielt der Film 'Drei Haselnüsse für Aschenbrödel'?",
+        "question": "Unter welchem Namen erschien 1984 der Charity-Song „Do They Know It's Christmas?“",
         "answers": [
-          "Deutschland",
-          "Österreich",
-          "Tschechien",
-          "Polen"
+          "Live Aid",
+          "Help Aid",
+          "USA for Africa",
+          "Band Aid"
         ],
-        "correct": 2,
-        "time_limit": 20
+        "correct": 3,
+        "time_limit": 15
       },
       {
-        "question": "Wer singt 'All I Want for Christmas Is You'?",
+        "question": "Wer singt „Feliz Navidad“?",
         "answers": [
-          "Whitney Houston",
-          "Celine Dion",
-          "Mariah Carey",
-          "Madonna"
+          "Enrique Iglesias",
+          "Ricky Martin",
+          "José Feliciano",
+          "Julio Iglesias"
         ],
         "correct": 2,
         "time_limit": 15
       },
       {
-        "question": "In welchem Film besuchen drei Geister einen geizigen Mann an Weihnachten?",
+        "question": "In welchem Film spielt Will Ferrell einen Menschen, der am Nordpol von Elfen aufgezogen wurde?",
         "answers": [
+          "Versprochen ist versprochen",
+          "Buddy – Der Weihnachtself",
+          "Fred Claus",
+          "Santa Clause"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Wer spielt Clark Griswold in „Schöne Bescherung“ (1989)?",
+        "answers": [
+          "Steve Martin",
+          "Bill Murray",
+          "Chevy Chase",
+          "Dan Aykroyd"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "In welchem Film kämpft John McClane an Heiligabend in einem Hochhaus gegen Terroristen?",
+        "answers": [
+          "Stirb langsam",
+          "Lethal Weapon",
+          "Speed",
+          "Cliffhanger"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "In welchem Weihnachtsfilm von 2003 spielt Hugh Grant den britischen Premierminister?",
+        "answers": [
+          "Tatsächlich… Liebe",
+          "Notting Hill",
+          "Bridget Jones",
+          "Liebe braucht keine Ferien"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie heißt der Kürbiskönig in „Nightmare Before Christmas“?",
+        "answers": [
+          "Jack Skellington",
+          "Oogie Boogie",
+          "Sandy Claws",
+          "Zero"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Wer sang 1958 „Rockin' Around the Christmas Tree“?",
+        "answers": [
+          "Connie Francis",
+          "Brenda Lee",
+          "Doris Day",
+          "Patsy Cline"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Wer komponierte das „Weihnachtsoratorium“ (1734)?",
+        "answers": [
+          "Joseph Haydn",
+          "Johann Sebastian Bach",
+          "Georg Friedrich Händel",
+          "Wolfgang Amadeus Mozart"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "In welcher Filmreihe wird Tim Allen zum Weihnachtsmann?",
+        "answers": [
+          "Arthur Weihnachtsmann",
           "Der Polarexpress",
-          "Die Geister, die ich rief",
-          "Das Wunder von Manhattan",
-          "Tatsächlich... Liebe"
+          "Die Weihnachtsgeschichte",
+          "Santa Clause"
         ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Welcher Komponist schrieb 'Der Nussknacker'?",
-        "answers": [
-          "Mozart",
-          "Beethoven",
-          "Tschaikowski",
-          "Bach"
-        ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "In welchem Jahr erschien 'Kevin - Allein zu Haus'?",
-        "answers": [
-          "1988",
-          "1990",
-          "1992",
-          "1994"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Welches Weihnachtslied stammt aus Österreich?",
-        "answers": [
-          "O Tannenbaum",
-          "Stille Nacht",
-          "Ihr Kinderlein kommet",
-          "Kling Glöckchen"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wer spielt den Grinch in der Verfilmung von 2000?",
-        "answers": [
-          "Adam Sandler",
-          "Jim Carrey",
-          "Robin Williams",
-          "Eddie Murphy"
-        ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 15
       }
     ]
@@ -523,135 +523,135 @@
     "title": "Weihnachten International 🌍🎄",
     "questions": [
       {
-        "question": "In welchem Land bringt die Hexe Befana die Geschenke?",
+        "question": "Wer begleitet in Russland Väterchen Frost beim Verteilen der Geschenke?",
         "answers": [
-          "Spanien",
-          "Italien",
-          "Griechenland",
-          "Portugal"
+          "Babuschka",
+          "Snegurotschka (Schneeflöckchen)",
+          "Knecht Ruprecht",
+          "Sinterklaas"
         ],
         "correct": 1,
         "time_limit": 20
       },
       {
-        "question": "Was essen die Japaner traditionell an Weihnachten?",
+        "question": "Wie viele Gerichte kommen in Polen traditionell an Heiligabend (Wigilia) auf den Tisch?",
         "answers": [
-          "Sushi",
-          "Ramen",
-          "KFC (Kentucky Fried Chicken)",
-          "Tempura"
+          "12",
+          "7",
+          "24",
+          "9"
         ],
-        "correct": 2,
+        "correct": 0,
         "time_limit": 20
       },
       {
-        "question": "In welchem Land wird Weihnachten am Strand gefeiert?",
+        "question": "Welcher Fisch schwimmt in Tschechien vor Weihnachten oft lebend in der Badewanne?",
         "answers": [
-          "Kanada",
-          "Russland",
-          "Australien",
-          "Norwegen"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt der Weihnachtsmann in Frankreich?",
-        "answers": [
-          "Santa Claus",
-          "Père Noël",
-          "Babbo Natale",
-          "Papá Noel"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land versteckt man an Weihnachten alle Besen?",
-        "answers": [
-          "Finnland",
-          "Island",
-          "Norwegen",
-          "Schweden"
-        ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "Wann feiern die Russen traditionell Weihnachten?",
-        "answers": [
-          "24. Dezember",
-          "25. Dezember",
-          "31. Dezember",
-          "7. Januar"
-        ],
-        "correct": 3,
-        "time_limit": 20
-      },
-      {
-        "question": "In welchem Land gibt es 13 Weihnachtsmänner (Yule Lads)?",
-        "answers": [
-          "Grönland",
-          "Island",
-          "Norwegen",
-          "Dänemark"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Welches Tier bringt in Schweden die Geschenke?",
-        "answers": [
-          "Der Weihnachtsbock",
-          "Das Rentier",
-          "Der Elch",
-          "Der Wolf"
+          "Karpfen",
+          "Forelle",
+          "Lachs",
+          "Hering"
         ],
         "correct": 0,
         "time_limit": 15
       },
       {
-        "question": "Was ist ein 'Christmas Cracker' in Großbritannien?",
+        "question": "Wie heißen die neun Nächte vor Weihnachten in Mexiko, in denen Maria und Josefs Herbergssuche nachgespielt wird?",
         "answers": [
-          "Ein Keks",
-          "Ein Knallbonbon",
-          "Ein Feuerwerk",
-          "Ein Kuchen"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land trägt man an Weihnachten oft Rollschuhe zur Messe?",
-        "answers": [
-          "Mexiko",
-          "Venezuela",
-          "Kolumbien",
-          "Peru"
+          "Las Fallas",
+          "Las Posadas",
+          "Día de Muertos",
+          "La Tomatina"
         ],
         "correct": 1,
         "time_limit": 20
       },
       {
-        "question": "Wie heißt das traditionelle Weihnachtsessen in England?",
+        "question": "In welchem Land tragen Mädchen am 13. Dezember zum Luciafest Lichterkronen?",
         "answers": [
-          "Gans",
-          "Truthahn",
-          "Ente",
-          "Lamm"
+          "Schweden",
+          "Polen",
+          "Italien",
+          "Irland"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie heißt der 26. Dezember in Großbritannien?",
+        "answers": [
+          "Pancake Day",
+          "Guy Fawkes Day",
+          "Thanksgiving",
+          "Boxing Day"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Aus welchem Land stammt der Weihnachtskuchen Panettone?",
+        "answers": [
+          "Frankreich",
+          "Spanien",
+          "Italien",
+          "Portugal"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie heißt die riesige spanische Weihnachtslotterie am 22. Dezember?",
+        "answers": [
+          "La Primitiva",
+          "El Grande",
+          "El Gordo",
+          "El Toro"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "In welchem Land beginnt die Weihnachtssaison schon im September?",
+        "answers": [
+          "Mexiko",
+          "Philippinen",
+          "Brasilien",
+          "Kanada"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Was ist eine „Bûche de Noël“ in Frankreich?",
+        "answers": [
+          "Ein Kuchen in Form eines Baumstamms",
+          "Eine Holzfigur",
+          "Ein Krippenspiel",
+          "Ein Weihnachtsmarkt"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "In welchem Land geht man an Heiligabend traditionell in die Sauna?",
+        "answers": [
+          "Schweden",
+          "Finnland",
+          "Estland",
+          "Russland"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land stellt man Schuhe statt Strümpfe auf?",
+        "question": "Was versteckt man in Dänemark im Reispudding (Risalamande)? Wer es findet, gewinnt ein Geschenk.",
         "answers": [
-          "Spanien",
-          "Deutschland",
-          "Niederlande",
-          "Belgien"
+          "Eine Bohne",
+          "Eine Münze",
+          "Eine Haselnuss",
+          "Eine ganze Mandel"
         ],
-        "correct": 2,
+        "correct": 3,
         "time_limit": 15
       }
     ]
@@ -660,135 +660,135 @@
     "title": "Weihnachts-Geschichte & Brauchtum 📜✨",
     "questions": [
       {
-        "question": "In welchem Land wurde der Weihnachtsbaum-Brauch erfunden?",
+        "question": "Seit wann ist Weihnachten am 25. Dezember in Rom belegt?",
         "answers": [
-          "England",
-          "Deutschland",
-          "Frankreich",
-          "Österreich"
+          "Seit dem 1. Jahrhundert",
+          "Seit dem 12. Jahrhundert",
+          "Seit dem 8. Jahrhundert",
+          "Seit dem 4. Jahrhundert"
         ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welche Königin machte den Weihnachtsbaum in England populär?",
-        "answers": [
-          "Königin Elisabeth I.",
-          "Königin Victoria",
-          "Königin Anne",
-          "Königin Elisabeth II."
-        ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 20
       },
       {
-        "question": "Was bedeutet 'Advent'?",
+        "question": "Welches römische Dezemberfest gilt oft als Vorläufer mancher Weihnachtsbräuche?",
         "answers": [
-          "Geschenk",
-          "Ankunft",
-          "Freude",
-          "Fest"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wer hat das Gedicht 'A Visit from St. Nicholas' (Twas the Night Before Christmas) geschrieben?",
-        "answers": [
-          "Charles Dickens",
-          "Clement Clarke Moore",
-          "Hans Christian Andersen",
-          "Washington Irving"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Welche Firma prägte das heutige Bild des roten Weihnachtsmanns?",
-        "answers": [
-          "Pepsi",
-          "Coca-Cola",
-          "McDonald's",
-          "Nestlé"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welcher Stadt wurde das Lied 'Stille Nacht' erstmals aufgeführt?",
-        "answers": [
-          "Wien",
-          "Salzburg",
-          "Oberndorf",
-          "Innsbruck"
+          "Bacchanalien",
+          "Floralien",
+          "Saturnalien",
+          "Lupercalien"
         ],
         "correct": 2,
         "time_limit": 20
       },
       {
-        "question": "Was ist ein Christstollen?",
+        "question": "Wer erfand 1839 in Hamburg den Adventskranz?",
         "answers": [
-          "Ein Weihnachtsbaum",
-          "Ein Hefekuchen mit Früchten",
-          "Eine Weihnachtskrippe",
-          "Ein Weihnachtslied"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welchen Feiertag begehen wir am 26. Dezember?",
-        "answers": [
-          "Heiligabend",
-          "1. Weihnachtsfeiertag",
-          "2. Weihnachtsfeiertag",
-          "Silvester"
-        ],
-        "correct": 2,
-        "time_limit": 10
-      },
-      {
-        "question": "Was symbolisiert die Mistel an Weihnachten?",
-        "answers": [
-          "Frieden und Liebe",
-          "Reichtum",
-          "Gesundheit",
-          "Stärke"
+          "Johann Hinrich Wichern",
+          "Martin Luther",
+          "Gerhard Lang",
+          "Friedrich Fröbel"
         ],
         "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "Woher kommt das Wort „Weihnachten“?",
+        "answers": [
+          "Von „weiße Nächte“",
+          "Von „weite Nächte“",
+          "Von „ze wîhen nahten“ – in den geweihten Nächten",
+          "Von „Wein in der Nacht“"
+        ],
+        "correct": 2,
         "time_limit": 15
       },
       {
-        "question": "Welcher Wochentag ist der Heiligabend 2024?",
+        "question": "Wer machte das Christkind statt des Nikolaus zum Gabenbringer?",
         "answers": [
-          "Montag",
-          "Dienstag",
-          "Mittwoch",
-          "Donnerstag"
+          "Johannes Calvin",
+          "Martin Luther",
+          "Papst Gregor",
+          "Karl der Große"
         ],
         "correct": 1,
         "time_limit": 20
       },
       {
-        "question": "Wann wurde 'Stille Nacht' erstmals aufgeführt?",
+        "question": "Wer gab 1843 in London die erste gedruckte Weihnachtskarte in Auftrag?",
         "answers": [
-          "1778",
-          "1798",
-          "1818",
-          "1838"
+          "Prinz Albert",
+          "Henry Cole",
+          "Isaac Newton",
+          "Charles Dickens"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Wer schmückte 1882 als Erster einen Weihnachtsbaum mit elektrischen Lichtern?",
+        "answers": [
+          "Ein Pariser Glasbläser",
+          "Werner von Siemens",
+          "Ein Mitarbeiter von Thomas Edison",
+          "Nikola Tesla"
         ],
         "correct": 2,
         "time_limit": 20
       },
       {
-        "question": "Was ist der Ursprung des Adventskalenders?",
+        "question": "Was geschah an Weihnachten 1914 an der Westfront?",
         "answers": [
-          "Frankreich 1700",
-          "Deutschland 1800er Jahre",
-          "England 1750",
-          "USA 1900"
+          "Paris wurde befreit",
+          "Der erste Panzer kam zum Einsatz",
+          "Soldaten hörten spontan auf zu kämpfen und feierten gemeinsam",
+          "Der Erste Weltkrieg endete"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "In welcher Stadt war der heilige Nikolaus Bischof?",
+        "answers": [
+          "Antiochia",
+          "Myra",
+          "Rom",
+          "Konstantinopel"
         ],
         "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Woraus wurde Lametta ursprünglich hergestellt?",
+        "answers": [
+          "Aus Papier",
+          "Aus dünnen Metallstreifen",
+          "Aus Glasfasern",
+          "Aus Kunststoff"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Welcher Brauch aus dem Mittelalter gilt als Vorläufer des Weihnachtsbaums?",
+        "answers": [
+          "Der Osterstrauch",
+          "Die Erntekrone",
+          "Der Maibaum",
+          "Der Paradiesbaum mit Äpfeln"
+        ],
+        "correct": 3,
+        "time_limit": 20
+      },
+      {
+        "question": "Unter wessen Herrschaft war Weihnachten in England zeitweise verboten?",
+        "answers": [
+          "Wilhelm der Eroberer",
+          "Elisabeth I.",
+          "Heinrich VIII.",
+          "Oliver Cromwell"
+        ],
+        "correct": 3,
         "time_limit": 20
       }
     ]
@@ -797,136 +797,136 @@
     "title": "Weihnachts-Knobeleien 🧠🎅",
     "questions": [
       {
-        "question": "Wie viele Rentiere ziehen den Schlitten des Weihnachtsmanns (ohne Rudolph)?",
+        "question": "Wie viele Geschenke gibt es insgesamt im Lied „The Twelve Days of Christmas“?",
+        "answers": [
+          "144",
+          "78",
+          "365",
+          "364"
+        ],
+        "correct": 3,
+        "time_limit": 25
+      },
+      {
+        "question": "Du öffnest ab dem 1. Dezember jeden zweiten Tag ein Türchen. Wie viele sind es bis einschließlich Heiligabend?",
+        "answers": [
+          "12",
+          "11",
+          "24",
+          "13"
+        ],
+        "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "Aus welcher Pflanze stammt Vanille?",
+        "answers": [
+          "Aus einer Palme",
+          "Aus einer Orchidee",
+          "Aus einer Lilie",
+          "Aus einem Farn"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Welches Weihnachtsgewürz ist eigentlich eine getrocknete Blütenknospe?",
+        "answers": [
+          "Kardamom",
+          "Gewürznelke",
+          "Sternanis",
+          "Muskatnuss"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Heiligabend 2026 ist ein Donnerstag. Welcher Wochentag ist Neujahr 2027?",
+        "answers": [
+          "Sonntag",
+          "Freitag",
+          "Samstag",
+          "Donnerstag"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Wie viele Arme hat eine Schneeflocke?",
         "answers": [
           "6",
-          "7",
-          "8",
-          "9"
+          "4",
+          "5",
+          "8"
         ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "Welches Gewürz ist typisch für Lebkuchen und riecht nach Weihnachten?",
-        "answers": [
-          "Curry",
-          "Zimt",
-          "Paprika",
-          "Oregano"
-        ],
-        "correct": 1,
+        "correct": 0,
         "time_limit": 10
       },
       {
-        "question": "Wie nennt man den Stern auf der Spitze des Weihnachtsbaums?",
+        "question": "Aus welcher Stadt kommen die berühmten Printen?",
         "answers": [
-          "Nordstern",
-          "Abendstern",
-          "Weihnachtsstern",
-          "Morgenstern"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Aus welchem Material waren die ersten Christbaumkugeln?",
-        "answers": [
-          "Plastik",
-          "Holz",
-          "Glas",
-          "Metall"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Welcher Nikolaus-Begleiter bestraft unartige Kinder in Österreich?",
-        "answers": [
-          "Knecht Ruprecht",
-          "Krampus",
-          "Zwarte Piet",
-          "Père Fouettard"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt der traditionelle englische Weihnachtspudding?",
-        "answers": [
-          "Apple Pie",
-          "Christmas Pudding",
-          "Trifle",
-          "Mince Pie"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welche Pflanze wird auch 'Weihnachtsstern' genannt?",
-        "answers": [
-          "Tanne",
-          "Poinsettie",
-          "Stechpalme",
-          "Mistel"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie viele Tage dauert die Weihnachtszeit traditionell?",
-        "answers": [
-          "7 Tage",
-          "12 Tage",
-          "14 Tage",
-          "21 Tage"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Was ist der traditionelle deutsche Weihnachtsbraten?",
-        "answers": [
-          "Schwein",
-          "Gans",
-          "Rind",
-          "Huhn"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "In welchem Buch von Charles Dickens geht es um Weihnachten?",
-        "answers": [
-          "Oliver Twist",
-          "David Copperfield",
-          "Eine Weihnachtsgeschichte",
-          "Große Erwartungen"
-        ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "Welche Stadt gilt als Heimat des Christkinds in Deutschland?",
-        "answers": [
-          "München",
           "Nürnberg",
+          "Aachen",
           "Köln",
-          "Dresden"
+          "Lübeck"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "Was ist die traditionelle Farbe der dritten Adventskerze?",
+        "question": "Welches Marzipan ist in der EU als Herkunftsbezeichnung geschützt?",
         "answers": [
-          "Rot",
-          "Weiß",
-          "Rosa",
-          "Lila"
+          "Kieler Marzipan",
+          "Königsberger Marzipan",
+          "Bremer Marzipan",
+          "Lübecker Marzipan"
         ],
-        "correct": 2,
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Woraus besteht die weiße Schicht auf Zimtsternen?",
+        "answers": [
+          "Weiße Schokolade",
+          "Marzipan",
+          "Kokosraspeln",
+          "Eischnee und Puderzucker"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie viele Zacken hat ein klassischer Herrnhuter Stern?",
+        "answers": [
+          "12",
+          "32",
+          "18",
+          "26"
+        ],
+        "correct": 3,
         "time_limit": 20
+      },
+      {
+        "question": "Zu welcher Pflanzengattung gehört die Christrose?",
+        "answers": [
+          "Rosen",
+          "Nieswurz (Helleborus)",
+          "Tulpen",
+          "Lilien"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Welches Weihnachtswort ergibt „LEGNE“ rückwärts gelesen?",
+        "answers": [
+          "Kegel",
+          "Engel",
+          "Nelke",
+          "Glocke"
+        ],
+        "correct": 1,
+        "time_limit": 15
       }
     ]
   },
@@ -934,136 +934,136 @@
     "title": "Weihnachts-Tech-Knobelei 🤖🎄",
     "questions": [
       {
-        "question": "Welches Problem löst der Weihnachtsmann bei seiner Tour am ehesten?",
+        "question": "Am 23.12. greifen Millionen Kinder auf den Wunschzettel-Server zu. Was verteilt die Last auf mehrere Server?",
         "answers": [
-          "Rucksackproblem",
-          "Problem des reisenden Händlers",
-          "Sudoku-Problem",
-          "Halting-Problem"
+          "VPN",
+          "Load Balancer",
+          "Compiler",
+          "Firewall"
         ],
         "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt in Prozessen die Engstelle, an der sich alles staut?",
-        "answers": [
-          "Bottleneck",
-          "Shortcut",
-          "Overload",
-          "Deadlock"
-        ],
-        "correct": 0,
         "time_limit": 12
       },
       {
-        "question": "Welche Verschwendung liegt vor, wenn Elfen unnötig durch die Werkstatt laufen?",
+        "question": "Die Brav-Liste liegt zur Sicherheit an zwei Standorten, falls einer ausfällt. Wie nennt man das?",
         "answers": [
-          "Transport",
-          "Überproduktion",
-          "Ausschuss",
-          "Wartezeit"
-        ],
-        "correct": 0,
-        "time_limit": 12
-      },
-      {
-        "question": "Welche Analyse schätzt aus Vergangenheitsdaten zukünftige Trends?",
-        "answers": [
-          "Deskriptive Analyse",
-          "Prädiktive Analyse",
-          "Diagnostische Analyse",
-          "Präskriptive Analyse"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie nennt man fehlende Werte in einem Datensatz?",
-        "answers": [
-          "Gaps",
-          "Nulls",
-          "Missing Values",
-          "Empty Cells"
+          "Kompression",
+          "Fragmentierung",
+          "Redundanz",
+          "Latenz"
         ],
         "correct": 2,
         "time_limit": 12
       },
       {
-        "question": "'Brav' vs. nicht 'brav' – was ist das für ein ML-Problem?",
+        "question": "Geschenke werden erst gebaut, wenn sie wirklich gebraucht werden. Welches Prinzip ist das?",
         "answers": [
-          "Regression",
-          "Clustering",
-          "Klassifikation",
-          "Reinforcement"
-        ],
-        "correct": 2,
-        "time_limit": 12
-      },
-      {
-        "question": "Ein Elf pusht ohne Review in Main und bricht den Build. Welches Prinzip wurde missachtet?",
-        "answers": [
-          "Code-Review",
-          "Daily Stand-up",
-          "Retrospektive",
-          "Sprint Planning"
-        ],
-        "correct": 0,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt eine Architektur mit kleinen, unabhängigen Services?",
-        "answers": [
-          "Monolith",
-          "Microservices",
-          "Client-Server",
-          "Peer-to-Peer"
-        ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "Wie nennt man einen Fehler, der nur unter sehr speziellen Bedingungen auftritt?",
-        "answers": [
-          "Race Condition",
-          "Heisenbug",
-          "Syntaxfehler",
-          "Nullpointer"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Ein Sensor startet automatisch die Verpackung. Was ist das?",
-        "answers": [
-          "Klassische Automatisierung",
-          "Autonomes System",
-          "Künstliche Intelligenz",
-          "Machine Learning"
+          "Just-in-Time",
+          "Losfertigung",
+          "Push-Produktion",
+          "Lagerhaltung"
         ],
         "correct": 0,
         "time_limit": 12
       },
       {
-        "question": "Der Schlitten fliegt selbstständig und weicht Hindernissen aus. Wie nennt man das?",
+        "question": "Die Werkstatt plant mit einer Tafel „To Do – In Arbeit – Fertig“. Wie heißt die Methode?",
         "answers": [
-          "Automatisiertes System",
-          "Autonomes System",
-          "Manuelles System",
-          "Ferngesteuertes System"
+          "PRINCE2",
+          "Wasserfall",
+          "Kanban",
+          "Gantt"
         ],
-        "correct": 1,
+        "correct": 2,
         "time_limit": 12
       },
       {
-        "question": "Maschinen melden Wartungsbedarf, bevor sie ausfallen. Wie heißt das?",
+        "question": "In welchem Format steht {\"name\": \"Anna\", \"brav\": true}?",
         "answers": [
-          "Reaktive Wartung",
-          "Präventive Wartung",
-          "Predictive Maintenance",
-          "Korrektive Wartung"
+          "SQL",
+          "CSV",
+          "JSON",
+          "HTML"
+        ],
+        "correct": 2,
+        "time_limit": 12
+      },
+      {
+        "question": "Ein Botnetz schickt Millionen falsche Wunschzettel, bis der Server zusammenbricht. Wie heißt der Angriff?",
+        "answers": [
+          "DDoS",
+          "SQL-Injection",
+          "Brute Force",
+          "Phishing"
+        ],
+        "correct": 0,
+        "time_limit": 12
+      },
+      {
+        "question": "Eine Mail „Der Weihnachtsmann braucht dringend dein Passwort“ ist ein Beispiel für …?",
+        "answers": [
+          "Phishing",
+          "Backup",
+          "Spam-Filter",
+          "Captcha"
+        ],
+        "correct": 0,
+        "time_limit": 12
+      },
+      {
+        "question": "Die Elfen bauen ein virtuelles Abbild ihrer Werkstatt, um Abläufe zu testen. Wie heißt das?",
+        "answers": [
+          "Firewall",
+          "Cloud-Backup",
+          "Digitaler Zwilling",
+          "Datenbank-Index"
         ],
         "correct": 2,
         "time_limit": 15
+      },
+      {
+        "question": "Welche Methode will Prozesse so stabil machen, dass nur 3,4 Fehler pro Million vorkommen?",
+        "answers": [
+          "Design Thinking",
+          "Six Sigma",
+          "Scrum",
+          "Wasserfall"
+        ],
+        "correct": 1,
+        "time_limit": 15
+      },
+      {
+        "question": "Welche japanische Methode steht für ständige kleine Verbesserungen?",
+        "answers": [
+          "Kanban",
+          "Origami",
+          "Kaizen",
+          "Sudoku"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Die Elfen fragen bei jedem Fehler fünfmal nacheinander „Warum?“. Wie heißt die Methode?",
+        "answers": [
+          "A/B-Test",
+          "SWOT-Analyse",
+          "5-Why-Methode",
+          "Pareto-Analyse"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Welches Bauteil lässt Rudolphs Nase stromsparend leuchten?",
+        "answers": [
+          "LED",
+          "Transistor",
+          "Kondensator",
+          "Widerstand"
+        ],
+        "correct": 0,
+        "time_limit": 10
       }
     ]
   },
@@ -1071,133 +1071,133 @@
     "title": "Kuriose Weihnachts-Facts 🎅🌍",
     "questions": [
       {
-        "question": "In welchem Land ist KFC ein typisches Weihnachtsessen?",
+        "question": "In welcher schwedischen Stadt wird jedes Jahr ein riesiger Strohbock aufgestellt, der schon oft angezündet wurde?",
         "answers": [
-          "China",
-          "Japan",
-          "Südkorea",
-          "Thailand"
-        ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "Wo werden Spinnennetze als Glückssymbol in den Baum gehängt?",
-        "answers": [
-          "Russland",
-          "Polen",
-          "Ukraine",
-          "Rumänien"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land bringt die Hexe 'La Befana' am 6. Januar die Geschenke?",
-        "answers": [
-          "Spanien",
-          "Italien",
-          "Griechenland",
-          "Portugal"
-        ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "Welches Land exportiert weltweit die meisten echten Weihnachtsbäume?",
-        "answers": [
-          "Deutschland",
-          "Kanada",
-          "Dänemark",
-          "USA"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land gibt es den 'Tió de Nadal' – einen Holzklotz, der Geschenke 'ausscheißt'?",
-        "answers": [
-          "Portugal",
-          "Spanien/Katalonien",
-          "Frankreich",
-          "Andorra"
+          "Malmö",
+          "Gävle",
+          "Uppsala",
+          "Kiruna"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "In welcher Stadt findet die größte 'SantaCon' statt (Tausende als Weihnachtsmann)?",
+        "question": "Wie heißt die Figur, die in katalanischen Krippen versteckt hockt und ihr Geschäft verrichtet?",
         "answers": [
-          "London",
-          "New York",
-          "Sydney",
-          "Berlin"
+          "Bufó",
+          "Tronquet",
+          "Pinxo",
+          "Caganer"
         ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "Welche Firma prägte das moderne Bild des rot-weißen Weihnachtsmanns?",
-        "answers": [
-          "Pepsi",
-          "Coca-Cola",
-          "McDonald's",
-          "Nestlé"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "Wie viele Kalorien hat ein klassisches Weihnachtsmenü ungefähr?",
-        "answers": [
-          "1.500 kcal",
-          "3.000 kcal",
-          "5.000 kcal",
-          "7.000 kcal"
-        ],
-        "correct": 2,
+        "correct": 3,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land versteckt man an Weihnachten traditionell alle Besen?",
+        "question": "Die „Weihnachtsgurke“ im Baum gilt als deutscher Brauch. Wo ist sie wirklich bekannt?",
+        "answers": [
+          "In Deutschland",
+          "In den USA",
+          "In Österreich",
+          "In Polen"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "In welchem Land schaut an Heiligabend halb das Land „Kalle Anka“ (Donald Duck) im Fernsehen?",
         "answers": [
           "Finnland",
           "Norwegen",
-          "Island",
+          "Dänemark",
           "Schweden"
         ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "In welcher österreichischen Stadt liegt das Postamt „Christkindl“, das Briefe mit Sonderstempel versieht?",
+        "answers": [
+          "Steyr",
+          "Graz",
+          "Innsbruck",
+          "Salzburg"
+        ],
+        "correct": 0,
+        "time_limit": 20
+      },
+      {
+        "question": "Wo legt man an Heiligabend Heu unter die Tischdecke, als Erinnerung an die Krippe?",
+        "answers": [
+          "In Frankreich",
+          "In Polen",
+          "In Portugal",
+          "In Irland"
+        ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "Welches ist der meistverkaufte Weihnachtssong aller Zeiten?",
+        "question": "Welches Tier frisst in Island angeblich Kinder, die zu Weihnachten keine neue Kleidung bekommen?",
         "answers": [
-          "Last Christmas",
-          "All I Want for Christmas",
-          "White Christmas",
-          "Jingle Bells"
+          "Ein Rabe",
+          "Ein Eisbär",
+          "Ein Wolf",
+          "Eine Katze"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie schnell müsste der Weihnachtsmann ungefähr fliegen, um in einer Nacht alle Kinder zu besuchen?",
+        "answers": [
+          "Rund 1 km pro Sekunde",
+          "Rund 100.000 km pro Sekunde",
+          "Rund 1.000 km pro Sekunde",
+          "Schneller als das Licht"
         ],
         "correct": 2,
-        "time_limit": 12
+        "time_limit": 20
       },
       {
-        "question": "In welchem Land fährt man mit Rollschuhen zur Weihnachtsmesse?",
+        "question": "In welchem Land gibt es am 23. Dezember die „Nacht der Radieschen“ mit kunstvoll geschnitzten Rettichen?",
         "answers": [
-          "Mexiko",
-          "Venezuela",
-          "Kolumbien",
-          "Brasilien"
+          "Spanien",
+          "Peru",
+          "Japan",
+          "Mexiko"
         ],
-        "correct": 1,
+        "correct": 3,
+        "time_limit": 20
+      },
+      {
+        "question": "Was ist Heiligabend in Japan für viele?",
+        "answers": [
+          "Ein Tag mit Feuerwerk",
+          "Ein großes Familienfest",
+          "Ein Fastentag",
+          "Ein romantischer Abend für Paare"
+        ],
+        "correct": 3,
         "time_limit": 15
       },
       {
-        "question": "Welcher deutsche Weihnachtsmarkt ist der älteste (seit 1434)?",
+        "question": "Norwegen schenkt London jedes Jahr einen Weihnachtsbaum als Dank für die Hilfe im Zweiten Weltkrieg. Wo steht er?",
         "answers": [
-          "Nürnberg",
-          "Dresden",
-          "Köln",
-          "Stuttgart"
+          "Piccadilly Circus",
+          "Trafalgar Square",
+          "Leicester Square",
+          "Hyde Park"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "Was ist die Mistel biologisch?",
+        "answers": [
+          "Ein Moos",
+          "Ein Halbschmarotzer, der auf Bäumen wächst",
+          "Ein kleiner Nadelbaum",
+          "Ein Pilz"
         ],
         "correct": 1,
         "time_limit": 15
@@ -1208,224 +1208,224 @@
     "title": "Weihnachtsfeier 🎅🌍",
     "questions": [
       {
-        "question": "In welchem Land fährt man mit Rollschuhen zur Weihnachtsmesse?",
+        "question": "Was brennt bei der Feuerzangenbowle über dem Glühwein?",
         "answers": [
-          "Mexiko",
-          "Venezuela",
-          "Kolumbien",
-          "Brasilien"
+          "Ein Stück Kandis mit Wodka",
+          "Ein mit Rum getränkter Zuckerhut",
+          "Eine Zimtstange",
+          "Eine Orangenschale"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land versteckt man an Weihnachten traditionell alle Besen?",
+        "question": "Wer spielt Hans Pfeiffer im Film „Die Feuerzangenbowle“ (1944)?",
         "answers": [
-          "Finnland",
-          "Norwegen",
-          "Island",
-          "Schweden"
+          "Heinz Erhardt",
+          "Theo Lingen",
+          "Hans Albers",
+          "Heinz Rühmann"
         ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 15
       },
       {
-        "question": "Wo werden Spinnennetze als Glückssymbol in den Baum gehängt?",
+        "question": "Was ist „Eggnog“?",
         "answers": [
-          "Russland",
-          "Polen",
-          "Ukraine",
-          "Rumänien"
+          "Ein Glühwein",
+          "Ein Apfelpunsch",
+          "Ein Eierpunsch",
+          "Ein Grog"
         ],
         "correct": 2,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land ist KFC ein typisches Weihnachtsessen?",
+        "question": "Was ist „Glögg“?",
         "answers": [
-          "China",
-          "Japan",
-          "Südkorea",
-          "Thailand"
+          "Dänisches Gebäck",
+          "Ein schwedischer Tanz",
+          "Ein finnischer Schneemann",
+          "Skandinavischer Glühwein"
         ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 15
       },
       {
-        "question": "In welchem Land bringt die Hexe 'La Befana' am 6. Januar die Geschenke?",
+        "question": "Wie heißt der Schneemann in Disneys „Die Eiskönigin“?",
         "answers": [
-          "Spanien",
-          "Italien",
-          "Griechenland",
-          "Portugal"
-        ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "In welchem Land wird Weihnachten am Strand gefeiert?",
-        "answers": [
-          "Kanada",
-          "Russland",
-          "Australien",
-          "Norwegen"
+          "Sven",
+          "Hans",
+          "Olaf",
+          "Kristoff"
         ],
         "correct": 2,
-        "time_limit": 15
+        "time_limit": 10
       },
       {
-        "question": "In welchem Land wurde der Weihnachtsbaum-Brauch erfunden?",
+        "question": "Was ist ein „Ugly Christmas Sweater“?",
         "answers": [
-          "England",
-          "Deutschland",
-          "Frankreich",
-          "Österreich"
+          "Ein absichtlich kitschiger Weihnachtspulli",
+          "Ein misslungener Weihnachtsbaum",
+          "Ein verlorenes Geschenk",
+          "Ein verbrannter Braten"
+        ],
+        "correct": 0,
+        "time_limit": 10
+      },
+      {
+        "question": "Wie heißt der Freitag nach Thanksgiving, an dem in den USA das Weihnachtsshopping startet?",
+        "answers": [
+          "Golden Friday",
+          "Super Saturday",
+          "Cyber Monday",
+          "Black Friday"
+        ],
+        "correct": 3,
+        "time_limit": 10
+      },
+      {
+        "question": "Wie heißt die rot-weiße Süßigkeit in Form eines Spazierstocks?",
+        "answers": [
+          "Zuckerstange",
+          "Zuckerwatte",
+          "Lakritzschnecke",
+          "Lolli"
+        ],
+        "correct": 0,
+        "time_limit": 10
+      },
+      {
+        "question": "Was essen die meisten Deutschen laut Umfragen an Heiligabend?",
+        "answers": [
+          "Gänsebraten",
+          "Kartoffelsalat mit Würstchen",
+          "Fondue",
+          "Karpfen"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "Wie heißt der Weihnachtsmann in Frankreich?",
+        "question": "Wer hält in Deutschland die Weihnachtsansprache im Fernsehen?",
         "answers": [
-          "Santa Claus",
-          "Père Noël",
-          "Babbo Natale",
-          "Papá Noel"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welche Stadt gilt als Heimat des Christkinds in Deutschland?",
-        "answers": [
-          "München",
-          "Nürnberg",
-          "Köln",
-          "Dresden"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Aus welchem Material waren die ersten Christbaumkugeln?",
-        "answers": [
-          "Plastik",
-          "Holz",
-          "Glas",
-          "Metall"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Was ist der Ursprung des Adventskalenders?",
-        "answers": [
-          "Frankreich 1700",
-          "Deutschland 1800er Jahre",
-          "England 1750",
-          "USA 1900"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Was symbolisiert die Mistel an Weihnachten?",
-        "answers": [
-          "Frieden und Liebe",
-          "Reichtum",
-          "Gesundheit",
-          "Stärke"
+          "Der Bundespräsident",
+          "Der Bundeskanzler",
+          "Der Papst",
+          "Die Bundestagspräsidentin"
         ],
         "correct": 0,
         "time_limit": 15
       },
       {
-        "question": "Was ist ein Christstollen?",
+        "question": "Welchen Segen spendet der Papst am ersten Weihnachtstag?",
         "answers": [
-          "Ein Weihnachtsbaum",
-          "Ein Hefekuchen mit Früchten",
-          "Eine Weihnachtskrippe",
-          "Ein Weihnachtslied"
+          "Urbi et orbi",
+          "Carpe diem",
+          "Ave Maria",
+          "Ora et labora"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie heißen die Nächte zwischen Weihnachten und Heilige Drei Könige?",
+        "answers": [
+          "Sternennächte",
+          "Walpurgisnächte",
+          "Polarnächte",
+          "Raunächte"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wie heißt Kevins Familie in „Kevin – Allein zu Haus“?",
+        "answers": [
+          "Henderson",
+          "Johnson",
+          "Griswold",
+          "McCallister"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wann ist die Wintersonnenwende, die längste Nacht des Jahres bei uns?",
+        "answers": [
+          "Am 1. Dezember",
+          "Um den 21. Dezember",
+          "Am 31. Dezember",
+          "Am 24. Dezember"
         ],
         "correct": 1,
         "time_limit": 15
       },
       {
-        "question": "Was bedeutet 'Advent'?",
+        "question": "Welche Holzfigur aus dem Erzgebirge stößt Rauch aus?",
         "answers": [
-          "Geschenk",
-          "Ankunft",
-          "Freude",
-          "Fest"
+          "Das Räuchermännchen",
+          "Der Bergmann",
+          "Der Nussknacker",
+          "Der Schwibbogen"
         ],
-        "correct": 1,
+        "correct": 0,
+        "time_limit": 10
+      },
+      {
+        "question": "Was dreht eine klassische Weihnachtspyramide?",
+        "answers": [
+          "Eine Handkurbel",
+          "Ein Uhrwerk",
+          "Eine Batterie",
+          "Die warme Luft der Kerzen"
+        ],
+        "correct": 3,
         "time_limit": 15
       },
       {
-        "question": "Welches Weihnachtslied stammt aus Österreich?",
+        "question": "Was sind Maronen?",
         "answers": [
-          "O Tannenbaum",
-          "Stille Nacht",
-          "Ihr Kinderlein kommet",
-          "Kling Glöckchen"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Land stellt man Schuhe statt Strümpfe auf?",
-        "answers": [
-          "Spanien",
-          "Deutschland",
-          "Niederlande",
-          "Belgien"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Wer singt 'Last Christmas'?",
-        "answers": [
-          "Michael Jackson",
-          "Wham!",
-          "Queen",
-          "The Beatles"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welcher Stadt findet die größte 'SantaCon' statt (Tausende als Weihnachtsmann)?",
-        "answers": [
-          "London",
-          "New York",
-          "Sydney",
-          "Berlin"
-        ],
-        "correct": 1,
-        "time_limit": 12
-      },
-      {
-        "question": "Welche Firma prägte das moderne Bild des rot-weißen Weihnachtsmanns?",
-        "answers": [
-          "Pepsi",
-          "Coca-Cola",
-          "McDonald's",
-          "Nestlé"
+          "Gefüllte Lebkuchen",
+          "Geröstete Esskastanien",
+          "Kandierte Früchte",
+          "Gebrannte Mandeln"
         ],
         "correct": 1,
         "time_limit": 10
       },
       {
-        "question": "Welcher deutsche Weihnachtsmarkt ist der älteste (seit 1434)?",
+        "question": "Was ist ein Lumumba?",
         "answers": [
-          "Nürnberg",
-          "Dresden",
-          "Köln",
-          "Stuttgart"
+          "Glühwein mit Amaretto",
+          "Tee mit Wodka",
+          "Kaffee mit Eierlikör",
+          "Heißer Kakao mit Rum"
         ],
-        "correct": 1,
+        "correct": 3,
         "time_limit": 15
+      },
+      {
+        "question": "Welcher Film läuft jedes Jahr zu Weihnachten im TV und handelt von einem Jungen, der Erbe eines Earls wird?",
+        "answers": [
+          "Oliver Twist",
+          "Der kleine Prinz",
+          "Pippi Langstrumpf",
+          "Der kleine Lord"
+        ],
+        "correct": 3,
+        "time_limit": 15
+      },
+      {
+        "question": "Wer bringt in Süddeutschland traditionell die Geschenke an Heiligabend?",
+        "answers": [
+          "Das Christkind",
+          "Der Weihnachtsmann",
+          "Knecht Ruprecht",
+          "Der Nikolaus"
+        ],
+        "correct": 0,
+        "time_limit": 10
       }
     ]
   },
@@ -1433,136 +1433,136 @@
     "title": "Weihnachtsmann & Co. KG 🎅🏭",
     "questions": [
       {
-        "question": "In welchem Land wohnt der Weihnachtsmann in der Serie?",
+        "question": "Welcher dieser Namen gehört NICHT zu den klassischen Rentieren des Weihnachtsmanns?",
         "answers": [
-          "Island",
-          "Grönland",
+          "Comet",
+          "Blitzen",
+          "Dasher",
+          "Sparky"
+        ],
+        "correct": 3,
+        "time_limit": 20
+      },
+      {
+        "question": "Wo liegt das „Santa Claus Village“ direkt am Polarkreis?",
+        "answers": [
+          "Rovaniemi",
+          "Reykjavík",
+          "Tromsø",
+          "Kiruna"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "In welchem Ort in Brandenburg beantwortet ein Weihnachtspostamt jedes Jahr Hunderttausende Kinderbriefe?",
+        "answers": [
+          "Himmelstadt",
+          "Engelskirchen",
+          "Himmelpfort",
+          "Sankt Nikolaus"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Welches nordamerikanische Militärkommando verfolgt an Heiligabend den Weihnachtsmann per Radar?",
+        "answers": [
+          "NATO",
+          "FBI",
+          "NORAD",
+          "NASA"
+        ],
+        "correct": 2,
+        "time_limit": 15
+      },
+      {
+        "question": "Wer begleitet in Deutschland den Nikolaus mit Rute und Sack?",
+        "answers": [
+          "Struwwelpeter",
+          "Rumpelstilzchen",
+          "Rübezahl",
+          "Knecht Ruprecht"
+        ],
+        "correct": 3,
+        "time_limit": 10
+      },
+      {
+        "question": "Welcher Zeichner prägte im 19. Jahrhundert in „Harper's Weekly“ das Bild des Weihnachtsmanns?",
+        "answers": [
+          "Norman Rockwell",
+          "Wilhelm Busch",
+          "Thomas Nast",
+          "Walt Disney"
+        ],
+        "correct": 2,
+        "time_limit": 20
+      },
+      {
+        "question": "Welche Postleitzahl hat der Weihnachtsmann in Kanada?",
+        "answers": [
+          "N0R 7H3",
+          "X0X 0X0",
+          "S4N 7A1",
+          "H0H 0H0"
+        ],
+        "correct": 3,
+        "time_limit": 20
+      },
+      {
+        "question": "Was stellen Kinder in den USA und Großbritannien dem Weihnachtsmann hin?",
+        "answers": [
+          "Milch und Kekse",
+          "Brot und Salz",
+          "Glühwein",
+          "Kaffee und Kuchen"
+        ],
+        "correct": 0,
+        "time_limit": 10
+      },
+      {
+        "question": "Wer baut in der Werkstatt am Nordpol die Spielsachen?",
+        "answers": [
+          "Die Zwerge",
+          "Die Kobolde",
+          "Die Elfen",
+          "Die Trolle"
+        ],
+        "correct": 2,
+        "time_limit": 10
+      },
+      {
+        "question": "Welcher Animationsfilm (2019) erzählt, wie ein Postbote den Weihnachtsmann-Mythos begründet?",
+        "answers": [
+          "Fred Claus",
+          "Klaus",
+          "Der Polarexpress",
+          "Arthur Weihnachtsmann"
+        ],
+        "correct": 1,
+        "time_limit": 20
+      },
+      {
+        "question": "In welchem Land bringt der „Julenisse“ die Geschenke?",
+        "answers": [
           "Norwegen",
-          "Finnland"
+          "Irland",
+          "Island",
+          "Deutschland"
+        ],
+        "correct": 0,
+        "time_limit": 15
+      },
+      {
+        "question": "Durch welchen Weg kommt der Weihnachtsmann traditionell ins Haus?",
+        "answers": [
+          "Durchs Fenster",
+          "Durch den Briefschlitz",
+          "Durch den Keller",
+          "Durch den Schornstein"
         ],
         "correct": 3,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt das Rentier mit der roten Nase?",
-        "answers": [
-          "Rudolph",
-          "Rudolf",
-          "Rodney",
-          "Ronny"
-        ],
-        "correct": 1,
         "time_limit": 10
-      },
-      {
-        "question": "Wer ist der Hauptgegenspieler des Weihnachtsmanns in der Serie?",
-        "answers": [
-          "Der Osterhase",
-          "Knecht Ruprecht",
-          "Grantelbart",
-          "Der Krampus"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Wie heißt die Frau des Weihnachtsmanns?",
-        "answers": [
-          "Maria",
-          "Anna",
-          "Frau Holle",
-          "Keine Angabe in der Serie"
-        ],
-        "correct": 3,
-        "time_limit": 15
-      },
-      {
-        "question": "Welche Aufgabe hat Trixi in der Weihnachtsmann & Co. KG?",
-        "answers": [
-          "Geschenke einpacken",
-          "Schlitten fahren",
-          "Elfe und Assistentin",
-          "Spielzeug herstellen"
-        ],
-        "correct": 2,
-        "time_limit": 15
-      },
-      {
-        "question": "Aus welchem Land stammt die Original-Zeichentrickserie?",
-        "answers": [
-          "Deutschland",
-          "USA",
-          "Frankreich",
-          "Kanada"
-        ],
-        "correct": 2,
-        "time_limit": 20
-      },
-      {
-        "question": "Wie heißt das technische Genie unter den Elfen?",
-        "answers": [
-          "Jordi",
-          "Gilfi",
-          "Trixi",
-          "Rudi"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "In welchem Jahr wurde die Serie erstmals im deutschen Fernsehen ausgestrahlt?",
-        "answers": [
-          "1995",
-          "1997",
-          "1999",
-          "2001"
-        ],
-        "correct": 1,
-        "time_limit": 20
-      },
-      {
-        "question": "Wie viele Staffeln hat die Serie insgesamt?",
-        "answers": [
-          "1",
-          "2",
-          "3",
-          "4"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Was versucht Grantelbart in der Serie zu erreichen?",
-        "answers": [
-          "Den Weihnachtsmann zu besiegen",
-          "Weihnachten zu verhindern",
-          "Selbst Weihnachtsmann zu werden",
-          "Die Spielzeugfabrik zu übernehmen"
-        ],
-        "correct": 1,
-        "time_limit": 15
-      },
-      {
-        "question": "Welches Verkehrsmittel nutzt der Weihnachtsmann hauptsächlich?",
-        "answers": [
-          "Schneemobil",
-          "Rentierschlitten",
-          "Flugzeug",
-          "Eisenbahn"
-        ],
-        "correct": 1,
-        "time_limit": 10
-      },
-      {
-        "question": "Wie heißt der deutsche Synchronsprecher des Weihnachtsmanns?",
-        "answers": [
-          "Manfred Lehmann",
-          "Joachim Kemmer",
-          "Christian Tramitz",
-          "Rolf Zacher"
-        ],
-        "correct": 1,
-        "time_limit": 20
       }
     ]
   },
