@@ -58,10 +58,10 @@ const TEMPLATES = [
         title: 'Jahresrückblick', entryWord: 'Gruppe', entries: 4,
         scaleHint: '4 = super gut, 1 = schlecht. Dazu eine Freitext-Frage je Gruppe.',
         criteria: [
-            { emoji: '🎯', name: 'Inhalt', question: 'Wie klar wurde, was das Produkt dieses Jahr erreicht, bewegt oder gelernt hat?', ...SCALE_4 },
-            { emoji: '💡', name: 'Relevanz', question: 'Was hat das Ergebnis für eine Bedeutung für Smart Solutions?', ...SCALE_4 },
-            { emoji: '🎨', name: 'Kreative Umsetzung', question: 'Wie gelungen wurde der Rückblick ohne klassische Präsentation umgesetzt?', ...SCALE_4 },
-            { emoji: '🧠', name: 'Bleibt hängen', question: 'Wie gut könnt ihr euch später noch an die Kernbotschaft erinnern?', ...SCALE_4 }
+            { icon: 'target', name: 'Inhalt', question: 'Wie klar wurde, was das Produkt dieses Jahr erreicht, bewegt oder gelernt hat?', ...SCALE_4 },
+            { icon: 'lightbulb', name: 'Relevanz', question: 'Was hat das Ergebnis für eine Bedeutung für Smart Solutions?', ...SCALE_4 },
+            { icon: 'palette', name: 'Kreative Umsetzung', question: 'Wie gelungen wurde der Rückblick ohne klassische Präsentation umgesetzt?', ...SCALE_4 },
+            { icon: 'pin', name: 'Bleibt hängen', question: 'Wie gut könnt ihr euch später noch an die Kernbotschaft erinnern?', ...SCALE_4 }
         ],
         texts: [{ question: 'Was ist die Kernbotschaft?', per_entry: true }]
     },
@@ -70,11 +70,11 @@ const TEMPLATES = [
         title: 'Frühstück', entryWord: 'Tisch', entries: 0,
         scaleHint: '4 = trifft voll zu, 1 = gar nicht. Bewertet wird das Frühstück als Ganzes.',
         criteria: [
-            { emoji: '🥨', name: 'Wie herzhaft wir unterwegs sind', low: 'gar nicht', high: 'voll' },
-            { emoji: '🍰', name: 'Wie süß wir unterwegs sind', low: 'gar nicht', high: 'voll' },
-            { emoji: '🥑', name: 'Wie gesund wir tatsächlich sind', low: 'gar nicht', high: 'voll' },
-            { emoji: '🌍', name: 'Wie international/unterschiedlich unser Frühstück ist', low: 'gar nicht', high: 'voll' },
-            { emoji: '😄', name: 'Dass ich manche Kollegen offenbar völlig falsch eingeschätzt habe', low: 'gar nicht', high: 'voll' }
+            { icon: 'utensils', name: 'Wie herzhaft wir unterwegs sind', low: 'gar nicht', high: 'voll' },
+            { icon: 'cookie', name: 'Wie süß wir unterwegs sind', low: 'gar nicht', high: 'voll' },
+            { icon: 'leaf', name: 'Wie gesund wir tatsächlich sind', low: 'gar nicht', high: 'voll' },
+            { icon: 'globe', name: 'Wie international/unterschiedlich unser Frühstück ist', low: 'gar nicht', high: 'voll' },
+            { icon: 'smile', name: 'Dass ich manche Kollegen offenbar völlig falsch eingeschätzt habe', low: 'gar nicht', high: 'voll' }
         ],
         texts: []
     },
@@ -83,11 +83,11 @@ const TEMPLATES = [
         title: 'Geschenke', entryWord: 'Gruppe', entries: 4,
         scaleHint: 'Je Kriterium bis zu 4 Punkte.',
         criteria: [
-            { emoji: '🎯', name: 'Zielgruppenverständnis', low: 'schwach', high: 'top' },
-            { emoji: '💬', name: 'Klarheit der Botschaft', low: 'schwach', high: 'top' },
-            { emoji: '🎨', name: 'Kreativität', low: 'schwach', high: 'top' },
-            { emoji: '💡', name: 'Smart-Solutions-Bezug', low: 'schwach', high: 'top' },
-            { emoji: '🎁', name: 'Umsetzung und Präsentation', low: 'schwach', high: 'top' }
+            { icon: 'target', name: 'Zielgruppenverständnis', low: 'schwach', high: 'top' },
+            { icon: 'message', name: 'Klarheit der Botschaft', low: 'schwach', high: 'top' },
+            { icon: 'palette', name: 'Kreativität', low: 'schwach', high: 'top' },
+            { icon: 'lightbulb', name: 'Smart-Solutions-Bezug', low: 'schwach', high: 'top' },
+            { icon: 'gift', name: 'Umsetzung und Präsentation', low: 'schwach', high: 'top' }
         ],
         texts: []
     },
@@ -96,11 +96,11 @@ const TEMPLATES = [
         title: 'Fotosession', entryWord: 'Gruppe', entries: 4,
         scaleHint: 'Je Kriterium 1–4 Punkte. Am Ende eine Freitext-Frage.',
         criteria: [
-            { emoji: '💡', name: 'Idee', low: 'schon mal gesehen', high: 'darauf muss man erstmal kommen' },
-            { emoji: '👀', name: 'Erkennbarkeit', low: 'Was soll das sein?', high: 'sofort erkannt!' },
-            { emoji: '🤝', name: 'Teamwork', low: 'Einzelkämpfer', high: 'perfekte Formation' },
-            { emoji: '🎨', name: 'Kreativität', low: 'solide', high: 'richtig clever' },
-            { emoji: '🤩', name: 'Wow-Faktor', low: 'nett', high: 'das gehört eingerahmt' }
+            { icon: 'lightbulb', name: 'Idee', low: 'schon mal gesehen', high: 'darauf muss man erstmal kommen' },
+            { icon: 'eye', name: 'Erkennbarkeit', low: 'Was soll das sein?', high: 'sofort erkannt!' },
+            { icon: 'users', name: 'Teamwork', low: 'Einzelkämpfer', high: 'perfekte Formation' },
+            { icon: 'palette', name: 'Kreativität', low: 'solide', high: 'richtig clever' },
+            { icon: 'sparkles', name: 'Wow-Faktor', low: 'nett', high: 'das gehört eingerahmt' }
         ],
         texts: [{ question: 'Welches Bild gehört auf unsere Smart-Solutions-Weihnachtskarte 2026?', per_entry: false }]
     },
@@ -175,11 +175,11 @@ function renderTemplateUi(def) {
         $('criteria-count').textContent = def.criteria.length;
         $('scale-hint').textContent = template.scaleHint || '';
         $('criteria-preview').innerHTML = def.criteria.map(c => `
-            <li><span class="emoji">${escapeHtml(c.emoji || '•')}</span>
+            <li>${SQ.critIcon(c.icon)}
                 <span><b>${escapeHtml(c.name)}</b>${c.question ? `<small>${escapeHtml(c.question)}</small>` : ''}
                 ${c.low || c.high ? `<small class="scale">1 = ${escapeHtml(c.low)} · 4 = ${escapeHtml(c.high)}</small>` : ''}</span></li>`).join('')
             + def.texts.map(t => `
-            <li class="text-q"><span class="emoji">✍️</span>
+            <li class="text-q">${SQ.critIcon('pencil')}
                 <span><b>${escapeHtml(t.question)}</b><small>Freitext ${t.per_entry ? `je ${escapeHtml(word)}` : 'einmal am Ende'}</small></span></li>`).join('');
     }
     document.querySelectorAll('.template-card').forEach(card => {
@@ -376,7 +376,7 @@ function renderLive(p) {
     $('chips-label').textContent = showCriteria ? 'Bewertet wird' : rating ? 'Bewertet werden' : 'Zur Wahl';
     const chipsHtml = showCriteria
         ? p.criteria.map(c => `
-        <span class="option-chip"><span class="num emoji">${escapeHtml(c.emoji || '•')}</span><span>${escapeHtml(c.name)}</span></span>`).join('')
+        <span class="option-chip"><span class="num crit">${SQ.critIcon(c.icon)}</span><span>${escapeHtml(c.name)}</span></span>`).join('')
         : p.options.map((o, i) => `
         <span class="option-chip"><span class="num">${i + 1}</span><span>${escapeHtml(o.name)}${o.detail ? `<small>${escapeHtml(o.detail)}</small>` : ''}</span></span>`).join('');
     if ($('option-chips').dataset.html !== chipsHtml) {
@@ -479,7 +479,7 @@ function renderRatingResult(p, r) {
             const a = row.averages[i];
             return `
             <li class="rank-row${a !== null && a === best && best > 0 ? ' win' : ''}" style="animation-delay:${i * 0.06}s">
-                <span class="place emoji">${escapeHtml(c.emoji || '•')}</span>
+                <span class="place crit">${SQ.critIcon(c.icon)}</span>
                 <span class="who">${escapeHtml(c.name)}</span>
                 <span class="bar"><div data-w="${(a || 0) / 4 * 100}"></div></span>
                 <span class="count">${a === null ? '–' : fmt(a)}<small>von 4</small></span>
@@ -500,7 +500,7 @@ function renderRatingResult(p, r) {
         $('ranking-title').textContent = 'Alle Punkte';
         const max = Math.max(1, r.max_total);
         $('ranking').innerHTML = r.ranking.map((row, i) => {
-            const parts = crit.map((c, k) => `<span title="${escapeHtml(c.name)}">${escapeHtml(c.emoji || c.name)} ${row.averages[k] === null ? '–' : fmt(row.averages[k])}</span>`).join('');
+            const parts = crit.map((c, k) => `<span title="${escapeHtml(c.name)}">${SQ.critIcon(c.icon)} ${row.averages[k] === null ? '–' : fmt(row.averages[k])}</span>`).join('');
             return `
             <li class="rank-row${r.winners.includes(row.index) ? ' win' : ''}" style="animation-delay:${i * 0.06}s">
                 <span class="place">${row.place}.</span>

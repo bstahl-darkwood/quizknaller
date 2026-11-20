@@ -746,7 +746,7 @@ function noteField(entry, t) {
     const key = `${entry === null ? '-' : entry}:${t}`;
     return `
         <label class="rate-text">
-            <span class="rate-q"><span class="emoji">✍️</span><b>${escapeHtml(text.question)}</b></span>
+            <span class="rate-q">${SQ.critIcon('pencil')}<b>${escapeHtml(text.question)}</b></span>
             <textarea maxlength="300" rows="2" data-entry="${entry === null ? '' : entry}" data-text="${t}"
                       placeholder="Deine Antwort …" ${poll.state === 'open' ? '' : 'readonly'}>${escapeHtml(poll.my_notes[key] || '')}</textarea>
         </label>`;
@@ -764,7 +764,7 @@ function renderRating() {
                 const mine = poll.my_scores[`${e}:${k}`];
                 return `
                 <div class="rate-crit">
-                    <div class="rate-q"><span class="emoji">${escapeHtml(c.emoji || '•')}</span><span><b>${escapeHtml(c.name)}</b>${c.question ? `<small>${escapeHtml(c.question)}</small>` : ''}</span></div>
+                    <div class="rate-q">${SQ.critIcon(c.icon)}<span><b>${escapeHtml(c.name)}</b>${c.question ? `<small>${escapeHtml(c.question)}</small>` : ''}</span></div>
                     <div class="rate-scale" role="radiogroup" aria-label="${escapeHtml(c.name)}">
                         ${[1, 2, 3, 4].map(v => `<button type="button" class="rate-btn${mine === v ? ' selected' : ''}" role="radio"
                             aria-checked="${mine === v}" data-entry="${e}" data-criterion="${k}" data-value="${v}">${v}</button>`).join('')}

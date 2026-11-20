@@ -17,6 +17,7 @@ Beitrittsseite. main.py leitet join_game/reconnect_player für Abstimmungs-Codes
 
 from __future__ import annotations
 
+import re
 import secrets
 import time
 
@@ -34,14 +35,14 @@ MAX_TEXTS = 4
 MAX_CRITERION_NAME = 60
 MAX_CRITERION_QUESTION = 140
 MAX_SCALE_LABEL = 60
-MAX_EMOJI = 8
+MAX_ICON = 24
 MAX_NOTE = 300
 SCALE_MAX = 4
 
 # code -> Zustand. Wähler sind nach ihrem geheimen Token sortiert (überlebt Socket-Wechsel).
 # {
 #   "host_token", "host_sid", "kind": "choice" | "rating", "title", "options": [{"name", "detail"}],
-#   "criteria": [{"emoji", "name", "question", "low", "high"}],   # nur "rating"
+#   "criteria": [{"icon", "name", "question", "low", "high"}],   # nur "rating"
 #   "texts": [{"question", "per_entry": bool}],                    # nur "rating"
 #   "state": "lobby" | "open" | "closed",
 #   "voters": {token: {"name", "sid", "vote": int | None, "connected": bool,
@@ -69,7 +70,7 @@ def _validate_criteria(data) -> list[dict] | str:
         if not name:
             continue
         criteria.append({
-            "emoji": _clean(item.get("emoji"), MAX_EMOJI),
+            "icon": re.sub(r"[^a-z0-9-]", "", str(item.get("icon") or "").lower())[:MAX_ICON],
             "name": name,
             "question": _clean(item.get("question"), MAX_CRITERION_QUESTION),
             "low": _clean(item.get("low"), MAX_SCALE_LABEL),
